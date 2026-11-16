@@ -26,7 +26,7 @@ Any static server from the repo root works:
 python3 -m http.server 8000
 ```
 
-Then open http://localhost:8000. Opening the files directly (`file://`) mostly works too, but links to `/` won't.
+Then open http://localhost:8000. Opening the files directly (`file://`) mostly works too, but Quit links back to the launcher may not.
 
 ## Notes
 

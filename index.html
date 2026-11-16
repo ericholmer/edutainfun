@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>/* folder pages need a trailing slash so relative links work */if(!/\/$|\.html?$/.test(location.pathname))location.replace(location.pathname+"/"+location.search+location.hash)</script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>edutain.fun</title>
 <style>@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2")}@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format("woff2")}</style>
@@ -137,9 +138,7 @@ button{font:inherit;color:inherit}
   <div class="mi">
     <button class="mt" aria-expanded="false" aria-haspopup="true">Special</button>
     <div class="dd" role="menu">
-      <button role="menuitem" data-do="sound"><span>Sound</span><span id="snd">✓</span></button>
-      <hr>
-      <button role="menuitem" data-do="all">Show All Games</button>
+            <button role="menuitem" data-do="all">Show All Games</button>
       <hr>
       <button role="menuitem" data-do="restart">Restart</button>
     </div>
@@ -209,12 +208,10 @@ const $=s=>document.querySelector(s);
 const tabsEl=$("#tabs"),panel=$("#panel"),hint=$("#hint"),count=$("#count");
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 let cur=TABS.includes(store.get("ef-tab"))?store.get("ef-tab"):TABS[0];
-let sound=store.get("ef-sound")!=="off";
 const DEFAULT_HINT="Click a button to start a game.";
 
-/* little 90s blip */
-let ac;
-function blip(f=660,d=.06){if(!sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type="square";o.frequency.value=f;g.gain.value=.04;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+/* sounds removed from the launcher */
+function blip(){}
 
 function drawTabs(){
   tabsEl.innerHTML=TABS.map(t=>`<button class="tab" role="tab" id="tab-${t.replace(/\W/g,"")}" aria-selected="${t===cur}" tabindex="${t===cur?0:-1}">${t}</button>`).join("");
@@ -290,7 +287,6 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeMenus();if(vei
 
 function act(what){
   if(what==="about"||what==="grown"){blip();dialog("info",...TEXT[what])}
-  if(what==="sound"){sound=!sound;store.set("ef-sound",sound?"on":"off");$("#snd").textContent=sound?"✓":"";blip()}
   if(what==="all"){blip(520);pick(TABS[0])}
   if(what==="restart")boot(true);
 }
@@ -300,7 +296,6 @@ document.querySelectorAll("[data-do]").forEach(b=>b.addEventListener("click",e=>
 const tick=()=>{$("#clock").textContent=new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})};
 tick();setInterval(tick,15000);
 
-$("#snd").textContent=sound?"✓":"";
 /* coming back from a game (#map, #gallery): show its tile and play the zoom-shut into it */
 const ret=GAMES.find(g=>"#"+g.id===location.hash&&!g.soon);
 if(ret&&cur!==TABS[0]&&ret.tab!==cur)cur=TABS[0];
@@ -325,7 +320,7 @@ if(ret){
 }
 
 /* startup screen: first visit only (skipped when coming back from a game or with reduced motion); Special > Restart replays it */
-function chime(){if(!sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const t=ac.currentTime;[262,330,392,523].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.type="triangle";o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.07,t+.02+i*.015);g.gain.exponentialRampToValueAtTime(.001,t+1.4);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+1.5)})}catch(e){}}
+function chime(){}
 function boot(force){
   const bt=$("#boot");
   if(!force&&(store.get("ef-booted")||ret||matchMedia("(prefers-reduced-motion: reduce)").matches))return;

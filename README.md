@@ -6,12 +6,13 @@ Free browser games in the spirit of 90s edutainment, teaching history, geography
 
 ```
 index.html        Launcher (At Ease–style desktop)
-fonts/            Fonts shared by the launcher and the Gallery (self-hosted, no Google Fonts calls)
+fonts/            Fonts shared by the launcher, the Gallery and Gone Fishing (self-hosted, no Google Fonts calls)
 map/              Mixed-Up Map
 gallery/          A Puzzling Presidential Gallery  (portraits/NN.jpg, 00 = Washington)
 first/            Which Came First?
 chase/            The Big Map Chase
 bill/             Bill's Big Trip  (art/ = pixel art, fonts/ = Pixelify Sans + Atkinson Hyperlegible)
+fish/             Gone Fishing: Chesapeake Bay  (fish/<id>.webp = Duane Raver USFWS paintings)
 ```
 
 Each game is a single self-contained `index.html`, plus its own fonts and images. Every game has the shared "edutain.fun" menu bar. Its config line `EB={id:"…",home:"/"}` sends Quit back to the launcher at `/#<id>`, which plays the zoom-shut into that game's tile.
@@ -37,8 +38,9 @@ Then open http://localhost:8000. Opening the files directly (`file://`) mostly w
 ## Credits and licenses
 
 - **ChicagoFLF** by Robin Casady: public domain.
-- **Atkinson Hyperlegible** (Braille Institute), **Pixelify Sans**, **Cormorant Garamond** and **Source Sans 3**: SIL Open Font License 1.1. License texts are next to the font files.
+- **Atkinson Hyperlegible** (Braille Institute), **Pixelify Sans**, **Cormorant Garamond**, **Source Sans 3** and **Zilla Slab**: SIL Open Font License 1.1. License texts are next to the font files.
 - **Presidential portraits**: public-domain works.
+- **Fish paintings** (Gone Fishing): Duane Raver, U.S. Fish and Wildlife Service, public domain.
 - **Map data** (The Big Map Chase): Natural Earth via world-atlas and us-atlas, public domain.
 - Pixel art for Bill's Big Trip was made for this project.
 

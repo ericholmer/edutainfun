@@ -1,0 +1,6 @@
+.DS_Store
+Thumbs.db
+*.mid
+*.midi
+node_modules/
+.scratch/

@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bill's Big Trip</title>
+<style>
+@font-face{font-family:"Pixelify Sans";src:url(fonts/pixelify-sans-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Pixelify Sans";src:url(fonts/pixelify-sans-latin-500-normal.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Pixelify Sans";src:url(fonts/pixelify-sans-latin-700-normal.woff2) format("woff2");font-weight:700;font-display:swap}
+@font-face{font-family:"Atkinson Hyperlegible";src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Atkinson Hyperlegible";src:url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format("woff2");font-weight:700;font-display:swap}
+/*
+VOICE: a 90s point-and-click adventure, friendly and funny, for 8-11 year olds.
+IDEA: the game screen itself: a room on top, a black dialog panel below, inventory on the right.
+PICTURE: the pixel-art room fills the top; characters speak in colored text over their heads.
+COLOUR and TYPE: near-black panel, saturated speaker colors, parchment notes; Pixelify Sans for game text, Atkinson Hyperlegible for longer reading.
+LAYOUT: landscape-first fixed screen scaled to the window; on a phone held upright the panel stacks under the room.
+*/
+:root{--u:3px;--px:"Pixelify Sans","Chicago",Geneva,ui-monospace,monospace;--rd:"Atkinson Hyperlegible",ui-rounded,system-ui,sans-serif;
+  --bg:#120c22;--panel:#0b0a12;--line:#3a2f5c;--gold:#ffd23f;--hi:#ffe14d;--paper:#f6ebc9;--ink:#2a1a12}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;min-width:0}
+html,body{margin:0;background:var(--bg);color:#fff;font-family:var(--rd)}
+body{min-height:100dvh;background-color:#120c22;background-image:radial-gradient(#22183e 1px,transparent 1.3px);background-size:6px 6px;overflow-x:clip}
+.hide{display:none!important}
+#game{position:relative;width:var(--W,100vw);margin:4px auto 0;border:2px solid #000;box-shadow:0 0 0 2px var(--line),0 10px 40px #0008;background:var(--panel)}
+#stage{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#1d1636;cursor:pointer;line-height:0;user-select:none;-webkit-user-select:none}
+.px{position:absolute;inset:0;overflow:hidden;background:#ddd}
+.px>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.px img{image-rendering:crisp-edges;image-rendering:pixelated}
+.px .room{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.px .spr{position:absolute;transform-origin:50% 100%;width:auto;max-width:none}
+/* speech over heads + narrator caption */
+#fx{position:absolute;inset:0;pointer-events:none;line-height:1.15}
+.say{position:absolute;transform:translateX(-50%);max-width:46%;width:max-content;text-align:center;font:500 max(16px,calc(var(--u)*8.6))/1.12 var(--px);
+  text-shadow:3px 0 #000,-3px 0 #000,0 3px #000,0 -3px #000,2px 2px #000,-2px -2px #000,2px -2px #000,-2px 2px #000,3px 3px 0 #000;animation:pop .18s ease-out}
+.say b{color:#fff}
+.cap{position:absolute;left:2.5%;right:calc(2.5% + 120px);top:3%;background:#0b0a12e6;border:2px solid #000;box-shadow:0 0 0 2px var(--line);padding:.45em .7em;
+  font:400 max(15px,calc(var(--u)*6.8))/1.25 var(--px);color:#fff;animation:pop .18s ease-out}
+.cap b{color:var(--hi)}
+.more{display:inline-block;margin-left:.35em;color:var(--hi);animation:blink 1s steps(2) infinite;font-size:.8em}
+@keyframes blink{50%{opacity:0}}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) translateY(4px)}to{opacity:1}}
+.cap{animation-name:popc}@keyframes popc{from{opacity:0}to{opacity:1}}
+.banner{position:absolute;left:50%;top:20%;transform:translateX(-50%) rotate(-3deg);font:700 max(26px,calc(var(--u)*15))/1 var(--px);color:var(--gold);white-space:nowrap;
+  text-shadow:3px 3px 0 #000,-2px 0 #000,0 -2px #000,2px 0 #000,0 2px #000,6px 6px 0 #5a1a40;pointer-events:none;animation:drop .5s cubic-bezier(.3,1.6,.6,1)}
+.banner.lose{color:#ff8f8f}.banner.small{font-size:max(18px,calc(var(--u)*8));top:19%;left:4%;transform:rotate(-4deg)}
+.banner .logo{display:block;font-size:1.25em}
+.banner.title{top:5%}
+.banner.end{top:auto;bottom:6%;animation:none}
+@keyframes drop{from{transform:translateX(-50%) translateY(-60px) rotate(-3deg);opacity:0}}
+.banner.small{animation:none}
+.strip{position:absolute;left:2.5%;right:calc(2.5% + 120px);top:3%;background:var(--paper);color:var(--ink);border:2px solid #000;box-shadow:3px 3px 0 #0008;
+  padding:.4em .7em;font:700 max(14px,calc(var(--u)*5.6))/1.25 var(--rd)}
+.strip small{display:block;font:500 .75em/1.2 var(--px);color:#7a5a2a;letter-spacing:.02em}
+.boards{position:absolute;left:50%;top:22%;transform:translateX(-50%);display:flex;gap:10px;pointer-events:none;width:min(92%,560px);justify-content:center}
+.board{flex:1;background:#101a10;border:2px solid #000;box-shadow:0 0 0 2px #3c6b3c;padding:6px 8px;font:500 max(13px,calc(var(--u)*4.6))/1.2 var(--px);color:#bff7bf}
+.board .tl{display:flex;justify-content:space-between}
+.bar{position:relative;height:max(12px,calc(var(--u)*4));background:#5a2020;border:1px solid #000;margin:5px 0}
+.bar .yes{position:absolute;left:0;top:0;bottom:0;background:#4fd36b}
+.bar .need{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--hi)}
+.tn{display:flex;justify-content:space-between}
+/* toolbar */
+.tools{position:absolute;top:6px;right:6px;display:flex;gap:5px;z-index:3}
+.tb{width:34px;height:34px;display:grid;place-items:center;background:#0b0a12d9;border:2px solid #000;box-shadow:0 0 0 2px var(--line);cursor:pointer;padding:0}
+.tb svg{width:20px;height:20px}.tb.off{opacity:.45}
+/* panel */
+#panel{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0;border-top:3px solid #000;box-shadow:inset 0 2px 0 var(--line);height:var(--P,auto);min-height:var(--Pmin,0)}
+#panel.noinv{grid-template-columns:minmax(0,1fr)}
+#panel.noinv #inv{display:none}
+#dlg{padding:10px 14px 12px;overflow:auto}
+#inv{border-left:3px solid #000;box-shadow:inset 2px 0 0 var(--line);padding:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start;width:min(31vw,calc(var(--u)*78));overflow:auto}
+.dls{display:flex;flex-direction:column;gap:2px}
+.dls.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 12px}
+.dl{display:flex;align-items:center;gap:.5em;width:100%;text-align:left;background:none;border:0;color:#b9a6ff;cursor:pointer;padding:.28em .3em;
+  font:500 max(17px,calc(var(--u)*7))/1.2 var(--px);min-height:44px;border-radius:2px}
+.dl::before{content:"›";color:#5a4c8a;width:.6em;flex:none}
+.dl:hover,.dl:focus-visible{color:#fff;background:#1d1636;outline:none}.dl:hover::before,.dl:focus-visible::before{color:var(--hi)}
+.dl small{font:400 .72em var(--px);color:#8d84b0;margin-left:.3em}
+.dl .ic{width:1.6em;height:1.6em;flex:none}.dl .ic svg,.dl .ic img{width:100%;height:100%}.pxi{image-rendering:pixelated;object-fit:contain}
+.dl.go{color:var(--hi)}.dl.meta{color:#7d74a3;font-size:max(15px,calc(var(--u)*5.2))}
+.dl.tipped{color:#fff}.star{color:var(--gold);font-style:normal;margin-right:.3em}
+.waiting{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.waiting .dl{width:auto}
+.note{background:var(--paper);color:var(--ink);border:2px solid #000;box-shadow:3px 3px 0 #000;padding:.55em .8em;margin:2px 0 10px;font:400 max(15px,calc(var(--u)*5))/1.4 var(--rd);transform:rotate(-.4deg)}
+.note b{font-weight:700}
+.note .lbl{font:700 1em var(--px);display:inline}
+.note.rep .lbl{display:block}
+.num{font-family:var(--rd);font-weight:700;letter-spacing:0}
+.note.rep ul{list-style:none;padding:0;margin:.3em 0;display:flex;flex-wrap:wrap;gap:2px 10px;font:500 .9em var(--px)}
+.note li.ok{color:#2c7a3a}.note li.x{color:#b3261e;font-weight:700}.note li.no{color:#a0957a}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+.slot{background:#16122a;border:2px solid #000;box-shadow:inset 0 0 0 2px #2a2250;padding:6px 7px;display:grid;grid-template-columns:auto 1fr;column-gap:6px;row-gap:3px;align-items:center;color:#fff;font-family:var(--px);text-align:left;position:relative}
+.slot svg{width:max(22px,calc(var(--u)*7.5));height:max(22px,calc(var(--u)*7.5))}
+.slot b{font:700 max(18px,calc(var(--u)*6.6))/1 var(--rd);white-space:nowrap}
+.slot small{grid-column:1/-1;font:400 max(11px,calc(var(--u)*3.5))/1.1 var(--px);color:#9c93c4}
+button.slot{cursor:pointer}button.slot:hover{box-shadow:inset 0 0 0 2px var(--hi)}
+.slot.bump{animation:bump .5s}.slot.bumpd{animation:bumpd .5s}
+@keyframes bump{30%{background:#1f4a2a}}@keyframes bumpd{30%{background:#5a1f1f;transform:translateX(-3px)}60%{transform:translateX(3px)}}
+.dpop{position:absolute;right:6px;top:-6px;font:700 max(14px,calc(var(--u)*5)) var(--px);text-shadow:2px 2px 0 #000;animation:up 1.4s ease-out forwards;pointer-events:none}
+.dpop.up{color:#7dff9a}.dpop.dn{color:#ff8a7a}
+@keyframes up{to{transform:translateY(-22px);opacity:0}}
+.where{grid-column:1/-1;font:400 max(12px,calc(var(--u)*3.8))/1.3 var(--px);color:#9c93c4}
+.where b{color:#fff;font-weight:500}
+.dots{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}.dots i{width:9px;height:9px;background:#2a2250;border:1px solid #000}.dots i.d{background:#4fd36b}.dots i.n{background:var(--hi)}.dots i.x{background:#ff6b5a}
+.namebox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+#nm{flex:1 1 260px;font:700 max(18px,calc(var(--u)*6.4)) var(--rd);padding:.45em .6em;border:2px solid #000;box-shadow:3px 3px 0 #000;background:var(--paper);color:var(--ink);border-radius:0}
+#nm:focus{outline:3px solid var(--hi)}
+.hintline{font:400 max(13px,calc(var(--u)*4)) var(--px);color:#9c93c4}.err{color:#ff8f8f;font:500 max(14px,calc(var(--u)*4.4)) var(--px);min-height:1.2em}
+.sizebar{display:inline-flex;gap:3px;vertical-align:middle;margin-left:6px}.sizebar i{width:10px;height:10px;border:1px solid #000;background:#2a2250}.sizebar i.on{background:var(--hi)}
+/* overlay note */
+.overlay{position:fixed;inset:0;background:#05040acc;display:none;place-items:center;padding:14px;z-index:20;overflow:auto}
+.overlay.show{display:grid}
+.dlgx{background:var(--paper);color:var(--ink);border:3px solid #000;box-shadow:6px 6px 0 #000;max-width:560px;width:100%;transform:rotate(-.5deg)}
+.dlgx h2{font:700 24px/1.1 var(--px);margin:0;padding:14px 18px 6px}
+.dlgb{padding:4px 18px 8px;font-size:17px;line-height:1.45}.dlgb p{margin:0 0 10px}.dlgb ul{padding-left:20px;margin:0 0 10px}
+.dlgf{padding:0 18px 16px;text-align:right}
+.btn{border:2px solid #000;padding:10px 24px;font:700 18px var(--px);background:#fff;cursor:pointer;box-shadow:3px 3px 0 #000;color:var(--ink)}
+.tg{display:flex;gap:8px;align-items:center;font-weight:700;margin:8px 0}.tg input{width:22px;height:22px}
+.conf{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.conf i{position:absolute;top:-20px;width:10px;height:10px;animation:fall 2.6s steps(26) forwards}
+@keyframes fall{to{top:110%}}
+/* phone held upright: inventory becomes a row above the dialog */
+@media (max-aspect-ratio:1/1){
+ #game{margin:0;border-left:0;border-right:0}
+ #panel{display:flex;flex-direction:column;height:auto}
+ #dlg{flex:1}
+ #inv{order:-1;width:auto;border-left:0;box-shadow:none;border-bottom:3px solid #000;grid-template-columns:repeat(4,minmax(0,1fr));padding:8px}
+ .where{grid-column:1/-1}
+ .dls.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cap,.strip{right:2.5%;top:auto;bottom:3%}
+}
+/* short landscape screens (phones turned sideways): panel beside the room */
+#game.side{display:flex;align-items:stretch;height:var(--H)}
+#game.side #stage{width:var(--SW);flex:none;align-self:flex-start}
+#game.side #panel{display:flex;flex-direction:column;width:var(--PW);height:var(--H);border-top:0;border-left:3px solid #000}
+#game.side #inv{order:-1;width:auto;border-left:0;box-shadow:none;border-bottom:3px solid #000;grid-template-columns:repeat(4,minmax(0,1fr));padding:6px;gap:5px}
+#game.side #dlg{flex:1;padding:6px 10px}
+#game.side .tools{right:calc(var(--PW) + 6px)}
+#game.side .slot small{display:none}
+@media(prefers-reduced-motion:reduce){.say,.cap,.banner,.slot.bump,.slot.bumpd,.dpop{animation:none}}
+
+/* whip count clipboard */
+.clip{position:absolute;left:3%;top:15%;width:56%;max-height:82%;overflow:hidden;background:var(--paper);color:#2a1a10;border:calc(var(--u)*1) solid #000;box-shadow:calc(var(--u)*1.5) calc(var(--u)*1.5) 0 rgba(0,0,0,.5);padding:calc(var(--u)*3) calc(var(--u)*4) calc(var(--u)*2.5);font:500 max(11px,calc(var(--u)*5.6))/1.12 var(--px);transform:rotate(-1deg);z-index:3}
+.clip:before{content:"";position:absolute;left:50%;top:calc(var(--u)*-3);width:28%;height:calc(var(--u)*5);transform:translateX(-50%);background:#8a8f96;border:calc(var(--u)*.7) solid #000;border-radius:calc(var(--u)*1)}
+.clipT{font-weight:700;font-size:1.05em;border-bottom:2px solid #2a1a10;margin-bottom:.25em}
+.clip ul{list-style:none;margin:0;padding:0}
+.clip li{display:grid;grid-template-columns:4.2em 1fr auto;gap:.4em;align-items:center;padding:.06em 0;border-bottom:1px dashed rgba(42,26,16,.3)}
+.clip li b{font-size:.8em;text-align:center;border:1.5px solid #000;padding:0 .2em;color:#fff}
+.clip .cy{background:#2f8f46}.clip .cm{background:#c98a14}.clip .cn{background:#b3261e}
+.clip em{font-style:normal;font-family:var(--rd);font-size:.85em;color:#6b4a2a}
+.clip li.rest span{font-style:italic}
+.clipF{margin-top:.35em;font-family:var(--rd);font-size:.9em}
+/* newspaper */
+.paper{position:absolute;right:4%;top:26%;width:46%;background:#f4f1e6;color:#111;border:calc(var(--u)*1) solid #000;box-shadow:calc(var(--u)*2) calc(var(--u)*2) 0 rgba(0,0,0,.5);padding:calc(var(--u)*3);text-align:center;transform:rotate(-4deg);animation:spinin .9s cubic-bezier(.2,.8,.3,1.2);z-index:3}
+.paper .mast{font:700 max(10px,calc(var(--u)*4.5))/1 var(--px);letter-spacing:.12em;border-bottom:3px double #111;padding-bottom:.3em;margin-bottom:.35em}
+.paper .hl{font:700 max(16px,calc(var(--u)*9))/1.05 var(--px)}
+.paper .sub{font:italic 400 max(11px,calc(var(--u)*4.6))/1.2 var(--rd);margin-top:.35em}
+@keyframes spinin{from{transform:rotate(-720deg) scale(.05)}to{transform:rotate(-4deg) scale(1)}}
+@media (prefers-reduced-motion: reduce){.paper{animation:none}}
+/* duel + reasons */
+.duelq{font:500 max(13px,calc(var(--u)*4.4))/1.3 var(--px);color:#ffd23f;margin:0 0 6px}
+.slot.rsn{grid-column:1/-1;grid-template-columns:1fr}
+.rsi{display:flex;flex-wrap:wrap;gap:4px;min-height:22px}
+.rsi i{width:max(20px,calc(var(--u)*7));height:max(20px,calc(var(--u)*7));display:inline-block}
+.rsi i svg,.rsi i img{width:100%;height:100%}
+.rsi i.bad{opacity:.45}
+.rl{list-style:none;padding:0;margin:.3em 0 .8em}
+.rli{display:flex;gap:.6em;align-items:flex-start;margin:.35em 0}
+.rli .ric{width:30px;height:30px;flex:none}.rli .ric svg,.rli .ric img{width:100%;height:100%}
+.rli.dim{opacity:.6}.rli em.no{color:#b3261e;font-style:normal;font-weight:700}
+</style>
+</head>
+<body>
+<!-- edutain.fun shared menu bar: keep this block identical across games except the EB config line -->
+<style>
+@font-face{font-family:"EduChicago";src:url("ChicagoFLF.woff") format("woff");font-display:swap}
+.eb{position:relative;z-index:10;flex:none;display:flex;align-items:center;height:34px;background:#fff;color:#111;border-bottom:1px solid #000;padding:0 6px;
+  font:15px/1 "EduChicago","Chicago","Charcoal",Geneva,Verdana,sans-serif;-webkit-font-smoothing:none;user-select:none;-webkit-user-select:none}
+.eb *{box-sizing:border-box}
+.eb svg{width:18px;height:18px;flex:none;cursor:inherit;touch-action:auto;display:block}
+.eb-mi{position:relative}
+.eb-mt{background:none;border:0;height:34px;padding:0 11px;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;border-radius:0;margin:0}
+.eb-mt[aria-expanded=true]{background:#111;color:#fff}
+.eb-dd{position:absolute;left:0;top:34px;min-width:220px;background:#fff;border:1px solid #000;box-shadow:1px 1px 0 #000;padding:3px 0;display:none}
+.eb-mt[aria-expanded=true]+.eb-dd{display:block}
+.eb-dd a{display:flex;align-items:center;min-height:40px;padding:0 16px;color:#111;text-decoration:none}
+.eb-dd a:hover,.eb-dd a:focus-visible{background:#111;color:#fff;outline:0}
+.eb-app{margin-left:auto;display:flex;align-items:center;gap:7px;padding:0 10px;white-space:nowrap;overflow:hidden}
+.eb-app span{overflow:hidden;text-overflow:ellipsis}
+.eb-quit{display:flex;align-items:center;height:26px;padding:0 14px;border:1px solid #000;border-radius:8px;background:#fff;color:#111;text-decoration:none;box-shadow:1px 1px 0 #000;margin-right:2px}
+.eb-quit:active{background:#111;color:#fff}
+.eb :focus-visible{outline:2px dashed #2a2aa8;outline-offset:1px}
+.eb-z{position:fixed;border:1px solid #000;outline:1px solid #fff;pointer-events:none;z-index:2147483000}
+@media(max-width:520px){.eb-app span{display:none}.eb-file{display:none}}
+.overlay{top:35px}
+</style>
+<div class="eb" role="menubar" aria-label="edutain.fun menu bar">
+  <div class="eb-mi">
+    <button class="eb-mt" aria-expanded="false" aria-haspopup="true" aria-label="edutain.fun menu">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#3a7bd5" stroke="#000"/><path d="M4 4.5c1.5-.5 2.5.5 2 2s-2 1-2.5 2.5S5 12 6.5 12.5M10 3.5c-.5 1.5 1 2 2.5 1.5M9.5 9c1-.5 2.5 0 2.5 1.5s-1 2-2 2" fill="none" stroke="#4fc14f" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="eb-dd" role="menu"><a role="menuitem" class="eb-go" href="#">Back to the Desktop</a></div>
+  </div>
+  <div class="eb-mi eb-file">
+    <button class="eb-mt" aria-expanded="false" aria-haspopup="true">File</button>
+    <div class="eb-dd" role="menu"><a role="menuitem" class="eb-go" href="#">Quit Bill's Big Trip</a></div>
+  </div>
+  <div class="eb-app" aria-hidden="true"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="7" y="5" width="18" height="21" fill="#fff8e0" stroke="#000"/><rect x="5" y="3" width="22" height="4" rx="2" fill="#e6d49c" stroke="#000"/><rect x="5" y="24" width="22" height="4" rx="2" fill="#e6d49c" stroke="#000"/><path d="M10 11h12M10 14h12M10 17h8" stroke="#666"/><path d="M12 28v2.5h-2M20 28v2.5h2" stroke="#000" stroke-width="1.5" fill="none"/><circle cx="20" cy="20" r="2.6" fill="#d33" stroke="#000" stroke-width=".8"/></svg><span>Bill's Big Trip</span></div>
+  <a class="eb-quit eb-go" href="#">Quit</a>
+</div>
+<script>
+{
+/* EB config: on the live site set home to "/" */
+const EB={id:"bill",home:"/"};
+const bar=document.currentScript.previousElementSibling;
+const url=EB.home+"#"+EB.id;
+const mts=bar.querySelectorAll(".eb-mt");
+const closeAll=()=>mts.forEach(m=>m.setAttribute("aria-expanded","false"));
+mts.forEach(m=>m.addEventListener("click",e=>{e.stopPropagation();const o=m.getAttribute("aria-expanded")==="true";closeAll();if(!o)m.setAttribute("aria-expanded","true")}));
+document.addEventListener("click",closeAll);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll()});
+let busy=false;
+bar.querySelectorAll(".eb-go").forEach(a=>{
+  a.href=url;
+  a.addEventListener("click",e=>{
+    e.stopPropagation();
+    if(a.dataset.go){delete a.dataset.go;return}
+    e.preventDefault();closeAll();if(busy)return;busy=true;
+    const done=()=>{busy=false;a.dataset.go="1";a.click()};
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches)return done();
+    const W=innerWidth,H=innerHeight,N=7,boxes=[];
+    for(let i=0;i<N;i++)setTimeout(()=>{
+      const p=i/(N-1),w=W*(1-p)+40*p,h=H*(1-p)+30*p;
+      const z=document.createElement("div");z.className="eb-z";
+      Object.assign(z.style,{left:(W-w)/2+"px",top:(H-h)/2+"px",width:w+"px",height:h+"px"});
+      document.body.appendChild(z);boxes.push(z);if(boxes.length>3)boxes.shift().remove();
+      if(i===N-1)setTimeout(()=>{boxes.forEach(b=>b.remove());done()},60);
+    },i*38);
+  });
+});
+}
+</script>
+
+<div id="game">
+ <div id="stage" aria-live="polite"></div>
+ <div class="tools">
+  <button class="tb" id="homeB" aria-label="Back to the title screen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10l7-6 7 6M5 9v8h10V9" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+  <button class="tb" id="readTog" aria-pressed="false" aria-label="Read lines aloud"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="#fff"/><path d="M13 7q2 3 0 6M15 5q4 5 0 10" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+  <button class="tb" id="sndTog" aria-pressed="true" aria-label="Sound effects"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 15V5l9-2v10" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="5" cy="15" r="2.5" fill="#fff"/><circle cx="14" cy="13" r="2.5" fill="#fff"/></svg></button>
+ </div>
+ <div id="panel"><div id="dlg"></div><div id="inv"></div></div>
+</div>
+<div id="ov" class="overlay"></div>
+<script>
+/* ===== Bill's Big Trip — game logic ===== */
+(()=>{
+const $=s=>document.querySelector(s);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+
+/* ---------- sound + voice ---------- */
+let AC=null,soundOn=store.get("bbt-sound",true),readOn=false;
+function tone(f,d=.1,type="square",vol=.05,when=0){if(!soundOn)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime+when,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+const sfx={tap:()=>tone(660,.06),good:()=>{tone(523,.1);tone(659,.1,"square",.05,.1);tone(784,.16,"square",.05,.2)},bad:()=>{tone(220,.18,"sawtooth",.04);tone(180,.25,"sawtooth",.04,.15)},
+  law:()=>[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,.16,"triangle",.07,i*.13)),tick:()=>tone(1200,.02,"square",.02),stamp:()=>{tone(90,.2,"sawtooth",.08)}};
+function say(text){if(!("speechSynthesis" in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text.replace(/<[^>]+>/g," "));u.rate=.95;speechSynthesis.speak(u)}
+function hush(){if("speechSynthesis" in window)speechSynthesis.cancel()}
+
+/* ---------- data ---------- */
+const FOODS=[
+ {id:"pizza",n:"pizza",day:"Pizza",or:"flatbread",pk:"thin crust only",pkSay:"Pizza must be thin crust. Thick crust is too much!",other:"deep dish",veg:true},
+ {id:"pancakes",n:"pancakes",day:"Pancake",or:"waffles",pk:"real maple syrup only",pkSay:"Pancakes must have real maple syrup. Nothing else!",other:"any syrup",veg:true},
+ {id:"tacos",n:"tacos",day:"Taco",or:"burritos",pk:"hard shells only",pkSay:"Tacos must have hard shells. Crunch is the law!",other:"soft shells",veg:true},
+ {id:"apples",n:"apples",day:"Apple",or:"pears",pk:"red apples only",pkSay:"Only red apples count. Green apples are too sour!",other:"green apples",veg:false},
+ {id:"curds",n:"cheese curds",day:"Cheese Curd",or:"string cheese",pk:"they must squeak",pkSay:"Cheese curds must squeak when you bite them!",other:"quiet curds",veg:true},
+ {id:"mac",n:"mac and cheese",day:"Mac and Cheese",or:"buttered noodles",pk:"baked only, no boxes",pkSay:"Mac and cheese must be baked. No boxes allowed!",other:"the boxed kind",veg:true},
+ {id:"pickles",n:"pickles",day:"Pickle",or:"cucumbers",pk:"dill only",pkSay:"Only dill pickles. Sweet pickles are not pickles!",other:"sweet pickles",veg:false},
+ {id:"broccoli",n:"broccoli",day:"Broccoli",or:"cauliflower",pk:"steamed only",pkSay:"Broccoli must be steamed. No mushy boiled broccoli!",other:"boiled broccoli",veg:false}
+];
+const KINDS=[{id:"official",w:1,label:"Official national food"},{id:"holiday",w:1,label:"A national day for it"},{id:"school",w:2,label:"A school lunch rule"},{id:"rest",w:3,label:"Every restaurant must serve it"}];
+const WHERES=[{id:"country",w:0,label:"The whole country"},{id:"schools",w:0,label:"Only at schools"},{id:"fridays",w:-1,label:"Only on Fridays"}];
+const TWISTS=[{id:"none",w:0,label:"No twist"},{id:"samples",w:2,label:"Free samples for everyone"},{id:"pine",w:1,label:"Ban pineapple forever"},{id:"parade",w:1,label:"With a parade"}];
+const QUICK=[
+ {id:"pizza",t:"Pizza Power",b:{food:"pizza",kind:"official",where:"country",twist:"none"},title:"The Pizza Power Act"},
+ {id:"pancakes",t:"Pancake Day",b:{food:"pancakes",kind:"holiday",where:"country",twist:"none"},title:"The Pancake Day Act"},
+ {id:"pickles",t:"Pickle Lunch",b:{food:"pickles",kind:"school",where:"country",twist:"none"},title:"The Pickle Lunch Act"},
+ {id:"tacos",t:"Tacos Everywhere",b:{food:"tacos",kind:"rest",where:"country",twist:"none"},title:"The Tacos Everywhere Act"}
+];
+const ADJ=["Mighty","Super","Great","Happy","Tasty","Brave","Big","Glorious","Yummy","Marvelous","Amazing","Snack-tastic"];
+const PEOPLE={
+ saucer:"Rep. Penny Saucer",crust:"Rep. Crustworthy",green:"Rep. Kale Greenleaf",dente:"Rep. Al Dente",gouda:"Rep. Gouda",
+ middle:"Rep. Middleton",ketchum:"Rep. Ketchum",topp:"Rep. Toppington",longwind:"Sen. Longwind",vp:"The Vice President",
+ nickel:"Sen. Nickelby",harvest:"Sen. Harvest",lark:"Sen. Lark",staffer:"Skip",farmer:"A farmer",lunch:"A school lunch cook",
+ chef:"The White House chef",kid:"You",clerk:"The bill clerk",pres:"The President",sgreen:"Sen. Greenleaf",reporter:"A reporter",blogger:"A food blogger"
+};
+const MODES={
+ easy:{name:"Easy",nick:"Junior Page",days:0,start:4,events:[0,0],cards:0,
+   queue:["sponsor","house","svote","president"]},
+ normal:{name:"Normal",nick:"Staffer",days:65,start:0,events:[2,3],cards:2,
+   queue:["sponsor","hopper","committee","hearing","markup","house","senate","svote","match","president"]},
+ hard:{name:"Hard",nick:"Capitol Pro",days:55,start:-1,events:[3,4],cards:3,
+   queue:["sponsor","hopper","committee","hearing","markup","house","senate","filibuster","svote","conference","president"]}
+};
+const ROUTE={sponsor:"Sponsor",hopper:"Hopper",committee:"Committee",hearing:"Hearing",markup:"Markup",house:"House vote",senate:"Senate",filibuster:"Filibuster",svote:"Senate vote",match:"Match",conference:"Conference",president:"President",override:"Override"};
+const LONG={sponsor:"finding a sponsor",hopper:"the hopper",committee:"the committee",hearing:"the hearing",markup:"the markup",house:"the House vote",senate:"the Senate",filibuster:"the filibuster",svote:"the Senate vote",match:"making the versions match",conference:"the conference committee",president:"the President's desk",override:"the override vote"};
+
+/* ---------- state ---------- */
+let S=null;
+const food=()=>FOODS.find(f=>f.id===S.bill.food);
+function sizeOf(b){return Math.max(0,KINDS.find(k=>k.id===b.kind).w+WHERES.find(k=>k.id===b.where).w+TWISTS.find(k=>k.id===b.twist).w)}
+function sizeWord(n){return n<=1?"Small":n<=3?"Medium":n<=5?"Big":"Huge"}
+function startFriends(size){return size<=1?7:size<=3?5:size<=5?3:1}
+function billSentence(b,mods){
+  const f=FOODS.find(x=>x.id===b.food);const fn=(mods&&mods.ketchup)?"ketchup":f.n;const dn=(mods&&mods.ketchup)?"Ketchup":f.day;
+  let s;
+  if(b.kind==="official")s=`Make ${fn} the official national ${(mods&&mods.snack)?"snack":"food"}`;
+  else if(b.kind==="holiday")s=`Make a national ${dn} Day${(mods&&mods.snack)?" (just a half day)":""}`;
+  else if(b.kind==="school")s=`Serve ${fn} at every school lunch${(mods&&mods.snack)?", once a week":""}`;
+  else s=`Every restaurant must serve ${fn}${(mods&&mods.snack)?" (if they already sell food like it)":""}`;
+  if(b.where==="country")s+=b.kind==="official"||b.kind==="holiday"?" for the whole country":" across the country";
+  else if(b.where==="schools"&&b.kind!=="school")s+=" at schools";
+  else if(b.where==="fridays")s+=", on Fridays only";
+  if(b.twist==="samples")s+=", with free samples for everyone";
+  if(b.twist==="pine")s+=", and ban pineapple forever";
+  if(b.twist==="parade")s+=", with a parade";
+  if(mods){if(mods.picky)s+=` (${f.pk})`;if(mods.veg)s+=f.veg?", with a vegetable on top":", with melted cheese on top";if(mods.or)s+=` (or ${f.or})`;if(mods.and)s+=` (and ${mods.and})`;if(mods.study)s+=", plus a big study about it";if(mods.deals)s+=` (plus ${mods.deals} small change${mods.deals>1?"s":""} from deals)`}
+  return s+".";
+}
+function billText(){if(S.slices<=0&&S.swapped)return S.swapped;return billSentence(S.bill,S.mods)}
+
+function newGame(mode,bill,title){
+  const M=MODES[mode],size=sizeOf(bill);
+  S={v:2,mode,bill,title,size,friends:0,lm:startStances(mode,bill),args:startArgs(bill),learn:{},quick:0,days:M.days,daysStart:M.days,slices:5,
+     queue:M.queue.slice(),i:0,mods:{},flags:{},num:1000+Math.floor(Math.random()*8999),congress:1,reached:[],
+     amend:[],eventsLeft:[],evSlots:[],sub:0,ended:null,swapped:null,hint:false};
+  const n=M.events[0]+Math.floor(Math.random()*(M.events[1]-M.events[0]+1));
+  const slots=shuffle([...Array(S.queue.length-1).keys()].map(x=>x+1)).slice(0,n);
+  S.evSlots=slots;S.eventsLeft=shuffle(EVENTS.map(e=>e.id));syncFriends();
+  save();
+}
+function save(){if(S)store.set("bbt-save",S)}
+const cur=()=>S.queue[S.i];
+
+/* ---------- lawmakers ---------- */
+// v = how many votes each lawmaker's group brings. House leaders bring their followers; senators bring a few friends.
+const LM={
+ saucer:{ch:"H",v:12},crust:{ch:"H",v:18,com:1},green:{ch:"H",v:22,com:1},dente:{ch:"H",v:14},gouda:{ch:"H",v:16,com:1},
+ topp:{ch:"H",v:14,com:1},middle:{ch:"H",v:24,com:1},ketchum:{ch:"H",v:10},
+ sgreen:{ch:"S",v:5},longwind:{ch:"S",v:6},nickel:{ch:"S",v:5},harvest:{ch:"S",v:5},lark:{ch:"S",v:5}
+};
+const HOUSE=Object.keys(LM).filter(k=>LM[k].ch==="H"),SENATE=Object.keys(LM).filter(k=>LM[k].ch==="S"),COMM=Object.keys(LM).filter(k=>LM[k].com);
+const VEG=["apples","broccoli","pickles"];
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+function costOK(b,mods){return["official","holiday"].includes(b.kind)&&["none","pine"].includes(b.twist)&&!(mods&&mods.study)}
+function lean(id,b){const f=b.food,sz=sizeOf(b);
+  switch(id){
+   case"crust":return sz>=4?-1:sz<=1?1:0;
+   case"green":case"sgreen":return VEG.includes(f)?1:b.kind==="school"?-1:0;
+   case"gouda":return["curds","mac","pizza"].includes(f)?1:0;
+   case"topp":return b.twist==="pine"?-1:["pizza","tacos"].includes(f)?1:0;
+   case"middle":return sz>=3?-1:b.where==="fridays"?1:0;
+   case"ketchum":return b.twist==="parade"||b.kind==="holiday"?1:f==="broccoli"?-1:0;
+   case"longwind":return sz>=3?-1:["apples","pancakes"].includes(f)?1:0;
+   case"nickel":return costOK(b)?(b.twist==="none"?1:0):-1;
+   case"harvest":return["apples","broccoli","pickles","curds"].includes(f)?1:0;
+   case"lark":return b.twist==="pine"?-1:["school","holiday"].includes(b.kind)?1:0;
+  }return 0}
+// stance: 0 = no, 1 = maybe, 2 = yes
+function startStances(mode,b){const o={};Object.keys(LM).forEach(id=>{let l=lean(id,b);
+  if(mode==="easy")l+=1;if(mode==="hard"&&l>0)l=0;
+  o[id]=id==="saucer"?1:clamp(l+1,0,2)});
+  if(mode==="hard")o.longwind=0;return o}
+function syncFriends(){if(S&&S.lm)S.friends=Object.keys(LM).filter(id=>S.lm[id]===2).length}
+const HOUSESTOPS=["sponsor","hopper","committee","hearing","markup","house"],SENSTOPS=["senate","filibuster","svote"];
+function chamberNow(){const q=S.queue[S.i];return HOUSESTOPS.includes(q)?HOUSE:SENSTOPS.includes(q)?SENATE:Object.keys(LM)}
+function nudge(n){const ids=chamberNow().filter(i=>i!=="saucer");for(let k=0;k<Math.abs(n);k++){
+  if(n>0){const m=shuffle(ids.filter(i=>S.lm[i]===1))[0]||shuffle(ids.filter(i=>S.lm[i]===0))[0];if(m)S.lm[m]++}
+  else{const y=shuffle(ids.filter(i=>S.lm[i]===2))[0]||shuffle(ids.filter(i=>S.lm[i]===1))[0];if(y)S.lm[y]--}}
+  syncFriends()}
+
+/* ---------- vote math ---------- */
+const HBASE=()=>Math.max(80,150-8*S.size+(S.mode==="easy"?25:0)-(S.mode==="hard"?5:0));
+const SBASE=()=>Math.max(15,40-2*S.size+(S.mode==="easy"?6:0)-(S.mode==="hard"?2:0));
+function count(ch){const ids=ch==="H"?HOUSE:SENATE;let sure=ch==="H"?HBASE():SBASE(),maybe=0;ids.forEach(id=>{if(S.lm[id]===2)sure+=LM[id].v;else if(S.lm[id]===1)maybe+=LM[id].v});return{sure,maybe}}
+function rollVotes(ch,extra=0){const c=count(ch),p=S.mode==="hard"?.3:S.mode==="easy"?.6:.4;let y=c.sure+extra;
+  (ch==="H"?HOUSE:SENATE).forEach(id=>{if(S.lm[id]===1)y+=LM[id].v*clamp(p+rnd(-.25,.25),0,1)});
+  return clamp(Math.round(y+(ch==="H"?rnd(-4,4):rnd(-1,1))),0,ch==="H"?435:100)}
+const comNeed=()=>S.size>=4||S.mode==="hard"?4:3;
+function comCount(){let y=0,m=0;COMM.forEach(id=>{if(S.lm[id]===2)y++;else if(S.lm[id]===1)m++});return{y,m}}
+
+/* ---------- reasons ---------- */
+const RS={
+ kids:{n:"Kids want it",src:"your own letter, or letters from kids"},
+ poll:{n:"Lots of people want it",src:"signatures, a news story, or the library"},
+ farms:{n:"It helps farmers",src:"a farmer at the hearing, or the library"},
+ health:{n:"It can be healthy",src:"the school lunch cook at the hearing"},
+ cost:{n:"It costs very little",src:"keeping your bill small and cheap"},
+ tradition:{n:"An old favorite",src:"the chef at the hearing, or the library"},
+ home:{n:"Every state loves it",src:"letters from kids in many states, or the library"},
+ fun:{n:"It's fun!",src:"a parade, a national day, or a news story"}
+};
+const RORDER=["kids","poll","farms","health","cost","tradition","home","fun"];
+function rsay(t){const f=food();return{
+ kids:"Kids all over the country want this. Here are their letters!",
+ poll:"We asked lots of people. Most of them like this idea!",
+ farms:`Farmers grow what goes into ${f.n}. This helps them!`,
+ health:`${cap(f.n)} can be part of a healthy meal.`,
+ cost:"This law costs almost no tax money.",
+ tradition:`People here have enjoyed ${f.n} for a long, long time.`,
+ home:`People in every state love ${f.n}, including yours!`,
+ fun:"It would make people smile. Everybody needs some fun!"}[t]}
+function rvalid(t){if(t==="health")return VEG.includes(S.bill.food)||!!S.mods.veg;if(t==="cost")return costOK(S.bill,S.mods);return true}
+function whyFalse(t){
+  if(t==="health")return`Healthy? ${cap(food().n)}? Every day? I don't think so!`;
+  if(S.mods.study)return"Cheap? That big study costs a lot of money!";
+  if(S.bill.twist==="samples")return"Cheap? Free samples for EVERYONE? Somebody pays for those!";
+  if(S.bill.twist==="parade")return"Cheap? Parades cost money!";
+  return S.bill.kind==="school"?"Cheap? Schools would have to pay for all that food!":"Cheap? Restaurants would have to pay for this!"}
+function gain(t){if(!S.args.includes(t)){S.args.push(t);S.args.sort((a,b)=>RORDER.indexOf(a)-RORDER.indexOf(b))}}
+function startArgs(b){const a=["kids"];if(b.twist==="parade"||b.kind==="holiday")a.push("fun");if(costOK(b))a.push("cost");return a}
+const RICON={
+ kids:`<svg viewBox="0 0 20 20"><rect x="2" y="5" width="16" height="11" fill="#fff8e0" stroke="#000"/><path d="M2 5l8 6 8-6" fill="none" stroke="#000"/><path d="M10 14.5l-2.6-2.4a1.5 1.5 0 0 1 2.6-1.4 1.5 1.5 0 0 1 2.6 1.4z" fill="#c8102e"/></svg>`,
+ poll:`<svg viewBox="0 0 20 20"><rect x="4" y="3" width="12" height="15" fill="#fff" stroke="#000"/><rect x="7.5" y="1.5" width="5" height="3" fill="#888" stroke="#000"/><circle cx="10" cy="11" r="4.2" fill="#24548a" stroke="#000"/><path d="M10 11V6.8A4.2 4.2 0 0 1 14 9.6z" fill="#f4c542" stroke="#000"/></svg>`,
+ farms:`<svg viewBox="0 0 20 20"><rect x="3" y="8" width="9" height="5" fill="#c8102e" stroke="#000"/><rect x="8" y="4" width="4" height="4" fill="#9cc9f0" stroke="#000"/><circle cx="6" cy="15" r="3" fill="#333" stroke="#000"/><circle cx="15" cy="15.5" r="2" fill="#333" stroke="#000"/><path d="M12 10h4v4" fill="#c8102e" stroke="#000"/></svg>`,
+ health:`<svg viewBox="0 0 20 20"><path d="M10 5q-6-3-7 4t7 9q8-2 7-9t-7-4z" fill="#7bc142" stroke="#000"/><path d="M10 5q0-3 3-4" fill="none" stroke="#000"/><path d="M10 8.5v6M7 11.5h6" stroke="#fff" stroke-width="2"/></svg>`,
+ cost:`<svg viewBox="0 0 20 20"><path d="M4 9q0-5 6-5t6 5v5q0 3-6 3t-6-3z" fill="#8b5a2b" stroke="#000"/><circle cx="7" cy="5" r="2.4" fill="#f4c542" stroke="#000"/><circle cx="12.5" cy="4" r="2.4" fill="#f4c542" stroke="#000"/></svg>`,
+ tradition:`<svg viewBox="0 0 20 20"><rect x="3" y="6" width="14" height="9" rx="1" fill="#f3e6c8" stroke="#000"/><path d="M5 9h10M5 12h7" stroke="#8b5a2b"/><path d="M3 10.5h14" stroke="#c8102e" stroke-width="1.6"/></svg>`,
+ home:`<svg viewBox="0 0 20 20"><path d="M10 18q-6-7-6-11a6 6 0 0 1 12 0q0 4-6 11z" fill="#c8102e" stroke="#000"/><circle cx="10" cy="7" r="2.2" fill="#fff" stroke="#000"/></svg>`,
+ fun:`<svg viewBox="0 0 20 20"><ellipse cx="10" cy="7" rx="7" ry="2.5" fill="#fff" stroke="#000"/><path d="M3 7v6q7 5 14 0V7" fill="#c8102e" stroke="#000"/><path d="M5 9l3 6M9 9.5l3 6M13 9l2 4" stroke="#f4c542"/><path d="M6 1l3 5M15 1l-3 5" stroke="#8b5a2b" stroke-width="1.5"/></svg>`
+};
+const ricon=t=>ART.has("arg-"+t)?`<img class="pxi" src="art/arg-${t}.png" alt="">`:RICON[t];
+
+/* ---------- objections: what each lawmaker asks ---------- */
+const OBJ={
+ saucer:[{q:"Congress is very busy. Does anybody really want this?",a:["poll","kids"]},{q:"Why should I put my name on a food bill?",a:["kids","poll","farms","home","tradition"]},{q:"Will it cost a lot?",a:["cost"]}],
+ crust:[{q:"My committee gets hundreds of bills. Why should yours get a hearing?",a:["poll","kids"]},{q:"And who pays for all this?",a:["cost"]},{q:"Does it help anybody's job?",a:["farms"]}],
+ green:[{q:"Is it good for growing bodies?",a:["health"]},{q:"Would kids actually eat it?",a:["kids","poll"]},{q:"Does it help the people who grow our food?",a:["farms"]}],
+ sgreen:[{q:"My cousin always asks this, and so do I. Is it healthy?",a:["health"]},{q:"Does it help the people who grow our food?",a:["farms"]},{q:"Would kids like it?",a:["kids"]}],
+ dente:[{q:"What's in it for the folks in my state?",a:["home","farms"]},{q:"Why should I care? I'm a noodle guy!",a:["tradition","fun"]},{q:"Do people even want it?",a:["poll"]}],
+ gouda:[{q:"What does this do for the people back home?",a:["home","farms"]},{q:"Is it really a national favorite?",a:["tradition","poll"]},{q:"Is it good for kids?",a:["kids","health"]}],
+ topp:[{q:"Will people like it, or just grumble?",a:["poll","fun"]},{q:"Isn't there something more important to do?",a:["kids","home"]},{q:"Does it cost a lot?",a:["cost"]}],
+ middle:[{q:"Can people from every state agree on this?",a:["home","poll"]},{q:"Isn't this bill a bit much?",a:["cost"]},{q:"Who does it help?",a:["kids","farms"]}],
+ ketchum:[{q:"But is it FUN?",a:["fun"]},{q:"Will kids love it?",a:["kids"]},{q:"Will it make the news?",a:["poll"]}],
+ longwind:[{q:"Laws should honor important, old things. Is this one?",a:["tradition"]},{q:"Why should we hurry?",a:["poll","kids"]},{q:"And who pays?",a:["cost"]}],
+ nickel:[{q:"Who pays for this? Every penny counts!",a:["cost"]},{q:"Do people even want it?",a:["poll","home"]},{q:"Does it help anyone earn a living?",a:["farms"]}],
+ harvest:[{q:"Does it help the farmers in my state?",a:["farms"]},{q:"Will folks back home like it?",a:["home","tradition"]},{q:"Is it healthy?",a:["health"]}],
+ lark:[{q:"I used to be a teacher. Is this good for kids?",a:["kids","health"]},{q:"Will it bring people together?",a:["fun","home"]},{q:"Do people want it?",a:["poll"]}]
+};
+const SILLY=["Because it's yummy!","Pleeeease?","Because I said so!","Um... look over there!","My grandma says it's a good idea."];
+const SILLYBACK=["Ha! Nice try.","That's not a reason. That's a wish!","Cute. But no.","I looked. There's nothing there.","Your grandma isn't in Congress."];
+const GOODBACK=["Hmm. Good point.","Oh! I didn't think of that.","That's a strong reason.","Okay, okay. You've got me there."];
+function duelQs(id){
+  const easy=S.mode==="easy";let n=easy?1:2;if(S.lm[id]===0)n++;
+  if(easy){const ok=OBJ[id].find(o=>o.a.some(t=>S.args.includes(t)&&rvalid(t)));return[ok||OBJ[id][0]]}
+  const qs=OBJ[id].slice(0,2);if(n>2)qs.push({q:"Hmm. Give me one more good reason.",a:RORDER});return qs}
+// can the player answer every question with a different true reason?
+function solvedOf(id){return(S.solved&&S.solved[id])||[]}
+const CHANGED="You answered my questions before, but I've been thinking it over. Give me one more good reason.";
+function openQs(id){const sv=solvedOf(id).map(x=>x.q);const q=duelQs(id).filter(o=>!sv.includes(o.q));if(q.length)return q;
+  if(S.solved&&S.solved[id]&&!sv.includes(CHANGED)){S.solved[id]=[];}return[{q:CHANGED,a:RORDER}]}
+function canWin(id){const qs=openQs(id),have=S.args.filter(rvalid).filter(t=>!solvedOf(id).some(x=>x.t===t));
+  const go=(k,used)=>k>=qs.length||qs[k].a.some(t=>have.includes(t)&&!used.includes(t)&&go(k+1,[...used,t]));return go(0,[])}
+const DUELDAYS=()=>S.mode==="easy"?0:2,LIBDAYS=()=>S.mode==="easy"?0:S.mode==="hard"?4:3;
+const ADVANCE={sponsor:"saucer",committee:"crust",senate:"sgreen",filibuster:"longwind"};
+
+function duel(id,c){
+  if(S.mode!=="easy"){S.days=Math.max(0,S.days-DUELDAYS());bump({d:-DUELDAYS()})}
+  const qs=openQs(id),used=solvedOf(id).map(x=>x.t);let k=0;S.solved=S.solved||{};S.met=S.met||{};const again=!!S.met[id];S.met[id]=1;const hint=S.mode==="easy"||S.hint||window.__allTips;S.hint=false;
+  stageSet("hall",id,"worried");renderHUD();save();
+  const done=used.length;
+  const intro=again?[{who:id,t:done?pick(["Back again! You already answered "+(done>1?"some of my questions":"one of my questions")+". Let's finish.","You're back! We were partway there. Next question."]):pick(["Back again? Okay, let's hear it.","You again! Did you find better reasons?"])}]:S.lm[id]===0?[{who:id,t:"I'm a NO on your bill. You'll have to really convince me."}]:[];
+  const ask=()=>{const o=qs[k];
+    play([...(k===0?intro:[]),{who:id,t:o.q}],()=>{
+      const list=S.args.filter(t=>!used.includes(t)).map(t=>({l:RS[t].n,icon:ricon(t),tip:o.a.includes(t)&&rvalid(t),go:()=>answer(t)}));
+      list.push({l:pick(SILLY),go:()=>answer("silly")},{l:"I don't have a good answer yet",cls:"meta",tip:!list.some(x=>x.tip),go:()=>answer("none")});
+      choices(list,{top:`<div class="duelq">${esc(PEOPLE[id])} asks (question ${done+k+1} of ${done+qs.length})</div>`});
+      if(!hint)document.querySelectorAll("#dlg .tipped").forEach(b=>b.classList.remove("tipped"))
+    })};
+  const learn=o=>{S.learn=S.learn||{};S.learn[id]=[...new Set([...(S.learn[id]||[]),...o.a])]};
+  const answer=t=>{const o=qs[k];
+    if(t!=="silly"&&t!=="none"&&o.a.includes(t)&&rvalid(t)){used.push(t);sfx.good();
+      stageSet("hall",id,"happy");
+      S.solved[id]=[...solvedOf(id),{q:o.q,t}];save();
+      play([{who:"bill",t:rsay(t)},{who:id,t:pick(GOODBACK)}],()=>{k++;if(k<qs.length)return ask();return win()});return}
+    sfx.bad();stageSet("hall",id,"worried");learn(o);
+    const lines=[];
+    if(t==="silly"){lines.push({who:id,t:pick(SILLYBACK)})}
+    else if(t==="none"){lines.push({who:"bill",t:"Um... I don't know yet."})}
+    else{lines.push({who:"bill",t:rsay(t)});
+      if(!rvalid(t)){lines.push({who:id,t:whyFalse(t)});if(S.mode==="hard"&&S.lm[id]>0){S.lm[id]--;syncFriends();lines.push({who:"nar",t:`${esc(PEOPLE[id])} doesn't trust your bill as much now.`})}}
+      else lines.push({who:id,t:"That's nice, but it doesn't answer my question."})}
+    const good=o.a.filter(x=>rvalid(x)&&!used.includes(x)),held=good.filter(x=>S.args.includes(x)&&x!==t),need=good.filter(x=>!S.args.includes(x));
+    if(held.length)lines.push({who:"nar",t:`Good news: you already have a reason that answers this one. Think about which reason fits the question!`});
+    else if(need.length){lines.push({who:id,t:`Come back when you can tell me: ${need.slice(0,3).map(x=>RS[x].n.toLowerCase()).join(", or ")}.`});lines.push({who:"nar",t:`Where to find "${RS[need[0]].n}": ${RS[need[0]].src}.`})}
+    else{lines.push({who:id,t:"Honestly? I don't think your bill can answer that one."});lines.push({who:"nar",t:`To win ${esc(PEOPLE[id])}, you might have to make a deal or change your bill.`})}
+    save();const canLib=S.mode!=="easy"||true;const lib=need.filter(x=>x!=="health"&&x!=="cost"||rvalid(x));
+    play(lines,()=>choices([
+      ...(lib.length?[{l:"Go to the Library of Congress",sub:S.mode==="easy"?"find a new reason":`${LIBDAYS()} days, find a new reason`,tip:1,go:()=>library(null,[id])}]:[]),
+      {l:"Okay, I'll come back later",cls:lib.length?"":"go",go:()=>back(false)}]))};
+  const win=()=>{S.lm[id]=2;syncFriends();save();renderHUD();bump({fr:1});sfx.law();
+    play([{who:id,t:pick(["You've convinced me. I'm a YES!","All right, I'm on your side!","Count me in. YES!"])}],()=>choices([{l:"Great!",cls:"go",go:()=>back(true)}]))};
+  const back=won=>{const st=S.queue[S.i];
+    if(won&&ADVANCE[st]===id)return afterWin(st);
+    if(S.mode!=="easy"&&S.days<=0){S.ended={id:"out"};save();return render()}
+    S.quick=1;save();render()};
+  ask();
+}
+function afterWin(st){
+  const txt={sponsor:"Rep. Saucer signs on as your sponsor! \"Let's go make a law.\"",committee:"Rep. Crustworthy bangs his gavel. \"Fine. Your bill gets a hearing.\"",
+    senate:"Sen. Greenleaf will lead your bill through the Senate committee. It moves on!",filibuster:"Sen. Longwind closes his cookbook and sits down. The filibuster is over!"}[st];
+  const c=STOP(st);showResult(R({},txt),c)}
+
+/* ---------- whip count clipboard ---------- */
+const SHORT=id=>PEOPLE[id].replace("Rep. ","").replace("Sen. ","");
+function clipHTML(title,ids,foot,o={}){
+  const mark=s=>s===2?`<b class="cy">YES</b>`:s===1?`<b class="cm">MAYBE</b>`:`<b class="cn">NO</b>`;
+  return`<div class="clip"><div class="clipT">${title}</div><ul>${ids.map(id=>`<li>${mark(S.lm[id])}<span>${esc(o.full?PEOPLE[id]:SHORT(id))}</span>${o.votes?`<em>${LM[id].v}</em>`:""}</li>`).join("")}${o.rest!=null?`<li class="rest"><b class="cy">YES</b><span>Others already with you</span><em>${o.rest}</em></li>`:""}</ul><div class="clipF">${foot}</div></div>`}
+function houseClip(need=218,extra=0){const c=count("H");return clipHTML("Whip count: House",HOUSE,`Sure yes: <b>${c.sure+extra}</b> · Maybe: up to <b>${c.maybe}</b> more · Need <b>${need}</b>`,{votes:1,rest:HBASE()+extra})}
+function senClip(need=51,extra=0){const c=count("S");return clipHTML("Whip count: Senate",SENATE,`Sure yes: <b>${c.sure+extra}</b> · Maybe: up to <b>${c.maybe}</b> more · Need <b>${need}</b>`,{votes:1,rest:SBASE()+extra,full:1})}
+function comClip(){const c=comCount();return clipHTML("Whip count: Committee",COMM,`Yes: <b>${c.y}</b> · Maybe: <b>${c.m}</b> · Need <b>${comNeed()}</b> of 5`,{})}
+function dealOpts(ids){if(S.mode==="easy"||S.slices<=1)return[];return ids.filter(id=>S.lm[id]===1&&id!=="dente"&&id!=="saucer").map(id=>({l:`Make a deal with ${PEOPLE[id]}`,sub:"-1 slice, your bill changes a little",tip:!canWin(id)&&S.slices>=3,
+  go:()=>{S.lm[id]=2;S.mods.deals=(S.mods.deals||0)+1;syncFriends();return R({sl:-1,noNudge:1},`${PEOPLE[id]} says, "I'll vote yes if you change one little thing in your bill." You shake hands. Your bill changes a little.`,{stay:1,sceneWho:id})}}))}
+function talkOpts(ids){return[...talkOpts0(ids),...dealOpts(ids)]}
+function talkOpts0(ids){return ids.filter(id=>S.lm[id]<2).map(id=>{const L=S.learn&&S.learn[id];
+  return{l:`Talk to ${PEOPLE[id]}`,sub:[S.mode==="easy"?"":`${DUELDAYS()} days`,S.lm[id]===0?"says NO":"maybe",L?"cares about: "+L.map(t=>RS[t].n.toLowerCase()).join(" / "):""].filter(Boolean).join(" · "),tip:canWin(id),go:()=>({kind:"duel",id})}})}
+function libOpt(ids){const stuck=!ids.some(id=>S.lm[id]<2&&canWin(id));const missing=RORDER.filter(t=>!S.args.includes(t)&&((t!=="health"&&t!=="cost")||rvalid(t)));
+  return missing.length?[{l:"Research at the Library of Congress",sub:S.mode==="easy"?"find a new reason":`${LIBDAYS()} days, find a new reason`,tip:stuck&&ids.some(id=>S.lm[id]<2),go:()=>({kind:"lib",ids})}]:[]}
+function library(c,ids){
+  stageSet("office",null,"happy");renderHUD();
+  const want=new Set();ids.filter(id=>S.lm[id]<2).forEach(id=>duelQs(id).forEach(o=>o.a.forEach(t=>want.add(t))));
+  const missing=RORDER.filter(t=>!S.args.includes(t)&&((t!=="health"&&t!=="cost")||rvalid(t)));
+  play([{who:"nar",t:"The Library of Congress is the biggest library in the world. It helps Congress find facts."},{who:"nar",t:"What do you want to look up?"}],()=>choices([
+    ...missing.map(t=>({l:RS[t].n,icon:ricon(t),tip:want.has(t),go:()=>{gain(t);if(S.mode!=="easy"){S.days=Math.max(0,S.days-LIBDAYS())}S.quick=1;save();
+      showResult({fx:{d:-LIBDAYS()},txt:`You dig through old books and new reports. Now you have a new reason: <b>${RS[t].n}</b>`,stay:1},{scene:"office",who:null,fact:"The Library of Congress has a team, the Congressional Research Service, that finds facts for members of Congress."})}})),
+    {l:"Never mind",cls:"meta",go:()=>{S.quick=1;render()}}],
+    {top:`<div class="duelq">"Healthy" and "cheap" can only be found if they're true for your bill.</div>`}))}
+
+/* ---------- amendments ---------- */
+function deck(){
+  const f=food();const d=[],lw=S.slices<=2;
+  d.push({id:"picky",who:"crust",say:f.pkSay,sl:-1,good:S.lm.crust<2&&S.lm.topp<2&&!lw,accSub:"Crustworthy joins you, Toppington gets grumpy, -1 slice",
+    rejTxt:"Rep. Crustworthy grumbles. He likes you a little less.",accTxt:`Your bill now says ${f.pk}. Rep. Crustworthy is happy. But Rep. Toppington loves ${f.other}. Now she says NO.`});
+  if(f.veg)d.push({id:"veg",who:"green",say:`Where are the vegetables? Add a vegetable on top of the ${f.n}!`,sl:-1,good:!lw,accSub:"Greenleaf joins you, your bill can be healthy, -1 slice",
+    rejTxt:"Rep. Greenleaf crosses her arms.",accTxt:"Now your bill needs a vegetable on top. Rep. Greenleaf cheers. And now you can honestly say it can be healthy!"});
+  else d.push({id:"veg",who:"gouda",say:`${f.day==="Broccoli"?"Broccoli":"These"} would be better with melted cheese on top!`,sl:-1,good:S.lm.gouda<2&&!lw,accSub:"Gouda joins you, -1 slice",
+    rejTxt:"Rep. Gouda is sad.",accTxt:"Now your bill needs melted cheese on top. Rep. Gouda does a little dance."});
+  const mid={official:"Let's make it the national SNACK, not the national food.",holiday:"A whole day? Let's make it a half day.",school:"Every lunch is a lot. How about once a week?",rest:"Every restaurant? Only the ones that already sell food like it."}[S.bill.kind];
+  d.push({id:"snack",who:"middle",say:mid,sl:-1,good:!lw,accSub:"Middleton joins you, a smaller bill, -1 slice",
+    rejTxt:"Rep. Middleton shrugs and walks away.",accTxt:"Your bill got a little smaller. Smaller bills are easier to pass."});
+  d.push({id:"ketchup",who:"ketchum",say:`I have a better idea. Change ${f.n} to KETCHUP!`,sl:-3,good:false,accSub:"Ketchum joins you, -3 slices!",
+    rejTxt:"Good call! You are allowed to say no.",accTxt:"Oh no. Your bill is now about ketchup. One new friend for all that."});
+  if(S.mode==="hard")d.push({id:"study",who:"middle",say:`Let's add a big study about ${f.n}. Scientists love studies!`,sl:0,good:false,accSub:"Middleton joins you, and no slice lost!",
+    rejTxt:"Rep. Middleton frowns.",accTxt:"Rep. Middleton is happy, and it didn't even cost a slice! Hmm. Studies cost money, though. Sen. Nickelby will notice...",catch:true});
+  return d;
+}
+function applyAmend(id){S.mods=S.mods||{};if(id==="picky"){S.mods.picky=1;S.flags.toppMad=1;S.lm.topp=0}else if(id==="veg")S.mods.veg=1;else if(id==="snack"){S.mods.snack=1;S.size=Math.max(0,S.size-1)}else if(id==="ketchup")S.mods.ketchup=1;else if(id==="study"){S.mods.study=1;S.lm.nickel=0}syncFriends()}
+
+/* ---------- events ---------- */
+const EVENTS=[
+ {id:"blogger",who:"blogger",scene:"street",t:"A food blogger posts about your bill!",txt:"Thousands of people see it. Some of them call their lawmakers.",ch:[{l:"Hooray!",fx:{},g:["poll"],r:"New reason: lots of people want it!"}],fact:"People outside Congress can help a bill by telling others about it."},
+ {id:"letters",who:"kid",scene:"street",t:"Letters pour in!",txt:"Kids from 30 states write to Congress about your bill.",ch:[{l:"Wow!",fx:{},g:["kids","home"],r:"New reasons: kids want it, and people in every state love it!"}],fact:"Lawmakers listen to the people who live in the places they represent."},
+ {id:"snow",who:"clerk",scene:"capitol",t:"A snowstorm!",txt:"Snow covers Washington. The Capitol closes for a few days.",ch:[{l:"Wait it out",fx:{d:-3},r:"Three days go by."}],fact:"Congress only has so much time. Every day counts."},
+ {id:"favor",who:"dente",scene:"office",need:s=>s.flags.trade,t:"Rep. Al Dente wants his favor.",txt:"Remember the deal? He wants you to back National Spaghetti Week now.",ch:[{l:"Keep your promise",fx:{fr:-1},r:"You keep your word. Some lawmakers think spaghetti week is silly, so you lose one friend."},{l:"Say no",fx:{},fn:()=>{S.lm.dente=0;syncFriends()},r:"Rep. Al Dente is upset. He and his group now say NO to your bill."}],fact:"A deal is a promise. Lawmakers remember who keeps their word."},
+ {id:"cold",who:"sgreen",scene:"senate",t:"Achoo!",txt:"A senator who likes your bill catches a cold.",ch:[{l:"Wait 2 days for her",fx:{d:-2},r:"She feels better and comes back."},{l:"Keep going",fx:{fr:-1},r:"She stays home in bed. One less friend for now."}],fact:"Only members who are there get to vote."},
+ {id:"news",who:"reporter",scene:"capitol",t:"Big news day",txt:"A huge story takes over the week. Nobody has time for food bills.",ch:[{l:"Wait",fx:{d:-5},r:"Five days slip by."}],fact:"Big events can push smaller bills aside."},
+ {id:"rival",who:"topp",scene:"office",t:"A rival bill!",txt:"Someone else has a bill too.",ch:[{l:"Join forces",fx:{fr:3,sl:-1},r:"Two bills become one. More friends, but it's less your bill.",fn:()=>{S.mods.and=S.bill.food==="tacos"?"pizza":"tacos"}},{l:"Race it",fx:{fr:-1},r:"You race ahead, but the other bill takes a fan."}],fact:"Similar bills sometimes get combined into one.",title:s=>`A rival bill: Make ${s.bill.food==="tacos"?"pizza":"tacos"} the national food!`},
+ {id:"reporter",who:"reporter",scene:"capitol",t:"A reporter wants a quote!",txt:"What should you say about your bill?",ch:[{l:"Something serious",fx:{},r:"Calm and clear. People nod."},{l:"Something funny",fx:{},g:["fun"],r:"People laugh. New reason: it's fun!"},{l:"Something silly",fx:{},r:"",fn:()=>Math.random()<.5?{fr:2,r:"It goes everywhere! Two new friends."}:{fr:-1,r:"It sounds like a joke bill. One friend leaves."}}],fact:"How people talk about a bill can change how others feel about it."},
+ {id:"coffee",who:"clerk",scene:"office",t:"Oops!",txt:"An intern spills coffee on your bill.",ch:[{l:"Dry it off",fx:{},r:"It's a little brown now. It still counts!"}],fact:"Bills today are also kept on computers, so a coffee spill can't stop one."},
+ {id:"parade",who:"blogger",scene:"street",t:"A food parade!",txt:"A town that loves your food throws a parade for your bill.",ch:[{l:"March along!",fx:{},g:["fun"],r:"New reason: it's fun!"}],fact:"People take food pride very seriously."}
+];
+
+/* ---------- stops ---------- */
+const tip=true;
+function STOP(id){
+  const f=food(),M=MODES[S.mode],easy=S.mode==="easy";
+  switch(id){
+  case "sponsor":return{scene:"office",who:"saucer",t:"Find a sponsor",
+    txt:`You have a great idea: <b>${esc(billText())}</b> But only a member of Congress can start a bill. Rep. Penny Saucer might be your sponsor, if you can convince her.`,
+    ch:[
+     {l:"Make your case to Rep. Saucer",sub:easy?"":`${DUELDAYS()} days`,tip:canWin("saucer"),go:()=>({kind:"duel",id:"saucer"})},
+     ...(S.args.includes("poll")?[]:[
+      {l:"Collect 300 signatures first",sub:easy?"get a new reason":"3 days, get a new reason",tip:!canWin("saucer"),go:()=>{gain("poll");return R({d:-3},"300 kids sign your paper! Now you have a new reason: lots of people want this.",{stay:1})}},
+      {l:"Post a video asking for help",sub:"1 day, a gamble",go:()=>{if(Math.random()<.5){gain("poll");return R({d:-1},"Your video goes big! Thousands of people say they want this. New reason: lots of people want it.",{stay:1})}return R({d:-1},"Only your aunt watched it. Thanks, Aunt Jo!",{stay:1,bad:1})}}]),
+     ...libOpt(["saucer"])
+    ],fact:"Anyone can come up with an idea for a law. But only a member of Congress can introduce a bill."};
+  case "hopper":return{scene:"hopper",who:"saucer",t:"Drop it in the hopper",
+    txt:`Rep. Saucer carries your bill to the House. There's a wooden box called the <b>hopper</b> at the clerk's desk.`,
+    ch:[{l:"Drop it in!",tip,go:()=>R({d:-1},`Plop! Your bill gets a number: <b>H.R. ${S.num}</b>. It's officially a bill now.`)}],
+    fact:"In the House, a member introduces a bill by putting it in a wooden box called the hopper. House bills get numbers that start with H.R."};
+  case "committee":{const big=S.size>1;return{scene:"committee",who:"crust",t:"The committee: the big gate",
+    txt:`Your bill goes to a committee. The chair, Rep. Crustworthy, decides if it gets a hearing at all.`,
+    ch:[
+     {l:"Talk to Rep. Crustworthy",sub:easy?"":`${DUELDAYS()} days`,tip:canWin("crust"),go:()=>({kind:"duel",id:"crust"})},
+     {l:"Ask politely and wait",sub:"8 days, a gamble",go:()=>Math.random()<.5?R({d:-8},"After eight days, Rep. Crustworthy says yes. You get a hearing!"):R({d:-8},"Eight days go by. \"Still thinking,\" says Rep. Crustworthy.",{stay:1,bad:1})},
+     {l:"Ask him to skip the hearing",sub:"small bills only",go:()=>big?R({d:-1},`"Skip it? For a ${sizeWord(S.size).toLowerCase()} bill like this? No!"`,{stay:1,bad:1}):(S.queue.splice(S.queue.indexOf("hearing"),1),R({d:-1},"\"It's a small, simple bill. Fine!\" No hearing needed."))},
+     ...libOpt(["crust"])
+    ],fact:"Most bills never get out of committee. The committee chair decides which bills get a hearing."}}
+  case "hearing":{const n=S.flags.wit||[];const max=2;const f2=food();return{scene:"committee",who:"saucer",t:"The hearing: pick witnesses",
+    txt:`At a hearing, people tell the committee what they know. Each witness can give you a new reason. You can call ${max-n.length===2?"two witnesses":"one more witness"}.`,
+    ch:[
+     ...(n.length<max?[
+      ...(n.includes("chef")?[]:[{l:"A famous chef",sub:`${easy?"":"2 days, "}an old-favorite reason`,tip:!S.args.includes("tradition"),go:()=>{S.flags.wit=[...n,"chef"];gain("tradition");return R({d:-2},`The chef talks about ${f2.n} that families have made for a long time. New reason: "An old favorite."`,{stay:1,sceneWho:"chef"})}}]),
+      ...(n.includes("farmer")?[]:[{l:"A farmer",sub:`${easy?"":"2 days, "}a farm reason`,tip:!S.args.includes("farms"),go:()=>{S.flags.wit=[...n,"farmer"];gain("farms");return R({d:-2},`The farmer explains how farms grow what goes into ${f2.n}. New reason: "It helps farmers."`,{stay:1,sceneWho:"farmer"})}}]),
+      ...(n.includes("lunch")?[]:[{l:"A school lunch cook",sub:`${easy?"":"2 days, "}a health reason?`,tip:rvalid("health")&&!S.args.includes("health"),go:()=>{S.flags.wit=[...n,"lunch"];
+        if(rvalid("health")){gain("health");return R({d:-2},`The cook says, "${cap(f2.n)} can be part of a healthy lunch." New reason: "It can be healthy."`,{stay:1,sceneWho:"lunch"})}
+        return R({d:-2},`The cook is honest. "I serve ${f2.n} once in a while, with fruit and vegetables on the side. I can't call it a health food." No new reason this time.`,{stay:1,bad:1,sceneWho:"lunch"})}}])]:[]),
+     {l:n.length?"End the hearing":"Skip the witnesses",cls:n.length?"go":"",tip:n.length>=max,go:()=>R({},"The hearing is over. Next, the committee works on the bill's words.")}
+    ],fact:"At a hearing, experts and regular people share facts and opinions with a committee. Witnesses must tell the truth."};}
+  case "markup":{
+    if(!S.amend.length&&!S.flags.markupDone){let d=deck();S.amend=shuffle(d).slice(0,M.cards).map(a=>a.id);S.sub=0;save()}
+    if(S.flags.markupDone==="vote"||!S.amend.length)return committeeVote();
+    const a=deck().find(x=>x.id===S.amend[0]);
+    return{scene:"committee",who:a.who,t:`Amendment ${S.sub+1}`,
+      txt:`<b>${PEOPLE[a.who]}</b> says: "${esc(a.say)}"`,
+      ch:[
+       {l:"Yes, change it",sub:a.accSub,tip:a.good,go:()=>{applyAmend(a.id);S.lm[a.who]=2;syncFriends();return amendNext({d:-1,sl:a.sl,fr:1,noNudge:1},a.accTxt)}},
+       {l:"No, keep it the same",sub:`${SHORT(a.who)} won't like it`,tip:!a.good,go:()=>{S.lm[a.who]=Math.max(0,S.lm[a.who]-1);syncFriends();return amendNext({d:-1,fr:-1,noNudge:1},a.rejTxt)}}
+      ],fact:"An amendment is a change to a bill. Lawmakers often trade changes for support."};}
+  case "house":{const tr=S.flags.trade;const c=count("H");return{scene:"floor",who:null,t:"The House vote",clip:houseClip(),
+    txt:`All 435 members of the House can vote. Your bill needs <b>218 yes votes</b>.`,
+    ch:[
+     ...talkOpts(HOUSE),...libOpt(HOUSE),
+     ...(tr||easy||S.lm.dente===2?[]:[{l:"Make a trade with Rep. Al Dente",sub:"he says yes, but you owe him",go:()=>{S.flags.trade=1;S.lm.dente=2;syncFriends();if(!S.eventsLeft.includes("favor"))S.eventsLeft.unshift("favor");else{S.eventsLeft=S.eventsLeft.filter(e=>e!=="favor");S.eventsLeft.unshift("favor")}if(!S.evSlots.some(x=>x>S.i))S.evSlots.push(S.i+2);return R({},"\"I'll vote yes if you back my National Spaghetti Week bill later.\" Deal! He and his group are with you.<br><i>Lawmakers trade support a lot. Some call it teamwork. Some worry it passes bills nobody really wanted.</i>",{stay:1,sceneWho:"dente"})}}]),
+     {l:"Call the vote now!",sub:c.sure>=218?"you have enough sure votes":"risky: you need some maybes",tip:c.sure>=218||!HOUSE.some(id=>S.lm[id]<2&&canWin(id)),go:()=>vote("House",rollVotes("H"),435,218,"house")}
+    ],fact:"A bill needs a majority in the House: more than half of the members who vote. Party leaders count votes ahead of time. This is called a whip count."}}
+  case "senate":return{scene:"senate",who:"sgreen",t:"On to the Senate",
+    txt:`Your bill passed the House! Now the Senate has to pass it too. It goes to a Senate committee first, led by Sen. Greenleaf.`,
+    ch:[
+     ...(S.lm.sgreen===2?[{l:"Sen. Greenleaf is already on your side!",cls:"go",tip,go:()=>R({d:-1},"Sen. Greenleaf (Rep. Greenleaf's cousin!) leads your bill through the committee.")}]:[{l:"Talk to Sen. Greenleaf",sub:easy?"":`${DUELDAYS()} days`,tip:canWin("sgreen"),go:()=>({kind:"duel",id:"sgreen"})}]),
+     {l:"Hope for the best",sub:"a gamble",go:()=>Math.random()<.5?R({d:-1},"Lucky! The committee sends it on."):R({d:-6},"The committee sits on it for six days. Finally it moves on.",{bad:1})},
+     ...libOpt(["sgreen"])
+    ],fact:"Both the House and the Senate must pass a bill. Each has its own committees."};
+  case "filibuster":{const cl=count("S").sure+8;return{scene:"senate",who:"longwind",t:"Filibuster!",clip:clipHTML("End the debate?",SENATE,`Sure yes: <b>${cl}</b> (with 8 who just want to move on) · Need <b>60</b>`,{full:1}),
+    txt:`Sen. Longwind doesn't like your bill. He's reading a whole cookbook out loud! To stop him, <b>60 senators</b> must vote to end the debate, or he has to change his mind.`,
+    ch:[
+     {l:"Talk to Sen. Longwind",sub:"3 hard questions",tip:canWin("longwind"),go:()=>({kind:"duel",id:"longwind"})},
+     ...talkOpts(SENATE.filter(x=>x!=="longwind")),
+     {l:"Vote to end the debate",tip:cl>=60,go:()=>{const y=rollVotes("S",8);if(y>=60)return R({d:-1},`<b>${y} senators</b> vote to end debate. Sen. Longwind closes his cookbook. Now the Senate can vote on your bill!`,{tally:{y,n:100-y,need:60,lab:"End the debate"}});return R({d:-2},`Only <b>${y}</b> voted to stop. You need 60. Sen. Longwind keeps reading. (Page 412: soups.)`,{stay:1,tally:{y,n:100-y,need:60,lab:"End the debate"},bad:1})}},
+     {l:"Make a deal with Sen. Longwind",sub:"-1 slice",go:()=>{S.mods.and=S.mods.and||"soup";return R({d:-1,sl:-1},"\"Add soup to your bill and I'll stop talking.\" Fine! Your bill now includes soup. He stops.")}},
+     {l:"Wait him out",sub:"6 days, a gamble",go:()=>Math.random()<.5?R({d:-6},"After six days his voice gives out. *squeak* The talking is over!"):R({d:-6},"Six days later he's still going. (Page 801: desserts.)",{stay:1,bad:1})}
+    ],fact:"In the Senate, a senator can keep a debate going. Ending it usually takes 60 votes. This is called a filibuster."}}
+  case "svote":{const c=count("S");return{scene:"senate",who:null,t:"The Senate vote",clip:senClip(),
+    txt:`There are 100 senators. Your bill needs <b>51 yes votes</b>. If it's a 50-50 tie, the Vice President breaks it!`,
+    ch:[
+     ...talkOpts(SENATE),...libOpt(SENATE),
+     {l:"Call the vote now!",sub:c.sure>=51?"you have enough sure votes":"risky: you need some maybes",tip:c.sure>=51||!SENATE.some(id=>S.lm[id]<2&&canWin(id)),go:()=>{const y=rollVotes("S");if(y===50)return tie();return vote("Senate",y,100,51,"svote")}}
+    ],fact:"A bill needs a majority in the Senate. The Vice President votes only to break a tie."}}
+  case "match":{const sy=SENATE.filter(id=>S.lm[id]===2).length;return{scene:"senate",who:"saucer",t:"Make both versions match",
+    txt:`The Senate changed one word! Their version says "<b>${f.n} or ${f.or}</b>". The House and Senate must pass the exact same words.`,
+    ch:[
+     {l:"The House agrees to the Senate's words",sub:"2 days, -1 slice",tip:sy<4,go:()=>{S.mods.or=1;return R({d:-2,sl:-1},`The House votes yes on the Senate version. Now it says "${f.n} or ${f.or}." Both match!`)}},
+     {l:`Ask the Senate to drop "${f.or}"`,sub:`6 days, needs 4 senators on your side (you have ${sy})`,tip:sy>=4,go:()=>sy>=4?R({d:-6},`Your senator friends agree. "${f.or}" is out. Both match!`):R({d:-6},"The Senate says no. Six days are gone. Choose again.",{stay:1,bad:1})}
+    ],fact:"The House and Senate must pass exactly the same words before a bill goes to the President."}}
+  case "conference":return{scene:"committee",who:"saucer",t:"The conference committee",
+    txt:`The House and Senate passed different versions. The Senate's says "<b>${f.n} or ${f.or}</b>". Lawmakers from both sit at one table to pick the final words.`,
+    ch:[
+     {l:"Keep the House words",sub:"-1 friend",go:()=>finalVotes({fr:-1},"You hold firm. Some senators grumble.")},
+     {l:"Use the Senate's words",sub:"-1 slice",tip,go:()=>{S.mods.or=1;return finalVotes({sl:-1},`The final bill says "${f.n} or ${f.or}."`)}}
+    ],fact:"A conference committee has members from both the House and Senate. It writes one final version that both must pass again."};
+  case "president":return{scene:"desk",who:"pres",t:"The President's desk",
+    txt:`Your bill passed Congress! Now the President has <b>10 days</b> (not counting Sundays) to sign it or say no with a veto. Can you help?`,
+    ch:[
+     {l:"Send letters from kids",tip,go:()=>{S.flags.letters=1;return presOutcome("Thousands of kids' letters arrive at the White House.")}},
+     {l:"Ask the White House chef for a taste test",sub:"a gamble",go:()=>{const good=Math.random()<.55;S.flags.chef=good?1:-1;return presOutcome(good?`The chef cooks ${f.n} for the President. "Mmm!" Big smile.`:`The chef burns the ${f.n}. The President makes a face.`)}},
+     {l:"Wait quietly",go:()=>presOutcome("You wait. And wait. The calendar flips.")}
+    ],fact:"The President can sign a bill, veto it, or do nothing. If Congress is in session and 10 days pass (not counting Sundays), it becomes law without a signature."};
+  case "override":{const h=count("H").sure+20,s=count("S").sure+5;return{scene:"floor",who:null,t:"Veto override!",clip:clipHTML("Override count",[...HOUSE,...SENATE],`House sure: <b>${h}</b> of 290 · Senate sure: <b>${s}</b> of 67`,{full:1}),
+    txt:`Congress can still win! To override a veto, it needs <b>two-thirds</b> of both: 290 in the House and 67 in the Senate. Some members are mad about the veto and will help.`,
+    ch:[
+     ...talkOpts([...HOUSE,...SENATE]),
+     {l:"Vote to override!",tip:h>=290&&s>=67,go:()=>{const hh=rollVotes("H",20),ss=rollVotes("S",5);const ok=hh>=290&&ss>=67;S.lastTallies=[{y:hh,n:435-hh,need:290,lab:"House"},{y:ss,n:100-ss,need:67,lab:"Senate"}];return ok?END("override",{tallies:S.lastTallies}):END("overrideFail",{tallies:S.lastTallies})}}
+    ],fact:"Congress can override a veto with a two-thirds vote in both the House and the Senate. It doesn't happen often."}}
+  }
+}
+function committeeVote(){
+  const need=comNeed(),c=comCount();
+  return{scene:"committee",who:null,t:"The committee votes",clip:comClip(),
+   txt:`The committee decides if your bill moves on. You need <b>${need} of 5</b> members to vote yes.`,
+   ch:[
+    ...talkOpts(COMM),...libOpt(COMM),
+    {l:"Call the committee vote",sub:c.y>=need?"you have enough":"risky: you need some maybes",tip:c.y>=need||!COMM.some(id=>S.lm[id]<2&&canWin(id)),go:()=>{const p=S.mode==="hard"?.35:.5;let y=c.y;COMM.forEach(id=>{if(S.lm[id]===1&&Math.random()<p)y++});
+      const t={y,n:5-y,need,lab:"Committee"};if(y>=need){S.flags.markupDone=1;S.amend=[];return R({d:-1},`<b>${y} of 5</b> vote yes! Your bill heads to the whole House.`,{tally:t})}return END("stuck",{tally:t})}}
+   ],fact:"Committees vote on whether to send a bill to the full House or Senate."};
+}
+function amendNext(fx,txt){S.amend.shift();S.sub++;if(!S.amend.length)S.flags.markupDone="vote";return R(fx,txt,{stay:1,showFact:S.sub===1})}
+function tie(){const yes=S.slices>=3||Math.random()<.5;S.flags.tie=1;
+  if(yes)return R({d:-1},"It's <b>50 to 50</b>! Everyone looks at the Vice President... who bangs the gavel: \"YES!\" Your bill passes the Senate!",{tally:{y:50,n:50,need:51,lab:"Senate",vp:1},sceneWho:"vp"});
+  return END("lostSenate",{tally:{y:50,n:50,need:51,lab:"Senate"},extra:"It was 50 to 50, and the Vice President voted no."})}
+function vote(where,y,tot,need,id){const t={y,n:tot-y,need,lab:where};
+  if(y>=need){if(id==="svote"&&S.mode==="normal")return R({d:-2},`<b>${y} yes votes!</b> Your bill passes the Senate! But wait. The Senate changed one word...`,{tally:t});
+    return R({d:-2},`<b>${y} yes votes!</b> Your bill passes the ${where}!`,{tally:t})}
+  return END(id==="house"?"lostHouse":"lostSenate",{tally:t})}
+function finalVotes(fx,txt){apply(fx);const h=rollVotes("H"),s=rollVotes("S");const t=[{y:h,n:435-h,need:218,lab:"House"},{y:s,n:100-s,need:51,lab:"Senate"}];
+  if(h>=218&&s>=51)return R({d:-3},txt+" Then both the House and Senate pass the final version!",{tallies:t,noApply:fx});
+  S.lastTallies=t;return END("lostFinal",{tallies:t})}
+function presOutcome(lead){
+  let p=.05;const why=[];
+  if(S.mode==="easy")p=0;else{
+   if(S.bill.twist==="pine"){p+=.4;why.push("pineapple")}
+   if(S.slices<=1){p+=.55;why.push("changes")}
+   if(S.size>=4){p+=.15;why.push("big")}
+   if(S.mods.study){p+=.2;why.push("study")}
+   if(S.mods.ketchup){p+=.15}
+   if(S.flags.letters)p-=.2;if(S.flags.chef===1)p-=.15;if(S.flags.chef===-1)p+=.15;
+   p=clamp(p,0,.9)}
+  if(Math.random()<p){
+    S.vetoWhy=why[0]||"plain";
+    if(S.mode==="hard"){S.queue.splice(S.i+1,0,"override");return R({d:-5},lead+` Then... <b>VETO!</b> The President says no. ${vetoReason()} But in Hard mode, Congress can fight back!`,{bad:1,sceneWho:"pres"})}
+    return END("veto",{lead})}
+  const sign=Math.random()<.75||S.flags.letters&&Math.random()<.5;
+  if(sign)return END("law",{lead});
+  if(S.mode==="hard"&&S.days<=10)return END("pocket",{lead});
+  return END("lawNoSign",{lead});
+}
+function vetoReason(){return{pineapple:"\"Ban pineapple forever? That's too far.\"",changes:"\"This bill isn't even about your food anymore!\"",big:"\"This bill is too big.\"",study:"\"That study costs too much money.\"",plain:"\"I just don't like it.\""}[S.vetoWhy||"plain"]}
+
+/* ---------- endings ---------- */
+const ENDS={
+ law:{t:"It's a Law!",mood:"wow",scene:"stage",good:1,txt:s=>`The President signs your bill! <b>${esc(s.title)}</b> is now a law of the United States.`,fact:"In December 2024, a law finally made the bald eagle the official national bird. Before that, it was never official, even though everyone thought it was!",tip:"Try a bigger bill next time, or a harder mode!"},
+ lawNoSign:{t:"A Law, No Signature Needed!",mood:"wow",scene:"desk",good:1,txt:s=>`The President doesn't sign it... and doesn't veto it. Ten days pass (not counting Sundays). Since Congress is still working, <b>${esc(s.title)}</b> becomes a law on its own!`,fact:"If the President does nothing for 10 days, not counting Sundays, while Congress is in session, a bill becomes law without a signature.",tip:"Try sending kids' letters next time to get a real signing party!"},
+ override:{t:"A Law, Over a Veto!",mood:"wow",scene:"floor",good:1,txt:s=>`Two-thirds of the House AND two-thirds of the Senate vote yes. The veto is overridden. <b>${esc(s.title)}</b> is a law!`,fact:"Congress can override a veto with a two-thirds vote in both the House and Senate. It's rare, so this is a big deal!",tip:"You beat Hard mode's toughest stop. Try a Huge bill!"},
+ stuck:{t:"Stuck in Committee",mood:"sleepy",scene:"drawer",restart:"committee",txt:()=>"The committee votes no. Your bill goes into a big filing drawer to take a nap. Zzz.",fact:"Most bills never make it out of committee. Only a small share of all bills ever become laws.",tip:"Next time, check the whip count and win over the maybes before the vote."},
+ lostHouse:{t:"Lost the House Vote",mood:"sad",scene:"floor",restart:"house",txt:()=>"Not enough yes votes. The tally board sputters and droops.",fact:"A bill needs a majority in both the House and the Senate.",tip:"Next time, talk to the MAYBEs on your clipboard first. Find the reasons they care about."},
+ lostSenate:{t:"Lost the Senate Vote",mood:"sad",scene:"senate",restart:"svote",txt:()=>"Not enough senators voted yes.",fact:"A bill needs a majority in the Senate too. The Vice President only votes to break a tie.",tip:"Next time, collect the reasons senators care about, then talk to the MAYBEs."},
+ lostFinal:{t:"Lost the Final Vote",mood:"sad",scene:"committee",restart:"conference",txt:()=>"The final version didn't get enough votes.",fact:"After a conference committee, both the House and Senate must pass the final version again.",tip:"Next time, win more lawmakers over before the final vote."},
+ out:{t:"Out of Time",mood:"sad",scene:"capitol",restart:"new",txt:()=>"Congress packs its suitcases and goes home. Your bill waves goodbye.",fact:"Congress lasts two years. When it ends, every unfinished bill dies and has to be introduced again in the next Congress.",tip:"Next time, skip the slow choices when the calendar gets low."},
+ veto:{t:"Vetoed!",mood:"sad",scene:"desk",restart:"president",txt:s=>`The President says no. ${vetoReason()} A giant red stamp lands on your bill.`,fact:"Congress can override a veto with a two-thirds vote in both the House and the Senate. Try Hard mode to play an override!",tip:"Next time, keep more slices and send kids' letters to the President."},
+ overrideFail:{t:"The Veto Stands",mood:"sad",scene:"floor",restart:"override",txt:()=>"Not enough votes to override. Two-thirds is a lot!",fact:"Overrides are rare. Usually, Congress works with the President earlier to avoid a veto.",tip:"Next time, talk to more members before the override vote."},
+ pocket:{t:"Pocket Veto!",mood:"sad",scene:"desk",restart:"new",txt:()=>"The President didn't sign it, and Congress went home before 10 days passed. That means the bill does NOT become law.",fact:"If Congress goes home before the 10 days are up and the President hasn't signed, the bill dies. This is called a pocket veto.",tip:"Next time, reach the President with more than 10 days left."}
+};
+
+/* ---------- engine ---------- */
+let pending=null; // result waiting for continue
+function apply(fx){if(!fx)return;const d=fx.d||0;if(S.mode!=="easy"&&d)S.days=Math.max(0,S.days+d);if(fx.fr&&!fx.noNudge)nudge(fx.fr);if(fx.sl)S.slices=clamp(S.slices+fx.sl,0,5)}
+function R(fx,txt,o={}){if(!o.noApply)apply(fx);return{kind:"res",fx:o.noApply||fx,txt,...o}}
+function END(id,o={}){return{kind:"end",id,...o}}
+
+function render(){
+  hush();renderHUD();
+  if(!S)return title();
+  if(S.ended)return showEnd(S.ended);
+  if(S.inter)return showInter(S.inter);
+  const id=cur();if(!id)return;
+  if(!S.reached.includes(id))S.reached.push(id);
+  const c=STOP(id);showCard(c,id);save();
+}
+function next(){
+  S._stay=0;S.quick=0;S.hint=false;
+  if(S.mode!=="easy"&&S.days<=0){S.ended={id:"out"};return render()}
+  if(S.slices<=0&&!S.swapped){S.inter="swap";return render()}
+  const done=S.queue[S.i];
+  S.i++;
+  if(S.i>=S.queue.length){return render()}
+  if((S.mode==="easy"?["house"]:["hopper","markup","house","filibuster","svote"]).includes(done)){S.inter="news:"+done;save();return render()}
+  afterNews();
+}
+function afterNews(){
+  if(S.evSlots.includes(S.i)&&S.eventsLeft.length){S.evSlots=S.evSlots.filter(x=>x!==S.i);
+    const evs=S.eventsLeft.map(id=>EVENTS.find(e=>e.id===id)).filter(e=>!e.need||e.need(S));
+    if(evs.length){const e=evs[0];S.eventsLeft=S.eventsLeft.filter(x=>x!==e.id);S.inter="ev:"+e.id;return render()}}
+  render();
+}
+/* ---------- the evening news ---------- */
+function newsLines(done){
+  const f=food(),D=f.day.toUpperCase(),nx=S.queue[S.i];
+  const head={hopper:`NEW BILL: H.R. ${S.num}!`,markup:`${D} BILL ESCAPES COMMITTEE!`,house:`HOUSE SAYS YES TO ${D} BILL!`,filibuster:`SENATOR FINALLY STOPS TALKING!`,svote:`SENATE PASSES ${D} BILL!`}[done];
+  const pun={pizza:"A slice of history?",pancakes:"Support is stacking up!",tacos:"Everybody's taco-ing about it!",apples:"The apple of Congress's eye?",curds:"A squeaky-clean win!",mac:"Cheesy news, folks!",pickles:"Out of a pickle at last?",broccoli:"Tree-mendous news!"}[f.id];
+  const recap={hopper:`${esc(S.title)} is now an official bill: H.R. ${S.num}. Rep. Penny Saucer is the sponsor.`,
+    markup:`The committee voted yes on ${esc(S.title)}. Most bills never make it this far!`,
+    house:`The House passed ${esc(S.title)}. That's one of the two parts of Congress.`,
+    filibuster:`Sen. Longwind's filibuster is over. His cookbook is closed.`,
+    svote:`The Senate passed ${esc(S.title)}. Both parts of Congress said yes!`}[done];
+  const what={committee:"Next, a committee decides if it even gets a hearing.",hearing:"Next, a committee hearing.",markup:"Next, the committee changes and votes on it.",house:"Next, the whole House votes. It needs 218 yes votes.",
+    senate:"Next stop: the Senate.",filibuster:"But one senator is getting ready to talk for a very long time...",svote:"The Senate votes next. It needs 51.",
+    match:"But the House and Senate versions don't match yet.",conference:"But the House and Senate passed different words.",president:"Next, it goes to the President's desk!"}[nx]||"";
+  const ids=SENSTOPS.includes(nx)||nx==="match"||nx==="conference"?SENATE:HOUSESTOPS.includes(nx)?HOUSE:[];
+  const worry=ids.find(id=>S.lm[id]===0)||ids.find(id=>S.lm[id]===1);
+  const lines=[{who:"nar",t:"EXTRA! EXTRA!"},{who:"reporter",t:"Good evening. Big news from Capitol Hill!"},{who:"reporter",t:recap},{who:"reporter",t:what}];
+  if(worry){const o=duelQs(worry)[0];lines.push({who:"reporter",t:`Word is ${PEOPLE[worry]} keeps asking: "${o.q}"`});
+    const have=o.a.some(t=>S.args.includes(t)&&rvalid(t));lines.push({who:"bill",t:have?"I know what to say to that!":"Uh oh. I need a good answer for that."})}
+  else if(nx==="president")lines.push({who:"reporter",t:"The White House isn't saying anything yet."});
+  return{head,pun,lines}}
+function showNews(done){
+  const N=newsLines(done);
+  stageSet("news","reporter","happy",{paper:`<div class="paper"><div class="mast">THE DAILY DOME</div><div class="hl">${esc(N.head)}</div><div class="sub">${esc(N.pun)}</div></div>`});
+  renderHUD();sfx.good();
+  play(N.lines,()=>choices([{l:"Back to work!",cls:"go",go:()=>{S.inter=null;save();afterNews()}}],{top:noteHTML("Reporters tell people what Congress is doing, so voters can keep track.")}));
+}
+
+/* ---------- UI: adventure-game screen ---------- */
+const COLORS={nar:"#ffffff",bill:"#ffe14d",kid:"#7fe0ff",saucer:"#ff9a9a",crust:"#cfb0ff",green:"#8cf08c",sgreen:"#7fe8b8",dente:"#ffb866",gouda:"#ffd75e",
+  middle:"#a8c8ff",ketchum:"#ff8a6a",topp:"#ffad5c",longwind:"#e4e4e4",vp:"#b8e0ff",chef:"#fff3c4",clerk:"#e6c890",reporter:"#9ad0ff",blogger:"#6ff0e0",pres:"#f2f2a0",
+  nickel:"#e8c39e",harvest:"#f0d070",lark:"#7ff0d0",staffer:"#c8f08f",farmer:"#f0b070",lunch:"#d8e8ff"};
+const NAMES=Object.assign({},PEOPLE,{bill:"Bill",nar:"",kid:"You"});
+const stripTags=s=>String(s).replace(/<[^>]+>/g,"");
+let SC={bg:null,who:null,anch:{}};
+const numfix=h=>String(h).replace(/(<[^>]+>)|(\d[\d,./]*)/g,(m,tag,num)=>tag?tag:`<span class="num">${num}</span>`);
+function anchors(bg,who){
+  if(bg==="news")return{L:{x:27,y:68}};
+  if(bg==="hopper"&&who)return{L:{x:25,y:68},B:{x:50,y:60}};
+  if(bg==="desk"&&who==="pres")return{L:{x:50,y:66},B:{x:76,y:56}};
+  if(bg==="desk")return{B:{x:50,y:60}};
+  if(bg==="capitol"&&!who)return{B:{x:28,y:66}};
+  if(bg==="stage")return{L:{x:22,y:66},B:{x:50,y:66}};
+  if(bg==="drawer")return{B:{x:50,y:60}};
+  return{L:{x:27,y:68},B:{x:72,y:61}};
+}
+function stageSet(bg,who,mood,o={}){
+  $("#stage").innerHTML=SCENE(bg,who,mood,o.win)+(o.clip||"")+(o.paper||"")+(o.strip?`<div class="strip">${o.strip}</div>`:"")+(o.banner?`<div class="banner ${o.bannerCls||""}">${o.banner}</div>`:"")+(o.boards||"")+`<div id="fx"></div>`;
+  SC={bg,who,anch:o.clip?{}:anchors(bg,who),strip:!!o.strip};
+}
+/* turn a result paragraph into lines: text in quotes is spoken by `who`, the rest is narration */
+function parseLines(txt,who){
+  const out=[];const t=String(txt).replace(/<br\s*\/?>/g," ");
+  const parts=t.split(/"([^"]+)"/);
+  parts.forEach((p,i)=>{p=p.trim();if(!p)return;
+    const sp=i%2?(who||"nar"):"nar";
+    const sents=p.match(/[^.!?]+[.!?)]*["']?\s*|.+$/g)||[p];let buf="";
+    sents.forEach(s=>{if((buf+s).length>120&&buf){out.push({who:sp,t:buf.trim()});buf=""}buf+=s});
+    if(buf.trim())out.push({who:sp,t:buf.trim()})});
+  // drop dangling narration like "says Rep. X." that only names the speaker
+  return out.filter(l=>!(l.who==="nar"&&/^(says|asks)\b/i.test(stripTags(l.t))&&l.t.length<40));
+}
+/* line playback */
+let LINES=[],LI=0,AFTER=null,NOW=false;
+function play(lines,after,o={}){
+  LINES=lines.filter(l=>l&&l.t);LI=0;AFTER=after;NOW=!!o.now;
+  if(NOW){const a=AFTER;AFTER=null;a&&a()}
+  if(!LINES.length){const fx=$("#fx");if(fx)fx.innerHTML="";if(AFTER){const a=AFTER;AFTER=null;a()}return}
+  showLine();if(!NOW)waitPanel();
+}
+function showLine(){
+  const l=LINES[LI],fx=$("#fx");if(!fx||!l)return;
+  const last=LI>=LINES.length-1;const col=COLORS[l.who]||"#fff";
+  const a=l.who==="bill"?SC.anch.B:(l.who===SC.who&&l.who!=="nar"?SC.anch.L:null);
+  const more=last?"":`<span class="more" aria-hidden="true">▼</span>`;
+  if(a){fx.innerHTML=`<div class="say" style="left:${clamp(a.x,24,76)}%;bottom:${a.y}%;color:${col}">${numfix(l.t)}${more}</div>`}
+  else{const nm=l.who&&l.who!=="nar"?`<b style="color:${col}">${esc(NAMES[l.who]||"")}:</b> `:"";
+    fx.innerHTML=`<div class="cap"${SC.strip?' style="top:auto;bottom:3%"':""}>${nm}${numfix(l.t)}${more}</div>`}
+  if(readOn)say((l.who&&l.who!=="nar"?(NAMES[l.who]||"")+": ":"")+stripTags(l.t));
+}
+function advance(){
+  if(!LINES.length)return;
+  if(LI<LINES.length-1){LI++;sfx.tick();showLine();if(LI===LINES.length-1&&!NOW&&AFTER){const a=AFTER;AFTER=null;a()}return}
+  if(AFTER){const a=AFTER;AFTER=null;a()}
+}
+function skipLines(){if(!LINES.length)return;LI=LINES.length-1;showLine();if(AFTER){const a=AFTER;AFTER=null;a()}}
+function waitPanel(){
+  if(LINES.length<=1){if(AFTER){const a=AFTER;AFTER=null;a()}return}
+  $("#dlg").innerHTML=`<div class="waiting"><button class="dl go" id="nx">Next</button>${LINES.length>2?`<button class="dl meta" id="sk">Skip to the choices</button>`:""}</div>`;
+  $("#nx").onclick=e=>{e.stopPropagation();sfx.tap();advance()};const sk=$("#sk");if(sk)sk.onclick=e=>{e.stopPropagation();skipLines()};
+}
+/* choices in the panel */
+function choices(list,o={}){
+  const showTip=S&&(S.mode==="easy"||S.hint||window.__allTips);
+  const rows=list.map((c,i)=>`<button class="dl ${c.cls||""}${showTip&&c.tip?" tipped":""}" data-i="${i}">${c.icon?`<span class="ic">${c.icon}</span>`:""}<span>${showTip&&c.tip?'<i class="star" title="Rep. Saucer\'s tip">★</i>':""}${numfix(esc(c.l))}${c.sub?`<small>(${numfix(esc(c.sub))})</small>`:""}</span></button>`).join("");
+  $("#dlg").innerHTML=numfix(o.top||"")+`<div class="dls${o.grid?" grid2":""}">${rows}</div>`+(o.bottom||"");
+  $("#dlg").scrollTop=0;
+  $("#dlg").querySelectorAll(".dl[data-i]").forEach(b=>b.onclick=e=>{e.stopPropagation();sfx.tap();hush();list[+b.dataset.i].go()});
+  if(o.after)o.after();
+}
+/* inventory */
+const SCROLLICON=`<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="5" y="3" width="10" height="14" fill="#fff8e0" stroke="#000"/><rect x="3.5" y="2" width="13" height="3" rx="1.5" fill="#e6c27a" stroke="#000"/><rect x="3.5" y="15" width="13" height="3" rx="1.5" fill="#e6c27a" stroke="#000"/><path d="M7 8h6M7 10.5h6M7 13h4" stroke="#777"/></svg>`;
+function renderHUD(){
+  const inv=$("#inv"),p=$("#panel");
+  if(!S||S.ended&&false){inv.innerHTML="";p.classList.add("noinv");return}
+  p.classList.remove("noinv");const easy=S.mode==="easy";
+  const vis=S.queue.filter(q=>!(q==="senate"&&S.queue.includes("svote")));
+  const curq=S.queue[S.i]==="senate"&&S.queue.includes("svote")?"svote":S.queue[S.i];
+  const ci=vis.indexOf(curq);
+  inv.innerHTML=`<div class="slot" id="m-fr">${ICON.friend}<b>${S.friends}</b><small>Friends</small></div>
+   <div class="slot" id="m-d">${ICON.cal}<b>${easy?"∞":S.days}</b><small>${easy?"No calendar":"Days left"}</small></div>
+   <div class="slot" id="m-sl">${pie(S.slices,food().id)}<b>${S.slices}/5</b><small>Still my bill</small></div>
+   <button class="slot" id="m-bill" aria-label="Read your bill">${SCROLLICON}<b>H.R.</b><small>${S.num} · read it</small></button>
+   <button class="slot rsn" id="m-rs" aria-label="Your reasons"><span class="rsi">${S.args.map(t=>`<i title="${esc(RS[t].n)}" class="${rvalid(t)?"":"bad"}">${ricon(t)}</i>`).join("")}</span><small>Reasons · ${S.args.length} · tap to see</small></button>
+   <div class="where">Stop ${Math.max(1,ci+1)} of ${vis.length}: <b>${ROUTE[curq]||""}</b><div class="dots">${vis.map((q,i)=>`<i class="${S.ended&&i===ci?"x":i<ci?"d":i===ci?"n":""}" title="${ROUTE[q]}"></i>`).join("")}</div></div>`;
+  $("#m-rs").onclick=e=>{e.stopPropagation();sfx.tap();showReasons()};
+  $("#m-bill").onclick=e=>{e.stopPropagation();sfx.tap();dialog(S.title,`<p><b>H.R. ${S.num}</b></p><p style="font-size:20px">${esc(billText())}</p><p>Size: <b>${sizeWord(S.size)}</b>. Changes from amendments show up here as your bill travels.</p>`)};
+}
+function showReasons(){
+  const L=S.learn||{};
+  const mine=S.args.map(t=>`<li class="rli"><span class="ric">${ricon(t)}</span><span><b>${esc(RS[t].n)}</b>${rvalid(t)?"":` <em class="no">Not true for your bill!</em>`}<br><small>"${esc(rsay(t))}"</small></span></li>`).join("");
+  const miss=RORDER.filter(t=>!S.args.includes(t)).map(t=>`<li class="rli dim"><span class="ric">${ricon(t)}</span><span><b>${esc(RS[t].n)}</b><br><small>Find it: ${esc(RS[t].src)}</small></span></li>`).join("");
+  const who=Object.keys(L).map(id=>`<li><b>${esc(PEOPLE[id])}</b> (${["NO","MAYBE","YES"][S.lm[id]]}) cares about: ${L[id].map(t=>esc(RS[t].n.toLowerCase())).join(", ")}</li>`).join("");
+  dialog("Your reasons",`<p>Lawmakers ask questions. Answer each one with a different true reason.</p><ul class="rl">${mine}</ul>${miss?`<p><b>Still to find</b></p><ul class="rl">${miss}</ul>`:""}${who?`<p><b>What you've learned</b></p><ul>${who}</ul>`:""}`)}
+function pie(n,fid){let s=`<svg viewBox="-22 -22 44 44" aria-hidden="true">`;for(let k=0;k<5;k++){const a0=-Math.PI/2+k*2*Math.PI/5,a1=a0+2*Math.PI/5;const x0=20*Math.cos(a0),y0=20*Math.sin(a0),x1=20*Math.cos(a1),y1=20*Math.sin(a1);
+  s+=`<path d="M0 0L${x0.toFixed(2)} ${y0.toFixed(2)}A20 20 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${k<n?(fid==="pizza"?"#f4c542":"#e9a23b"):"#2a2250"}" stroke="#000" stroke-width="1.5"/>`;if(k<n&&fid==="pizza"){const m=(a0+a1)/2;s+=`<circle cx="${(11*Math.cos(m)).toFixed(1)}" cy="${(11*Math.sin(m)).toFixed(1)}" r="3" fill="#c8102e"/>`}}
+  return s+"</svg>"}
+function bump(fx){if(!fx)return;[["fr","#m-fr"],["d","#m-d"],["sl","#m-sl"]].forEach(([k,sel])=>{const v=fx[k];if(!v||(k==="d"&&S.mode==="easy"))return;const el=$(sel);if(!el)return;
+  el.classList.remove("bump","bumpd");void el.offsetWidth;el.classList.add(v>0?"bump":"bumpd");
+  const p=document.createElement("span");p.className="dpop "+(v>0?"up":"dn");p.textContent=(v>0?"+":"")+v;el.appendChild(p);setTimeout(()=>p.remove(),1500)})}
+function boardsHTML(ts){if(!ts||!ts.length)return"";return`<div class="boards">${ts.map(t=>{const tot=t.y+t.n,pct=v=>(v/tot*100).toFixed(1);
+  return`<div class="board" data-y="${t.y}" data-n="${t.n}"><div class="tl"><span>${t.lab}</span><span>need ${t.need}</span></div><div class="bar"><div class="yes" style="width:0"></div><div class="need" style="left:${pct(t.need)}%"></div></div><div class="tn"><span class="yy">YES 0</span><span class="nn">NO 0</span></div></div>`}).join("")}</div>`}
+function animBoards(){document.querySelectorAll(".board").forEach(el=>{const y=+el.dataset.y,n=+el.dataset.n,tot=y+n;let k=0;const steps=26;
+  const go=()=>{k++;const p=Math.min(1,k/steps);el.querySelector(".yes").style.width=(y/tot*p*100)+"%";el.querySelector(".yy").textContent="YES "+Math.round(y*p);el.querySelector(".nn").textContent="NO "+Math.round(n*p);if(k%3===0)sfx.tick();if(p<1)setTimeout(go,32)};
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)k=steps-1;go()})}
+const noteHTML=fact=>fact?`<div class="note"><span class="lbl">This really happens:</span> ${fact}</div>`:"";
+
+/* stop lines, written as dialog */
+function SAY(id,c){const f=food();const L=(who,t)=>({who,t});
+  switch(id){
+  case"sponsor":return S.lm.saucer===2?[L("saucer","I'm your sponsor!")]:[L("saucer","Hi! I'm Rep. Penny Saucer. I only have a few minutes."),L("bill","Hi! I'm the idea!"),L("saucer",`A bill about ${f.n}? Hmm.`),L("saucer","If I sponsor a bill, I put my name on it. So convince me!"),L("nar","Lawmakers ask hard questions. Answer with good, true <b>reasons</b>. You start with one: kids want it.")];
+  case"hopper":return[L("saucer","Time to make you official, little bill."),L("nar","At the front of the House sits a wooden box called the <b>hopper</b>.")];
+  case"committee":return[L("nar","Your bill goes to a committee first."),L("crust","I'm the chair. I decide if you even get a hearing."),...(S.bill.twist==="samples"?[L("crust","Free samples? Who pays for those?")]:[]),L("bill","Gulp.")];
+  case"hearing":return[L("saucer","It's a hearing! People tell the committee what they think."),L("saucer","Each witness can give you a new <b>reason</b>. You can call two.")];
+  case"markup":if(S.flags.markupDone==="vote"||!S.amend.length)return[L("crust","Time for the committee to vote."),L("nar",`You need <b>${comNeed()} of 5</b> members. The clipboard shows who is with you.`)];
+    {const a=deck().find(x=>x.id===S.amend[0]);return[...(S.sub===0?[L("nar","An <b>amendment</b> is a change to a bill.")]:[]),L(a.who,esc(a.say)),...(S.sub===0?[L("bill","Saying yes makes friends. Saying no keeps me... me!")]:[])]}
+  case"house":return[L("nar","This is the whole House. 435 members!"),L("bill","We need <b>218 yes votes</b>."),L("nar","Your clipboard is a <b>whip count</b>. It shows who is a YES, a NO or a MAYBE."),L("bill","Maybes might vote either way. Talk to them first, or take a chance!")];
+  case"senate":return[L("sgreen","Welcome to the Senate! The House passed you. Now it's our turn."),L("sgreen","I lead the committee that looks at food bills."),...(S.lm.sgreen===2?[L("sgreen","And I like you already!")]:[L("sgreen","But first, I have some questions.")])];
+  case"filibuster":return[L("longwind","I do not like this bill. So I will talk... and talk... and talk..."),L("nar","He's reading a whole cookbook out loud!"),L("nar","To stop him, <b>60 senators</b> must vote to end the debate. Or you could change his mind.")];
+  case"svote":return[L("nar","There are 100 senators. You need <b>51 yes votes</b>."),L("nar","If it's a 50-50 tie, the Vice President breaks it!"),L("bill","Let's check the whip count.")];
+  case"match":return[L("saucer","Uh oh. The Senate changed one word."),L("nar",`Their version says "<b>${f.n} or ${f.or}</b>".`),L("saucer","The House and Senate must pass the exact same words.")];
+  case"conference":return[L("saucer","The House and Senate passed different versions."),L("nar",`The Senate's says "<b>${f.n} or ${f.or}</b>".`),L("saucer","Members of both sit at one table to pick the final words.")];
+  case"president":return[L("nar","Your bill passed Congress! It's on the President's desk."),L("pres","I have <b>10 days</b> to decide. Sundays don't count."),L("bill","How can we help?")];
+  case"override":return[L("nar","Congress can still win! But it needs two-thirds."),L("nar","That's <b>290</b> in the House and <b>67</b> in the Senate."),L("bill","Some members are mad about the veto. They'll help!")];
+  }return parseLines(c.txt,c.who)}
+
+/* a stop */
+function showCard(c,id){
+  stageSet(c.scene,c.who,"happy",{clip:c.clip});renderHUD();
+  const lines=S.quick?[]:SAY(id,c);S.quick=0;
+  const opts=()=>{const list=c.ch.map(x=>({l:x.l,sub:x.sub,tip:x.tip,go:()=>{S.hint=false;handle(x.go(),c)}}));
+    if(S.mode==="normal"&&!S.hint&&c.ch.length>1)list.push({l:"Ask Rep. Saucer for a tip",sub:"costs 1 day",cls:"meta",go:()=>{S.days=Math.max(0,S.days-1);S.hint=true;save();renderHUD();bump({d:-1});opts()}});
+    list.push({l:"Hear that again",cls:"meta",go:()=>play(SAY(id,c),opts)});
+    choices(list)};
+  play(lines,opts);save();
+}
+function handle(r,c){
+  if(r.kind==="duel")return duel(r.id,c);
+  if(r.kind==="lib")return library(c,r.ids);
+  if(r.kind==="end"){S.ended={id:r.id,tally:r.tally,tallies:r.tallies,lead:r.lead,extra:r.extra};save();sfx.bad();return render()}
+  showResult(r,c);
+}
+function showResult(r,c){
+  const good=!r.bad;(good?sfx.good:sfx.bad)();
+  const ts=r.tallies||(r.tally?[r.tally]:[]);
+  const who=r.sceneWho||c.who;
+  stageSet(c.scene,who,good?"happy":"worried",{boards:boardsHTML(ts)});
+  renderHUD();bump(r.fx);animBoards();save();
+  const fact=(r.stay&&!r.showFact)?"":c.fact;
+  const cont=()=>{if(r.stay||r.evDone){S.quick=r.stay?1:0;if(S.mode!=="easy"&&S.days<=0){S.ended={id:"out"};save();return render()}if(S.slices<=0&&!S.swapped){S.inter="swap";S._stay=1;return render()}return render()}next()};
+  play(parseLines(r.txt,r.by||who),()=>choices([{l:r.stay?"Keep going":"Continue the trip",cls:"go",go:cont}],{top:noteHTML(fact)}));
+}
+function showInter(key){
+  renderHUD();
+  if(key.startsWith("news:"))return showNews(key.slice(5));
+  if(key==="swap"){
+    const f=food();S.swapped=f.id==="broccoli"?"Make ketchup the official national snack.":"Make broccoli the official national snack.";save();
+    stageSet("office","saucer","worried",{banner:"Uh oh!",bannerCls:"small lose"});
+    play([{who:"saucer",t:"After all those changes, this doesn't sound like your bill anymore."},{who:"nar",t:`It now says: <b>${esc(S.swapped)}</b>`}],
+      ()=>choices([{l:"Keep going anyway",sub:"it's still a bill!",go:()=>{S.inter=null;save();if(S._stay){S._stay=0;return render()}next()}},
+        {l:"Ask Rep. Saucer to pull it",sub:"build a new bill",go:()=>{store.del("bbt-save");const m=S.mode;S=null;builder(m)}}],{top:noteHTML("Amendments can change a bill a lot on its trip through Congress.")}));
+    return}
+  const e=EVENTS.find(x=>x.id===key.slice(3));const t=e.title?e.title(S):e.t;
+  stageSet(e.scene,e.who,"wow",{banner:"Surprise!",bannerCls:"small"});sfx.good();
+  play([{who:"nar",t:esc(t)},{who:"nar",t:e.txt}],()=>choices(e.ch.map(c=>({l:c.l,go:()=>{let fx=Object.assign({},c.fx),txt=c.r;
+    if(c.fn){const o=c.fn();if(o){if(o.fr!=null)fx.fr=o.fr;if(o.r)txt=o.r}}
+    (c.g||[]).forEach(gain);apply(fx);S.inter=null;save();showResult({fx,txt,evDone:1,bad:(fx.fr||0)<0||(fx.d||0)<-2},{scene:e.scene,who:e.who,fact:e.fact})}}))));
+}
+function showEnd(E){
+  const e=ENDS[E.id];const good=!!e.good;
+  if(good){sfx.law();store.del("bbt-save")}
+  const ts=E.tallies||(E.tally?[E.tally]:[]);
+  stageSet(e.scene,null,e.mood,{win:good,banner:e.t,bannerCls:(good?"":"lose")+" end",boards:boardsHTML(ts)});
+  renderHUD();animBoards();if(good)confetti();
+  const used=S.mode==="easy"?null:S.daysStart-S.days;
+  const vis=S.queue.filter(q=>!(q==="senate"&&S.queue.includes("svote")));
+  const ci=vis.indexOf(S.queue[S.i]==="senate"&&S.queue.includes("svote")?"svote":S.queue[S.i]);
+  const route=vis.map((q,i)=>{const st=good||i<ci?"ok":i===ci?"x":"no";return`<li class="${st}">${st==="ok"?"✓":st==="x"?"✗":"·"} ${ROUTE[q]}</li>`}).join("");
+  const rep=`<div class="note rep"><span class="lbl">Trip report: ${esc(S.title)}</span><ul>${route}</ul>${used!=null?`Days used: <b>${used}</b> · `:""}Friends: <b>${S.friends}</b> · Slices left: <b>${S.slices}</b><br>${e.tip}</div>`;
+  const restartLabel=e.restart==="new"?"Start over in a new Congress":e.restart?`Try again from ${LONG[e.restart]}`:"";
+  const txt=(E.lead?E.lead+" ":"")+e.txt(S)+(E.extra?" "+E.extra:"")+(good&&S.slices<=0?" It's a law... just not the one you wrote!":"");
+  const list=[];
+  if(e.restart)list.push({l:restartLabel,sub:e.restart==="new"?"fresh calendar, keep your friends":"your meters stay the same",cls:"go",go:()=>restart(e.restart)});
+  list.push({l:"Build a new bill",go:()=>{store.del("bbt-save");const m=S.mode;S=null;builder(m)}});
+  list.push({l:"Change mode",go:()=>{store.del("bbt-save");S=null;title()}});
+  play(parseLines(txt,E.id==="veto"?"pres":"nar"),()=>choices(list,{top:`<div class="row2">${noteHTML(e.fact)}${rep}</div>`}));
+}
+function restart(where){
+  S.ended=null;
+  if(where==="new"){S.congress++;S.days=S.daysStart;const h=S.queue.indexOf("hopper");S.i=h>=0?h:0;
+    S.flags.markupDone=0;S.amend=[];S.reached=S.reached.slice(0,1);
+    if(MODES[S.mode].queue.includes("hearing")&&!S.queue.includes("hearing"))S.queue.splice(S.queue.indexOf("committee")+1,0,"hearing");
+    S.queue=S.queue.filter(q=>q!=="override");}
+  else if(where==="president"&&S.mode!=="easy"){S.i=S.queue.indexOf("president");S.days=Math.max(0,S.days-10);if(S.days<=0){S.ended={id:"out"};save();return render()}}
+  else if(where==="committee"){S.i=S.queue.indexOf("markup");S.flags.markupDone="vote";}
+  else S.i=Math.max(0,S.queue.indexOf(where));
+  S.flags.letters=0;S.flags.chef=0;
+  save();render();
+}
+
+/* ---------- title + builder conversation ---------- */
+function title(){
+  hush();S=null;renderHUD();
+  const sv=store.get("bbt-save",null);
+  stageSet("capitol",null,"happy",{banner:`<span class="logo">Bill's Big Trip</span>`,bannerCls:"title"});
+  const list=[];
+  if(sv&&sv.v===2&&!sv.ended)list.push({l:`Keep going: ${sv.title}`,sub:`${MODES[sv.mode].name}, at ${LONG[sv.queue[sv.i]]||"the start"}`,cls:"go",go:()=>{S=sv;readOn=store.get("bbt-read",sv.mode==="easy");syncRead();render()}});
+  const desc={easy:"4 stops, tips on, no calendar",normal:"the whole trip, 65 days",hard:"filibusters and veto fights, 55 days, no tips"};
+  Object.entries(MODES).forEach(([k,m])=>list.push({l:`${m.name}: ${m.nick}`,sub:desc[k],go:()=>{readOn=store.get("bbt-read",k==="easy");syncRead();builder(k)}}));
+  list.push({l:"How to play",cls:"meta",go:howTo},{l:"For Grown-Ups",cls:"meta",go:grownups});
+  play([{who:"bill",t:"Hi! I'm an idea. I want to become a law!"},{who:"bill",t:"Will you help me get through Congress?"}],()=>choices(list),{now:true});
+}
+function howTo(){dialog("How to play",`<p>Help your bill travel through Congress and become a law.</p><p>Tap the picture or <b>Next</b> to hear what people say. Then pick what to do from the list below it.</p><ul><li><b>Friends</b>: lawmakers who say YES to your bill. Each one brings a group of votes.</li><li><b>Reasons</b>: good, true answers you collect. Lawmakers ask questions, and you answer with a reason. Each question needs a different reason. Find more at hearings, in the news, or at the Library of Congress.</li><li><b>Whip count</b>: your clipboard before a vote shows who is YES, NO or MAYBE. Maybes might vote either way.</li><li><b>Days left</b>: Congress goes home when the calendar runs out.</li><li><b>Still my bill</b>: how much your bill is still what you wanted. Changes (amendments) make friends but cost slices.</li></ul><p>If your bill gets stuck, you'll learn why, and you can try again from that stop.</p>`)}
+function grownups(){
+  const typing=store.get("ef-bill-typing",true);
+  dialog("For Grown-Ups",`<p>Bill's Big Trip follows a bill through the U.S. Congress: sponsor, committee, hearing, amendments, House and Senate votes, matching versions, and the President (plus filibuster, conference committee, veto override and pocket veto on Hard).</p>
+  <p>All lawmakers are made-up characters. No real parties or people. The civics facts in "This really happens" are checked against sources such as the Congressional Research Service, the House and Senate, and the Constitution.</p>
+  <p><b>About the calendar:</b> a real Congress lasts two years. Game "days" stand for the limited time Congress has to work on any one bill.</p>
+  <p><b>Bill names:</b> kids can type a short name for their bill. It's limited to 30 letters, passes a word filter, and never leaves this device.</p>
+  <label class="tg"><input type="checkbox" id="tgType" ${typing?"checked":""}> Let kids type bill names</label>
+  <p>No login, no timers, no ads.</p>`);
+  $("#tgType").onchange=e=>store.set("ef-bill-typing",e.target.checked);
+}
+let B=null,BSTEP="start",BMODE="normal";
+const KINDSAY={official:"Make it the official national food",holiday:"Give it a national day",school:"Serve it at every school lunch",rest:"Make every restaurant serve it"};
+const WHERESAY={country:"For the whole country",schools:"Only at schools",fridays:"Only on Fridays"};
+const TWISTSAY={none:"No twist, keep it simple",samples:"Free samples for everyone!",pine:"And ban pineapple forever!",parade:"With a parade!"};
+const dots=w=>w>0?"●".repeat(w)+" bigger":w<0?"smaller":"";
+function sizeBar(n){return`<span class="sizebar">${[0,1,2,3,4,5].map(i=>`<i class="${i<Math.max(1,n)?"on":""}"></i>`).join("")}</span>`}
+function bstrip(){if(BSTEP==="start"||BSTEP==="food")return"";const sz=sizeOf(B);return`<small>Your bill says</small>${esc(billSentence(B))} <small>Size: ${sizeWord(sz)} ${sizeBar(sz)}</small>`}
+function builder(mode){
+  hush();S=null;renderHUD();BMODE=mode||BMODE;B={food:"pizza",kind:"official",where:"country",twist:"none"};BSTEP="start";bstep();
+}
+function bgo(step){BSTEP=step;bstep()}
+function bstep(){
+  const strip=bstrip();stageSet("office","staffer","happy",{strip});
+  const back=prev=>({l:"Go back",cls:"meta",go:()=>bgo(prev)});
+  const L=(t,who="staffer")=>({who,t});
+  if(BSTEP==="start"){
+    play([L("Hi! I'm Skip. I work for Rep. Penny Saucer."),L("She's in a meeting. While you wait, let's write down your idea."),L("Every law starts as an idea. What's yours?")],()=>choices([
+      ...QUICK.map(q=>({l:`${q.t}`,sub:"ready-made",icon:FOODICON[q.b.food],go:()=>{B=Object.assign({},q.b);B._title=q.title;bgo("review")}})),
+      {l:"I want to build my own!",cls:"go",go:()=>bgo("food")},{l:"Back to the title screen",cls:"meta",go:title}]))}
+  else if(BSTEP==="food"){
+    play([L("Ooh, your own bill! What food is it about?")],()=>choices([...FOODS.map(f=>({l:f.n,icon:FOODICON[f.id],go:()=>{B.food=f.id;bgo("kind")}})),back("start")],{grid:true}))}
+  else if(BSTEP==="kind"){
+    const f=FOODS.find(x=>x.id===B.food);
+    play([L(`${f.n[0].toUpperCase()+f.n.slice(1)}! Great choice.`),L("What should the law do? Bigger laws are harder to pass.")],()=>choices([...KINDS.map(k=>({l:KINDSAY[k.id],sub:dots(k.w),go:()=>{B.kind=k.id;bgo("where")}})),back("food")]))}
+  else if(BSTEP==="where"){
+    play([L("Where should the law count?")],()=>choices([...WHERES.map(k=>({l:WHERESAY[k.id],sub:dots(k.w),go:()=>{B.where=k.id;bgo("twist")}})),back("kind")]))}
+  else if(BSTEP==="twist"){
+    play([L("Want to add a twist? Twists are fun, but they make a bill bigger.")],()=>choices([...TWISTS.map(k=>({l:TWISTSAY[k.id],sub:dots(k.w),go:()=>{B.twist=k.id;bgo("review")}})),back("where")]))}
+  else if(BSTEP==="review"){
+    const sz=sizeOf(B);const c={0:"A small bill. Lawmakers will like that!",1:"A small bill. Lawmakers will like that!",2:"A medium bill. We'll need some friends.",3:"A medium bill. We'll need some friends.",4:"A big bill! We'll have to make deals.",5:"A big bill! We'll have to make deals."}[sz]||"A HUGE bill! This will be really hard. Are you sure?";
+    play([L("That's me! I'm a bill now!","bill"),L(c),...(BSTEP==="review"?[L("Rep. Saucer will be out soon. You'll have to convince her!")]:[])],()=>choices([{l:"Yes! Let's name it",cls:"go",go:()=>bgo("name")},{l:"Change something",go:()=>bgo("food")},{l:"Start over",cls:"meta",go:()=>bgo("start")}]))}
+  else if(BSTEP==="name"){
+    const typing=store.get("ef-bill-typing",true);let name=B._title||genName();
+    play([L("Real laws have catchy names. What should we call yours?")],()=>{
+      choices([{l:"Make one up for me",go:()=>{name=genName();const i=$("#nm");if(i)i.value=name;else $("#nmshow").textContent=name}},
+        {l:"Start the trip!",sub:`${MODES[BMODE].name} mode`,cls:"go",go:()=>{const i=$("#nm");let n=i?i.value.replace(/\s+/g," ").trim():name;
+          if(i&&!okName(n)){n=genName();i.value=n;$("#err").textContent="Let's use this name instead!";sfx.bad();return}
+          sfx.good();const b=Object.assign({},B);delete b._title;newGame(BMODE,b,n.slice(0,30));render()}},
+        back("review")],{top:typing?`<div class="namebox"><input id="nm" maxlength="30" autocomplete="off" spellcheck="false" value="${esc(name)}" aria-label="Bill name"></div><div class="hintline">Use food words, not people's names. 30 letters max.</div><div class="err" id="err"></div>`:`<div class="note" id="nmshow">${esc(name)}</div>`});
+      const i=$("#nm");if(i){i.onclick=e=>e.stopPropagation();i.onkeydown=e=>{e.stopPropagation();if(e.key==="Enter")document.querySelector('.dl.go').click()}}});
+  }
+}
+const BAD=["fuck","shit","bitch","cunt","nigg","fag","whore","slut","rape","nazi","porn","penis","vagina","boob","dick","cock","pussy","bastard","asshole","retard"];
+const BADW=["ass","hell","damn","crap","poop","butt","fart","pee","sex","kill","die","dead","hate","stupid","dumb","idiot","ugly","fat","loser","sucks","suck","shut","gun","drug","drugs","beer","wine","vape"];
+function okName(s){const t=s.toLowerCase().trim();if(!/[a-z]/.test(t))return false;const flat=t.replace(/[^a-z]/g,"");if(BAD.some(w=>flat.includes(w)))return false;const words=t.split(/[^a-z]+/);if(words.some(w=>BADW.includes(w)))return false;return true}
+function genName(){const f=FOODS.find(x=>x.id===B.food);return`The ${pick(ADJ)} ${f.day} Act`}
+
+/* ---------- dialog note, toggles, layout ---------- */
+function dialog(t,html){const o=$("#ov");o.innerHTML=`<div class="dlgx" role="dialog" aria-modal="true" aria-label="${esc(t)}"><h2>${esc(t)}</h2><div class="dlgb">${html}</div><div class="dlgf"><button class="btn ok">OK</button></div></div>`;
+  o.classList.add("show");const close=()=>{o.classList.remove("show");o.innerHTML=""};o.querySelector(".ok").onclick=close;o.onclick=e=>{if(e.target===o)close()};o.querySelector(".ok").focus()}
+function syncRead(){const b=$("#readTog");if(b){b.classList.toggle("off",!readOn);b.setAttribute("aria-pressed",readOn)}}
+function syncSound(){const b=$("#sndTog");if(b){b.classList.toggle("off",!soundOn);b.setAttribute("aria-pressed",soundOn)}}
+$("#sndTog").onclick=e=>{e.stopPropagation();soundOn=!soundOn;store.set("bbt-sound",soundOn);syncSound();sfx.tap()};
+$("#readTog").onclick=e=>{e.stopPropagation();readOn=!readOn;store.set("bbt-read",readOn);syncRead();if(!readOn)hush();else if(LINES.length)showLine()};
+$("#homeB").onclick=e=>{e.stopPropagation();sfx.tap();title()};
+$("#stage").onclick=()=>advance();
+document.addEventListener("keydown",e=>{if($("#ov").classList.contains("show")){if(e.key==="Escape"||e.key==="Enter"){const b=$("#ov .ok");b&&b.click()}return}
+  if(e.target&&e.target.tagName==="INPUT")return;
+  if((e.key===" "||e.key==="Enter")&&LINES.length&&(LI<LINES.length-1||AFTER)){e.preventDefault();advance();return}
+  if(/^[1-9]$/.test(e.key)){const bs=document.querySelectorAll("#dlg .dl[data-i]");const b=bs[+e.key-1];if(b){e.preventDefault();b.click()}}});
+function layout(){
+  const bar=document.querySelector(".eb");const top=(bar?bar.offsetHeight:34)+6;
+  const vw=document.documentElement.clientWidth,vh=window.innerHeight-top;
+  const g=$("#game"),r=document.documentElement.style;
+  g.classList.remove("side");
+  if(vw/vh<1){r.setProperty("--W",vw+"px");r.setProperty("--u",(vw/320)+"px");r.setProperty("--P","auto");r.setProperty("--Pmin",Math.max(220,vh-vw*9/16)+"px")}
+  else if(vh<520){const H=vh-6;const SW=Math.min(vw*0.6,H*16/9);const PW=Math.min(vw-SW-8,560);g.classList.add("side");
+    r.setProperty("--W",(SW+PW+4)+"px");r.setProperty("--SW",SW+"px");r.setProperty("--PW",PW+"px");r.setProperty("--H",H+"px");r.setProperty("--u",Math.max(1.6,SW/320)+"px");r.setProperty("--P","auto");r.setProperty("--Pmin","0px")}
+  else{const W=Math.min(vw-16,1280,vh/(0.5625+0.34));const P=Math.max(170,vh-W*0.5625-8);
+    r.setProperty("--W",W+"px");r.setProperty("--u",(W/320)+"px");r.setProperty("--P",P+"px");r.setProperty("--Pmin","0px")}
+}
+window.addEventListener("resize",layout);layout();
+function confetti(){if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;const c=document.createElement("div");c.className="conf";
+  for(let i=0;i<60;i++){const p=document.createElement("i");p.style.left=Math.random()*100+"%";p.style.background=pick(["#c8102e","#24548a","#f4c542","#2fbf71","#fff"]);p.style.animationDelay=Math.random()*.8+"s";c.appendChild(p)}
+  document.body.appendChild(c);setTimeout(()=>c.remove(),3500)}
+
+/* ---------- art ---------- */
+const ICON={
+ friend:`<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" fill="#ffe14d" stroke="#000"/><circle cx="7" cy="8" r="1.2"/><circle cx="13" cy="8" r="1.2"/><path d="M6 12q4 4 8 0" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+ cal:`<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="4" width="15" height="13.5" rx="1.5" fill="#fff" stroke="#000"/><rect x="2.5" y="4" width="15" height="4" fill="#c8102e" stroke="#000"/><path d="M6 2.5v3M14 2.5v3" stroke="#000" stroke-width="1.5"/><path d="M6 11h2M9 11h2M12 11h2M6 14h2M9 14h2" stroke="#000"/></svg>`,
+ slice:`<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4q7-3 14 0L10 18z" fill="#f4c542" stroke="#000"/><path d="M3 4q7-3 14 0" fill="none" stroke="#b5651d" stroke-width="2"/><circle cx="9" cy="8" r="1.4" fill="#c8102e"/><circle cx="11.5" cy="11.5" r="1.2" fill="#c8102e"/></svg>`,
+ speak:`<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-3.5v11L6 12H3z" fill="#fff" stroke="#000" stroke-linejoin="round"/><path d="M13 7q2 3 0 6M15 5q4 5 0 10" fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+ bulb:`<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5a5.5 5.5 0 0 0-3 10.1V15h6v-2.4a5.5 5.5 0 0 0-3-10.1z" fill="#ffe14d" stroke="#000"/><path d="M7.5 17h5" stroke="#000" stroke-width="1.5"/></svg>`
+};
+const FOODICON={
+ pizza:`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5 8q15-7 30 0L20 36z" fill="#f4c542" stroke="#000" stroke-width="1.5"/><path d="M5 8q15-7 30 0" fill="none" stroke="#c98a3a" stroke-width="4"/><circle cx="17" cy="15" r="3" fill="#c8102e"/><circle cx="24" cy="18" r="2.6" fill="#c8102e"/><circle cx="20" cy="25" r="2.2" fill="#c8102e"/></svg>`,
+ pancakes:`<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="31" rx="15" ry="4" fill="#fff" stroke="#000" stroke-width="1.2"/><g fill="#e9b264" stroke="#000" stroke-width="1.2"><rect x="7" y="22" width="26" height="6" rx="3"/><rect x="8" y="16" width="24" height="6" rx="3"/><rect x="9" y="10" width="22" height="6" rx="3"/></g><path d="M13 10q7 2 14 0v6q-2 2-3 0-2 4-4 0-3 3-7 0z" fill="#9b4f19"/><rect x="17" y="6" width="6" height="4" fill="#fff3a0" stroke="#000"/></svg>`,
+ tacos:`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 30a16 16 0 0 1 32 0z" fill="#f3c65c" stroke="#000" stroke-width="1.5"/><path d="M8 26q4-8 12-9t12 9" fill="none" stroke="#3faa4a" stroke-width="4" stroke-linecap="round"/><circle cx="15" cy="22" r="2" fill="#d33"/><circle cx="24" cy="21" r="2" fill="#d33"/><path d="M8 30a12 12 0 0 1 24 0" fill="none" stroke="#d9a73a" stroke-width="1.2"/></svg>`,
+ apples:`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 12c-5-4-15-2-14 9 1 10 7 15 10 14 2 0 3-1 4-1s2 1 4 1c3 1 9-4 10-14 1-11-9-13-14-9z" fill="#d7262e" stroke="#000" stroke-width="1.5"/><path d="M20 12q0-5 3-7" fill="none" stroke="#6b3d1e" stroke-width="2"/><path d="M22 8q6-4 9 1-5 3-9-1z" fill="#3faa4a" stroke="#000"/><path d="M12 17q-2 3-1 6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+ curds:`<svg viewBox="0 0 40 40" aria-hidden="true"><g fill="#f6dc6b" stroke="#000" stroke-width="1.3"><path d="M6 26q0-6 6-6t6 5-5 6-7-5z"/><path d="M17 22q1-7 8-6t5 7-7 6-6-7z"/><path d="M14 32q2-5 8-4t4 5-6 4-6-5z"/><path d="M25 30q2-5 7-4t3 5-5 3-5-4z"/></g><path d="M9 11l2-3M20 9l1-4M31 11l-1-3" stroke="#000" stroke-width="1.4" stroke-linecap="round"/></svg>`,
+ mac:`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 18h32q-1 15-16 16Q5 33 4 18z" fill="#4f8fd6" stroke="#000" stroke-width="1.5"/><ellipse cx="20" cy="18" rx="16" ry="5" fill="#f7b928" stroke="#000" stroke-width="1.5"/><g fill="none" stroke="#c98112" stroke-width="2" stroke-linecap="round"><path d="M10 17q2-2 4 0M16 19q2-2 4 0M23 16q2-2 4 0M27 19q2-2 4 0M13 20q1-1 2 0"/></g></svg>`,
+ pickles:`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 33c-5-3-3-9 3-17s11-12 15-9-1 11-6 17-8 12-12 9z" fill="#6fae3f" stroke="#000" stroke-width="1.5"/><g fill="#3e7a24"><circle cx="17" cy="20" r="1.3"/><circle cx="22" cy="15" r="1.3"/><circle cx="25" cy="21" r="1.3"/><circle cx="16" cy="27" r="1.3"/><circle cx="27" cy="11" r="1.1"/></g></svg>`,
+ broccoli:`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M17 22h6l2 13h-10z" fill="#9bd16b" stroke="#000" stroke-width="1.4"/><g fill="#3d9a3a" stroke="#000" stroke-width="1.3"><circle cx="13" cy="17" r="7"/><circle cx="27" cy="17" r="7"/><circle cx="20" cy="11" r="8"/><circle cx="20" cy="20" r="6"/></g></svg>`
+};
+function BILLART(fid){if(ART.has("bill-front"))return`<div class="billart pxb"><img src="art/bill-front.png" alt=""><span>${FOODICON[fid]}</span></div>`;return`<svg class="billart" viewBox="0 0 70 90" aria-hidden="true">${billFig(35,48,1,"happy")}<g transform="translate(46 4) scale(.55)">${FOODICON[fid].replace(/<\/?svg[^>]*>/g,"")}</g></svg>`}
+
+/* bill character */
+function billFig(x,y,s,mood){
+  const eyes=mood==="sleepy"?`<path d="M-9 -6h6M3 -6h6" stroke="#000" stroke-width="2" stroke-linecap="round"/>`:mood==="wow"?`<circle cx="-6" cy="-6" r="3" fill="#fff" stroke="#000"/><circle cx="6" cy="-6" r="3" fill="#fff" stroke="#000"/><circle cx="-6" cy="-6" r="1.5"/><circle cx="6" cy="-6" r="1.5"/>`:`<circle cx="-6" cy="-6" r="2.2"/><circle cx="6" cy="-6" r="2.2"/><circle cx="-5.3" cy="-6.8" r=".7" fill="#fff"/><circle cx="6.7" cy="-6.8" r=".7" fill="#fff"/>`;
+  const mouth=mood==="sad"?`<path d="M-6 6q6-5 12 0" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/>`:mood==="worried"?`<path d="M-5 5q2.5-2 5 0t5 0" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/>`:mood==="sleepy"?`<circle cx="0" cy="5" r="2" fill="none" stroke="#000" stroke-width="1.5"/><text x="12" y="-16" font-size="9" font-weight="700">z</text><text x="17" y="-23" font-size="11" font-weight="700">Z</text>`:mood==="wow"?`<path d="M-6 3q6 9 12 0z" fill="#c8102e" stroke="#000" stroke-width="1.5"/>`:`<path d="M-6 3q6 7 12 0" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/>`;
+  const brow=mood==="worried"||mood==="sad"?`<path d="M-9 -12l5 2M9 -12l-5 2" stroke="#000" stroke-width="1.6" stroke-linecap="round"/>`:"";
+  return`<g transform="translate(${x} ${y}) scale(${s})">
+   <path d="M-8 30l-3 9h-7M8 30l3 9h7" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round"/>
+   <ellipse cx="-17" cy="40" rx="6" ry="3" fill="#1b1b40"/><ellipse cx="17" cy="40" rx="6" ry="3" fill="#1b1b40"/>
+   <path d="M-17 4l-9 10M17 4l9 -6" stroke="#000" stroke-width="2.5" stroke-linecap="round"/>
+   <rect x="-17" y="-22" width="34" height="52" fill="#fff8e0" stroke="#000" stroke-width="1.6"/>
+   <rect x="-21" y="-27" width="42" height="8" rx="4" fill="#e6d49c" stroke="#000" stroke-width="1.6"/>
+   <rect x="-21" y="26" width="42" height="8" rx="4" fill="#e6d49c" stroke="#000" stroke-width="1.6"/>
+   <path d="M-11 13h22M-11 18h22M-11 23h14" stroke="#999" stroke-width="1.2"/>
+   <g transform="translate(0 -31) rotate(-8)"><rect x="-4" y="-16" width="8" height="14" fill="#f5c542" stroke="#000" stroke-width="1.4"/><path d="M-4 -16l4 -7 4 7z" fill="#f2d3a8" stroke="#000" stroke-width="1.2"/><path d="M-1.3 -20.6l1.3-2.4 1.3 2.4z" fill="#333"/><rect x="-4.6" y="-4" width="9.2" height="4" fill="#f08c9a" stroke="#000" stroke-width="1.2"/></g>
+   ${brow}${eyes}${mouth}<circle cx="-11" cy="1" r="2.5" fill="#f4a3a3" opacity=".7"/><circle cx="11" cy="1" r="2.5" fill="#f4a3a3" opacity=".7"/>
+  </g>`}
+
+/* people */
+const LOOK={
+ saucer:{skin:"#8d5524",hair:"bun",hc:"#2b1a10",suit:"#c8102e",acc:"glasses"},
+ crust:{skin:"#f1c27d",hair:"bald",hc:"#9a9a9a",suit:"#3b3f6b",acc:"stache"},
+ green:{skin:"#c68642",hair:"curly",hc:"#3a2414",suit:"#2f7d3a",acc:"leaf"},
+ sgreen:{skin:"#c68642",hair:"curly",hc:"#3a2414",suit:"#24548a",acc:"leaf"},
+ dente:{skin:"#e0ac69",hair:"curly",hc:"#111",suit:"#5b5b5b",acc:"noodle"},
+ gouda:{skin:"#a1665e",hair:"short",hc:"#222",suit:"#7a4fa0",acc:"cheese"},
+ middle:{skin:"#ffdbac",hair:"long",hc:"#c47a2c",suit:"#6d8b9c",acc:"pearls"},
+ ketchum:{skin:"#d1a17a",hair:"short",hc:"#5a3a1a",suit:"#b8001f",acc:"bottle"},
+ topp:{skin:"#f3d1b5",hair:"long",hc:"#e2c044",suit:"#e07b39",acc:""},
+ longwind:{skin:"#f1c27d",hair:"short",hc:"#ddd",suit:"#2d2d2d",acc:"book"},
+ vp:{skin:"#b07a4f",hair:"short",hc:"#777",suit:"#1f2f55",acc:"gavel"},
+ chef:{skin:"#e8b98f",hair:"chef",hc:"#fff",suit:"#fff",acc:""},
+ kid:{skin:"#d9a066",hair:"cap",hc:"#24548a",suit:"#f4c542",acc:"",small:1},
+ clerk:{skin:"#c99a6e",hair:"short",hc:"#333",suit:"#777",acc:"glasses"},
+ reporter:{skin:"#9c6b45",hair:"short",hc:"#111",suit:"#4a6fa5",acc:"mic"},
+ blogger:{skin:"#f0c8a0",hair:"long",hc:"#7a3e9d",suit:"#3fbfbf",acc:"phone"},
+ pres:{back:1},
+ nickel:{skin:"#f3d1b5",hair:"short",hc:"#cfcfcf",suit:"#8b5a2b",acc:"glasses"},
+ harvest:{skin:"#e8c39e",hair:"short",hc:"#222",suit:"#4a6fa5",acc:""},
+ lark:{skin:"#c68e5a",hair:"short",hc:"#222",suit:"#2a9d8f",acc:""},
+ staffer:{skin:"#f3d1b5",hair:"short",hc:"#a0522d",suit:"#5a7d3a",acc:""},
+ farmer:{skin:"#b07a4f",hair:"long",hc:"#3b2a1a",suit:"#4a6fa5",acc:""},
+ lunch:{skin:"#7a4e2d",hair:"short",hc:"#bbb",suit:"#fff",acc:""}
+};
+function person(key,x,y,s=1){
+  const L=LOOK[key];if(!L)return"";
+  if(L.back)return`<g transform="translate(${x} ${y}) scale(${s})"><path d="M-30 60q0-38 30-40t30 40z" fill="#1d2433" stroke="#000" stroke-width="1.6"/><ellipse cx="0" cy="0" rx="17" ry="19" fill="#6b5a4a" stroke="#000" stroke-width="1.6"/><path d="M-17 -2q0-20 17-21t17 21q-4-10-17-10t-17 10z" fill="#3a3a3a"/></g>`;
+  const k=L.small?.8:1;let h="";const hc=L.hc;
+  if(L.hair==="bun")h=`<circle cx="0" cy="-26" r="9" fill="${hc}" stroke="#000" stroke-width="1.4"/><path d="M-17 -2q-2-20 17-21t17 21q-3-9-17-11t-17 11z" fill="${hc}" stroke="#000" stroke-width="1.4"/>`;
+  else if(L.hair==="bald")h=`<path d="M-17 2q-3-10 1-13M17 2q3-10-1-13" fill="none" stroke="${hc}" stroke-width="5" stroke-linecap="round"/>`;
+  else if(L.hair==="curly")h=`<g fill="${hc}" stroke="#000" stroke-width="1.2"><circle cx="-13" cy="-12" r="7"/><circle cx="-4" cy="-18" r="8"/><circle cx="7" cy="-17" r="8"/><circle cx="14" cy="-9" r="6"/></g>`;
+  else if(L.hair==="long")h=`<path d="M-19 14q-4-36 19-36t19 36l-6 0q2-20-13-24-13 4-13 24z" fill="${hc}" stroke="#000" stroke-width="1.4"/>`;
+  else if(L.hair==="chef")h=`<path d="M-14 -12h28v-6q8-2 6-10t-10-4q-4-8-10-4-6-4-10 4-8-2-10 4t6 10z" fill="#fff" stroke="#000" stroke-width="1.4"/>`;
+  else if(L.hair==="cap")h=`<path d="M-17 -6q0-17 17-17t17 17z" fill="${hc}" stroke="#000" stroke-width="1.4"/><path d="M10 -7h16q0 4-4 4h-12z" fill="${hc}" stroke="#000" stroke-width="1.4"/>`;
+  else h=`<path d="M-17 -3q-1-19 17-19t17 19q-4-8-17-9t-17 9z" fill="${hc}" stroke="#000" stroke-width="1.4"/>`;
+  let a="";
+  if(L.acc==="glasses")a=`<g fill="none" stroke="#000" stroke-width="1.4"><circle cx="-6.5" cy="0" r="5"/><circle cx="6.5" cy="0" r="5"/><path d="M-1.5 0h3"/></g>`;
+  if(L.acc==="stache")a=`<path d="M-11 9q5-5 11-1 6-4 11 1-5 4-11 0-6 4-11 0z" fill="#888" stroke="#000"/>`;
+  let body=`<path d="M-26 52q0-30 26-30t26 30z" fill="${L.suit}" stroke="#000" stroke-width="1.6"/><path d="M-6 22l6 10 6-10" fill="#fff" stroke="#000" stroke-width="1.2"/>`;
+  if(L.acc==="leaf")body+=`<path d="M-14 26q8 8 14 2 6 6 14-2-6 10-14 6-8 4-14-6z" fill="#7bc142" stroke="#000"/>`;
+  if(L.acc==="noodle")body+=`<path d="M0 30q-4 4 0 7t0 7 0 7" fill="none" stroke="#f3c65c" stroke-width="3"/>`;
+  if(key==="crust")body+=`<path d="M-7 25l7 4 7-4v8l-7-4-7 4z" fill="#8e44ad" stroke="#000"/>`;
+  if(L.acc==="pearls")body+=`<path d="M-10 25q10 8 20 0" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="1 2" stroke-linecap="round"/>`;
+  let hand="";
+  if(L.acc==="gavel")hand=`<g transform="translate(24 30) rotate(-30)"><rect x="-2" y="-2" width="4" height="22" fill="#8b5a2b" stroke="#000"/><rect x="-8" y="-8" width="16" height="8" rx="2" fill="#8b5a2b" stroke="#000"/></g>`;
+  if(L.acc==="mic")hand=`<g transform="translate(22 30)"><rect x="-2" y="0" width="4" height="14" fill="#333"/><circle r="5" fill="#555" stroke="#000"/></g>`;
+  if(L.acc==="book")hand=`<g transform="translate(20 36)"><rect x="-12" y="-8" width="24" height="16" fill="#c0392b" stroke="#000"/><path d="M0 -8v16" stroke="#000"/></g>`;
+  if(L.acc==="phone")hand=`<rect x="16" y="22" width="10" height="17" rx="2" fill="#222" stroke="#000"/>`;
+  if(L.acc==="bottle")hand=`<g transform="translate(22 28)"><path d="M-5 0h10l1 18h-12z" fill="#c8102e" stroke="#000"/><rect x="-3" y="-6" width="6" height="6" fill="#fff" stroke="#000"/></g>`;
+  if(L.acc==="cheese")h+=`<path d="M-16 -16l32 -6v8z" fill="#f6dc6b" stroke="#000" stroke-width="1.2"/><circle cx="4" cy="-17" r="1.5" fill="#d9b23a"/>`;
+  return`<g transform="translate(${x} ${y}) scale(${s*k})">${body}<ellipse cx="0" cy="0" rx="17" ry="19" fill="${L.skin}" stroke="#000" stroke-width="1.6"/>${h}
+   <circle cx="-6" cy="0" r="1.8"/><circle cx="6" cy="0" r="1.8"/><path d="M-6 9q6 5 12 0" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round"/>${a}${hand}</g>`;
+}
+
+/* scenes: 360 x 190 */
+function BG(n){
+ switch(n){
+ case"capitol":return`<rect width="360" height="190" fill="#9cc9f0"/><circle cx="300" cy="38" r="18" fill="#ffe14d"/><g fill="#fff" stroke="#000" stroke-width="1.4"><rect x="70" y="120" width="220" height="40"/><rect x="120" y="96" width="120" height="24"/><path d="M135 96q45-70 90 0z"/><rect x="172" y="50" width="16" height="14"/></g><path d="M176 50l4-10 4 10z" fill="#fff" stroke="#000"/><g stroke="#000">${[...Array(9)].map((_,i)=>`<path d="M${84+i*24} 124v32"/>`).join("")}${[...Array(6)].map((_,i)=>`<path d="M${128+i*21} 100v16"/>`).join("")}</g><rect y="160" width="360" height="30" fill="#6fae3f"/><path d="M150 190l10-30h40l10 30z" fill="#e9dcc0"/>`;
+ case"office":return`<rect width="360" height="190" fill="#f3e6c8"/><rect x="230" y="20" width="100" height="80" fill="#9cc9f0" stroke="#000" stroke-width="2"/><path d="M280 20v80M230 60h100" stroke="#000"/><path d="M250 100l14-26 14 26z" fill="#fff" stroke="#000"/><rect x="24" y="22" width="60" height="38" fill="#fff" stroke="#000"/><path d="M24 22h60v6H24zM24 34h60v6H24zM24 46h60v6H24z" fill="#c8102e"/><rect x="24" y="22" width="24" height="18" fill="#24548a"/><rect y="150" width="360" height="40" fill="#7b4a2a"/><rect x="40" y="140" width="280" height="14" fill="#a0673e" stroke="#000"/>`;
+ case"hopper":return`<rect width="360" height="190" fill="#e8dcc4"/><rect x="0" y="0" width="360" height="26" fill="#24548a"/><rect y="150" width="360" height="40" fill="#24548a"/><rect x="40" y="128" width="280" height="24" fill="#8b5a2b" stroke="#000" stroke-width="1.5"/><g transform="translate(250 98)"><path d="M-30 0h60l-8 30h-44z" fill="#a0673e" stroke="#000" stroke-width="1.6"/><path d="M-24 8h48" stroke="#5a3a1a"/><text x="0" y="22" font-size="9" text-anchor="middle" font-weight="700" fill="#fff8e0">HOPPER</text></g>`;
+ case"committee":return`<rect width="360" height="190" fill="#e6d9c2"/><rect y="0" width="360" height="30" fill="#5a3a1a"/><path d="M0 120q180-60 360 0v30H0z" fill="#8b5a2b" stroke="#000" stroke-width="1.6"/><g fill="#fff8e0" stroke="#000">${[60,130,230,300].map(x=>`<rect x="${x-18}" y="${x<180?106-(180-x)*.05:106-(x-180)*.05}" width="36" height="9"/>`).join("")}</g><rect y="150" width="360" height="40" fill="#24548a"/><rect x="150" y="150" width="60" height="22" fill="#a0673e" stroke="#000"/>`;
+ case"floor":return`<rect width="360" height="190" fill="#efe3c9"/><rect x="90" y="10" width="180" height="56" rx="4" fill="#1b2a1b" stroke="#000" stroke-width="2"/><text x="180" y="30" font-size="10" fill="#7dff7d" text-anchor="middle" font-family="monospace">YEA ▮▮▮▮▮▮▮  NAY ▮▮▮</text><text x="180" y="50" font-size="10" fill="#ffd34d" text-anchor="middle" font-family="monospace">H.R. ${S?S.num:"0000"}</text>${[0,1,2].map(r=>`<path d="M${0} ${120+r*22}q180 ${-30+r*4} 360 0" fill="none" stroke="#7b4a2a" stroke-width="12"/>`).join("")}<rect y="168" width="360" height="22" fill="#24548a"/>`;
+ case"senate":return`<rect width="360" height="190" fill="#e9e1d1"/><path d="M0 0h360v40H0z" fill="#8a9bb0"/>${[...Array(12)].map((_,i)=>`<circle cx="${15+i*30}" cy="20" r="9" fill="#c9d3df" stroke="#000"/>`).join("")}<rect y="140" width="360" height="50" fill="#1f3a66"/>${[0,1].map(r=>`<path d="M0 ${134+r*18}q180 -28 360 0" fill="none" stroke="#8b5a2b" stroke-width="10"/>`).join("")}`;
+ case"desk":return`<rect width="360" height="190" fill="#f4ecd8"/><path d="M120 20q60-30 120 0v90H120z" fill="#bcd7ef" stroke="#000" stroke-width="1.6"/><path d="M180 6v104M120 60h120" stroke="#000"/><path d="M40 30v90" stroke="#555" stroke-width="2"/><path d="M40 32h30v18H40z" fill="#c8102e"/><path d="M40 32h12v9H40z" fill="#24548a"/><path d="M300 30v90" stroke="#555" stroke-width="2"/><path d="M300 32h26v18h-26z" fill="#24548a"/><rect y="160" width="360" height="30" fill="#1f3a66"/><rect x="70" y="128" width="220" height="40" fill="#7b4a2a" stroke="#000" stroke-width="1.6"/><rect x="160" y="122" width="40" height="8" fill="#fff8e0" stroke="#000"/>`;
+ case"drawer":return`<rect width="360" height="190" fill="#d9d2c3"/><rect x="60" y="20" width="240" height="170" fill="#8a8f96" stroke="#000" stroke-width="2"/>${[0,1,2].map(r=>`<rect x="74" y="${32+r*50}" width="212" height="40" fill="#a3a8ae" stroke="#000"/><rect x="164" y="${46+r*50}" width="32" height="8" rx="3" fill="#555"/>`).join("")}`;
+ case"street":return`<rect width="360" height="190" fill="#9cc9f0"/><g stroke="#000" stroke-width="1.3"><rect x="10" y="50" width="70" height="110" fill="#e9b264"/><rect x="90" y="30" width="80" height="130" fill="#d7d0c4"/><rect x="190" y="60" width="60" height="100" fill="#c97b63"/><rect x="260" y="40" width="90" height="120" fill="#e3d6a8"/></g>${[...Array(12)].map((_,i)=>`<rect x="${20+(i%6)*55}" y="${70+Math.floor(i/6)*40}" width="14" height="16" fill="#fff8b0" stroke="#000"/>`).join("")}<rect y="160" width="360" height="30" fill="#777"/><path d="M0 175h360" stroke="#fff" stroke-dasharray="14 10" stroke-width="3"/>`;
+ case"stage":return`<rect width="360" height="190" fill="#24548a"/>${[...Array(18)].map((_,i)=>`<path d="M${i*20} 0l10 ${18+(i%3)*6}l10 -${18+(i%3)*6}" fill="${i%2?"#c8102e":"#fff"}"/>`).join("")}<rect y="150" width="360" height="40" fill="#7b4a2a"/><rect x="70" y="128" width="220" height="30" fill="#a0673e" stroke="#000" stroke-width="1.6"/>`;
+ }return`<rect width="360" height="190" fill="#eee"/>`}
+function SCENEVEC(bg,who,mood,win){
+  let s=`<svg viewBox="0 0 360 190" role="img" aria-label="" preserveAspectRatio="xMidYMid slice">${BG(bg)}`;
+  if(bg==="hopper"&&who)s+=person(who,90,92,1.2)+billFig(170,98,1,mood);
+  else if(bg==="drawer")s+=`<g transform="translate(180 90) rotate(-90)">${billFig(0,0,.9,"sleepy")}</g>`;
+  else if(bg==="desk"&&who==="pres")s+=person("pres",180,106,1.1)+billFig(270,110,.8,mood);
+  else if(bg==="desk")s+=billFig(180,92,1,mood);
+  else if(bg==="capitol"&&!who)s+=billFig(70,140,1,mood)+person("kid",290,128,1);
+  else if(bg==="stage")s+=billFig(180,96,1.1,"wow")+person("saucer",80,110,1)+person("kid",280,116,1);
+  else{if(who&&who!=="kid")s+=person(who,100,118,1.25);if(who==="kid")s+=person("kid",100,124,1.3);s+=billFig(255,118,1,mood);if(win)s+=person("saucer",80,118,1)}
+  return s+"</svg>"}
+
+
+/* pixel art: files in art/, drawn over the room; anything missing falls back to the vector drawing */
+const ART=new Set(["room-capitol","room-office","room-hopper","room-committee","room-house","room-senate","room-president","room-drawer","room-street","room-stage","food-pizza","food-pancakes","food-tacos","food-apples","food-curds","food-mac","food-pickles","food-broccoli","bill-happy","bill-worried","bill-sad","bill-sleepy","bill-wow","saucer","crust","green","sgreen","dente","gouda","topp","longwind","vp","chef","kid","clerk","reporter","blogger","pres"]);
+const DIM={"bill-happy":[61,98],"bill-worried":[50,98],"bill-sad":[59,95],"bill-sleepy":[135,77],"bill-wow":[78,98],"saucer":[53,112],"crust":[158,112],"green":[131,112],"sgreen":[50,112],"dente":[116,112],"gouda":[90,112],"topp":[64,112],"longwind":[106,112],"vp":[92,112],"chef":[91,112],"kid":[77,90],"clerk":[69,112],"reporter":[96,112],"blogger":[65,112],"pres":[96,102]};
+const ROOMART={capitol:"room-capitol",office:"room-office",hopper:"room-hopper",committee:"room-committee",floor:"room-house",senate:"room-senate",desk:"room-president",drawer:"room-drawer",street:"room-street",stage:"room-stage",hall:"room-hall",news:"room-news"};
+const RALIAS={hall:"office",news:"capitol"};
+for(const k in FOODICON)if(ART.has("food-"+k))FOODICON[k]=`<img class="pxi" src="art/food-${k}.png" alt="">`;
+function spr(name,cx,h,o={}){const t=`translateX(-50%)${o.flip?" scaleX(-1)":""}${o.rot?` rotate(${o.rot}deg)`:""}`;
+  return`<img class="spr" src="art/${name}.png" alt="" style="left:${cx}%;bottom:${o.b==null?5:o.b}%;height:${(h/180*100).toFixed(2)}%;transform:${t}">`}
+function billSpr(mood,cx,o={}){let n="bill-"+mood;if(!ART.has(n))n=ART.has("bill-happy")?"bill-happy":ART.has("bill-3q")?"bill-3q":"bill-front";const flip=!o.noflip&&n!=="bill-front";const h=(DIM[n]?DIM[n][1]:96)*(o.s||1);const rot=mood==="sleepy"&&n!=="bill-sleepy"?-90:o.rot;return spr(n,cx,h,{flip,rot,b:o.b})}
+function SCENE(bg,who,mood,win){
+  let room=ROOMART[bg];if(!ART.has(room)&&RALIAS[bg])room=ROOMART[RALIAS[bg]];
+  if(!room||!ART.has(room))return`<div class="px">${SCENEVEC(RALIAS[bg]&&bg!=="news"?RALIAS[bg]:bg==="news"?"capitol":bg,bg==="news"?"reporter":who,mood,win)}</div>`;
+  let sp="",vec="";
+  const P=(key,cx,sx,sy,s=1.25)=>{if(ART.has(key))sp+=spr(key,cx,(DIM[key]?DIM[key][1]:110)*(s/1.25));else vec+=person(key,sx,sy+6,s*.8)};
+  if(bg==="hopper"&&who){P(who,25,90,92,1.2);sp+=billSpr(mood,50)}
+  else if(bg==="drawer")sp+=billSpr("sleepy",71,{b:37,s:.6});
+  else if(bg==="desk"&&who==="pres"){P("pres",50,180,106,1.1);sp+=billSpr(mood,76,{s:.85})}
+  else if(bg==="desk")sp+=billSpr(mood,50);
+  else if(bg==="capitol"&&!who){sp+=billSpr(mood,26,{s:1.1,noflip:true});if(ART.has("kid"))sp+=spr("kid",80,DIM.kid?DIM.kid[1]:88)}
+  else if(bg==="news")P("reporter",26,100,118,1.25);
+  else if(bg==="stage"){sp+=billSpr("wow",50,{s:1.1});P("saucer",22,80,110,1);if(ART.has("kid"))sp+=spr("kid",80,DIM.kid?DIM.kid[1]:88)}
+  else{if(who)P(who,27,100,who==="kid"?124:118,who==="kid"?1.3:1.25);sp+=billSpr(mood,72);if(win)P("saucer",20,80,118,1)}
+  return`<div class="px"><img class="room" src="art/${room}.png" alt="">${vec?`<svg class="ov" viewBox="0 0 360 190" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${vec}</svg>`:""}${sp}</div>`}
+
+/* ---------- boot ---------- */
+syncSound();syncRead();
+window.__bbt={get S(){return S},set S(v){S=v},render,newGame,STOP,MODES,FOODS,sizeOf,billSentence,okName,ENDS,LM,OBJ,canWin,count,rvalid,next};
+title();
+})();
+
+</script>
+</body>
+</html>

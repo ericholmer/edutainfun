@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Came First?</title>
+<style>
+/* VOICE: a friendly classroom card game, bright and calm
+   IDEA: picture cards laid on a long paper timeline that grows
+   PICTURE: the cards and the timeline strip with a to-scale ruler
+   COLOUR and TYPE: cream paper, black outlines, one colour per card theme; Chicago for titles, rounded sans for reading
+   LAYOUT: play area on top, timeline strip and ruler below, story card after each move */
+:root{--paper:#f6f1e7;--ink:#14213a;--line:#000;--hi:#ffe14d;--good:#2fbf71;--bad:#e2533f;
+  --inv:#3a7bd5;--exp:#2e9e5b;--big:#d6453d;--won:#d99a1e}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font:16px/1.45 ui-rounded,"SF Pro Rounded","Segoe UI",system-ui,sans-serif}
+body{overflow-x:clip}
+.sys{font-family:"EduChicago","Chicago",Geneva,Verdana,sans-serif;font-weight:400}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px 4px;flex-wrap:wrap}
+h1{font-size:22px;margin:0}
+h1 span{color:var(--big)}
+.hr{margin-left:auto;display:flex;gap:8px;align-items:center}
+.prog{font-weight:800;font-size:15px}
+.tog{border:1px solid #000;background:#fff;border-radius:8px;height:36px;min-width:42px;font-size:17px;cursor:pointer;box-shadow:1px 1px 0 #000;color:var(--ink)}
+.tog.off{opacity:.45}
+main{max-width:1100px;margin:0 auto;padding:6px 12px 30px}
+.msg{min-height:30px;text-align:center;font-weight:800;font-size:17px;margin:4px 0 8px}
+.msg.good{color:#16794a}.msg.bad{color:#b23624}
+/* cards */
+.card{position:relative;width:128px;flex:none;background:#fff;border:1.5px solid #000;border-radius:10px;box-shadow:2px 2px 0 #000;
+  display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 6px 8px;cursor:pointer;font:inherit;color:inherit;user-select:none}
+.card .band{align-self:stretch;margin:0 -6px 6px;height:24px;border-radius:8px 8px 0 0;border-bottom:1.5px solid #000;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:11px;letter-spacing:.3px;text-transform:uppercase;font-weight:800}
+.card.inv .band{background:var(--inv)}.card.exp .band{background:var(--exp)}.card.big .band{background:var(--big)}.card.won .band{background:var(--won)}
+.card svg.ic{width:58px;height:58px}
+.card img.ph{width:100%;height:70px;object-fit:cover;border:1px solid #000;border-radius:4px}
+.card .t{font-weight:800;font-size:14px;line-height:1.2;margin-top:4px;text-wrap:balance}
+.card .s{font-size:12px;color:#555;margin-top:2px;line-height:1.2}
+.card .yr{margin-top:6px;font:15px/1 "EduChicago","Chicago",Geneva,sans-serif;background:var(--hi);border:1px solid #000;border-radius:6px;padding:4px 6px}
+.card .ago{font-size:11px;color:#555;margin-top:3px}
+.card.sel{outline:4px solid var(--hi);outline-offset:2px}
+.card.right{box-shadow:2px 2px 0 #000,0 0 0 4px var(--good)}
+.card.wrong{box-shadow:2px 2px 0 #000,0 0 0 4px var(--bad)}
+.card.newest{animation:land .5s ease}
+@keyframes land{0%{transform:translateY(-30px) scale(1.1);opacity:.3}100%{transform:none;opacity:1}}
+.card:focus-visible,button:focus-visible{outline:3px dashed #2a2aa8;outline-offset:3px}
+/* round 1 */
+.hand{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;min-height:60px;margin-bottom:12px}
+.slots{display:flex;gap:14px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.slot{width:140px;min-height:218px;border:2px dashed #8a8270;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px;background:#fffdf6}
+.slot b{font-size:13px;color:#555;text-align:center}
+.arrow{align-self:center;font-size:26px;color:#8a8270}
+/* insert round */
+.newcard{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px}
+.newcard .card{width:150px;cursor:default}
+.newcard p{margin:0;font-weight:700;text-align:center}
+/* timeline */
+.tlwrap{background:#fff;border:1.5px solid #000;border-radius:12px;box-shadow:2px 2px 0 #000;padding:10px 0 4px;margin-top:8px}
+.tlhead{display:flex;justify-content:space-between;align-items:center;padding:0 12px 6px;gap:8px;flex-wrap:wrap}
+.tlhead b{font-size:15px}.tlhead small{color:#555;font-size:13px}
+.tl{display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding:8px 12px 14px;scroll-behavior:smooth;scrollbar-width:thin}
+.tl .card{width:118px;cursor:pointer}
+.tl .card .t{font-size:13px}
+.gap{align-self:center;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;width:84px;gap:6px;padding:0 4px;text-align:center}
+.gap .gl{font-size:11px;color:#555;line-height:1.2}
+.gap .gl:before{content:"";display:block;height:2px;background:#000;margin:0 auto 4px;width:60px}
+.drop{width:46px;height:46px;border-radius:50%;border:2px dashed #000;background:var(--hi);font-size:24px;font-weight:900;cursor:pointer;color:var(--ink);display:none}
+.inserting .drop{display:block}
+.drop:hover{background:#fff59a}
+.drop:disabled{background:#eee;color:#aaa;border-color:#bbb;cursor:default}
+.drop.no{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.ends{display:flex;justify-content:space-between;font-size:12px;color:#555;padding:0 14px;font-weight:700}
+.ruler{display:block;width:100%;height:70px}
+/* story */
+.story{display:none;margin-top:12px;background:#fffbe6;border:1.5px solid #000;border-radius:12px;box-shadow:2px 2px 0 #000;padding:12px 16px}
+.story.show{display:block}
+.story h3{margin:0 0 6px;font-size:16px}
+.story p{margin:4px 0 0;font-size:17px;line-height:1.45}
+.story p b{display:block;font-size:14px;margin-top:8px}
+.bar{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.btn{border:1px solid #000;border-radius:10px;padding:12px 22px;font-size:17px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:2px 2px 0 #000;color:var(--ink);background:#fff;min-height:48px}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #000}
+.btn.primary{background:var(--big);color:#fff}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.hide{display:none!important}
+/* windows */
+.overlay{position:fixed;inset:0;background:#14213a99;display:none;place-items:center;padding:14px;z-index:5;overflow:auto}
+.overlay.show{display:grid}
+.win{background:#fff;border:1px solid #000;box-shadow:2px 2px 0 #000;max-width:460px;width:100%;border-radius:4px}
+.wt{height:24px;border-bottom:1px solid #000;display:flex;align-items:center;justify-content:center;
+  background:repeating-linear-gradient(#fff 0 1px,#000 1px 2px) 0 5px/100% 13px no-repeat;font:14px/1 "EduChicago","Chicago",Geneva,Verdana,sans-serif}
+.wt span{background:#fff;padding:0 8px}
+.wb{padding:18px}
+.wb h2{margin:0 0 6px;font-size:24px}
+.wb p{margin:6px 0 12px;line-height:1.45}
+.lab{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#666;font-weight:800;margin:4px 0 6px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.opt{border:1px solid #000;background:#fff;border-radius:10px;padding:9px;font-weight:800;font-family:inherit;font-size:14px;cursor:pointer;color:var(--ink);text-align:left;min-height:44px}
+.opt.on{background:var(--hi);box-shadow:2px 2px 0 #000}
+.opt small{display:block;font-weight:500;color:#555;font-size:12px;margin-top:2px}
+.opt i{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid #000;margin-right:6px}
+.wb .btn{width:100%}
+.big{font-size:44px;text-align:center;margin:0}
+@media(max-width:600px){
+  h1{font-size:18px}
+  .card{width:104px}.card svg.ic{width:46px;height:46px}.card .t{font-size:13px}
+  .slot{width:108px;min-height:196px}.slots,.hand{gap:8px}.arrow{display:none}
+  .tl .card{width:104px}.gap{width:70px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<!-- edutain.fun shared menu bar: keep this block identical across games except the EB config line -->
+<style>
+@font-face{font-family:"EduChicago";src:url("ChicagoFLF.woff") format("woff");font-display:swap}
+.eb{position:relative;z-index:10;flex:none;display:flex;align-items:center;height:34px;background:#fff;color:#111;border-bottom:1px solid #000;padding:0 6px;
+  font:15px/1 "EduChicago","Chicago","Charcoal",Geneva,Verdana,sans-serif;-webkit-font-smoothing:none;user-select:none;-webkit-user-select:none}
+.eb *{box-sizing:border-box}
+.eb svg{width:18px;height:18px;flex:none;cursor:inherit;touch-action:auto;display:block}
+.eb-mi{position:relative}
+.eb-mt{background:none;border:0;height:34px;padding:0 11px;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;border-radius:0;margin:0}
+.eb-mt[aria-expanded=true]{background:#111;color:#fff}
+.eb-dd{position:absolute;left:0;top:34px;min-width:220px;background:#fff;border:1px solid #000;box-shadow:1px 1px 0 #000;padding:3px 0;display:none}
+.eb-mt[aria-expanded=true]+.eb-dd{display:block}
+.eb-dd a{display:flex;align-items:center;min-height:40px;padding:0 16px;color:#111;text-decoration:none}
+.eb-dd a:hover,.eb-dd a:focus-visible{background:#111;color:#fff;outline:0}
+.eb-app{margin-left:auto;display:flex;align-items:center;gap:7px;padding:0 10px;white-space:nowrap;overflow:hidden}
+.eb-app span{overflow:hidden;text-overflow:ellipsis}
+.eb-quit{display:flex;align-items:center;height:26px;padding:0 14px;border:1px solid #000;border-radius:8px;background:#fff;color:#111;text-decoration:none;box-shadow:1px 1px 0 #000;margin-right:2px}
+.eb-quit:active{background:#111;color:#fff}
+.eb :focus-visible{outline:2px dashed #2a2aa8;outline-offset:1px}
+.eb-z{position:fixed;border:1px solid #000;outline:1px solid #fff;pointer-events:none;z-index:2147483000}
+@media(max-width:520px){.eb-app span{display:none}.eb-file{display:none}}
+.overlay{top:35px}
+</style>
+<div class="eb" role="menubar" aria-label="edutain.fun menu bar">
+  <div class="eb-mi">
+    <button class="eb-mt" aria-expanded="false" aria-haspopup="true" aria-label="edutain.fun menu">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#3a7bd5" stroke="#000"/><path d="M4 4.5c1.5-.5 2.5.5 2 2s-2 1-2.5 2.5S5 12 6.5 12.5M10 3.5c-.5 1.5 1 2 2.5 1.5M9.5 9c1-.5 2.5 0 2.5 1.5s-1 2-2 2" fill="none" stroke="#4fc14f" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="eb-dd" role="menu"><a role="menuitem" class="eb-go" href="#">Back to the Desktop</a></div>
+  </div>
+  <div class="eb-mi eb-file">
+    <button class="eb-mt" aria-expanded="false" aria-haspopup="true">File</button>
+    <div class="eb-dd" role="menu"><a role="menuitem" class="eb-go" href="#">Quit Which Came First?</a></div>
+  </div>
+  <div class="eb-app" aria-hidden="true"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="9" width="11" height="15" rx="1.5" fill="#fff" stroke="#000" transform="rotate(-10 7 16)"/><rect x="10.5" y="7" width="11" height="15" rx="1.5" fill="#ffe14d" stroke="#000"/><rect x="19" y="9" width="11" height="15" rx="1.5" fill="#fff" stroke="#000" transform="rotate(10 25 16)"/><path d="M16 11v7M14.5 12.5l1.5-1.5" stroke="#000" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M3 28h26" stroke="#000" stroke-width="1.5"/><path d="M26 26l3 2-3 2" fill="none" stroke="#000" stroke-width="1.5"/></svg><span>Which Came First?</span></div>
+  <a class="eb-quit eb-go" href="#">Quit</a>
+</div>
+<script>
+{
+/* EB config: on the live site set home to "/" */
+const EB={id:"first",home:"/"};
+const bar=document.currentScript.previousElementSibling;
+const url=EB.home+"#"+EB.id;
+const mts=bar.querySelectorAll(".eb-mt");
+const closeAll=()=>mts.forEach(m=>m.setAttribute("aria-expanded","false"));
+mts.forEach(m=>m.addEventListener("click",e=>{e.stopPropagation();const o=m.getAttribute("aria-expanded")==="true";closeAll();if(!o)m.setAttribute("aria-expanded","true")}));
+document.addEventListener("click",closeAll);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll()});
+let busy=false;
+bar.querySelectorAll(".eb-go").forEach(a=>{
+  a.href=url;
+  a.addEventListener("click",e=>{
+    e.stopPropagation();
+    if(a.dataset.go){delete a.dataset.go;return}
+    e.preventDefault();closeAll();if(busy)return;busy=true;
+    const done=()=>{busy=false;a.dataset.go="1";a.click()};
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches)return done();
+    const W=innerWidth,H=innerHeight,N=7,boxes=[];
+    for(let i=0;i<N;i++)setTimeout(()=>{
+      const p=i/(N-1),w=W*(1-p)+40*p,h=H*(1-p)+30*p;
+      const z=document.createElement("div");z.className="eb-z";
+      Object.assign(z.style,{left:(W-w)/2+"px",top:(H-h)/2+"px",width:w+"px",height:h+"px"});
+      document.body.appendChild(z);boxes.push(z);if(boxes.length>3)boxes.shift().remove();
+      if(i===N-1)setTimeout(()=>{boxes.forEach(b=>b.remove());done()},60);
+    },i*38);
+  });
+});
+}
+</script>
+<!-- /edutain.fun shared menu bar -->
+<header>
+  <h1 class="sys">Which Came <span>First?</span></h1>
+  <div class="hr">
+    <span class="prog" id="prog"></span>
+    <button class="tog" id="voiceBtn" aria-label="Read cards out loud" title="Read cards out loud">🗣️</button>
+    <button class="tog" id="soundBtn" aria-label="Sound" title="Sound">🔊</button>
+  </div>
+</header>
+<main>
+  <div class="msg" id="msg" aria-live="polite"></div>
+  <section id="round1" class="hide">
+    <div class="hand" id="hand"></div>
+    <div class="slots" id="slots"></div>
+  </section>
+  <section id="round2" class="hide">
+    <div class="newcard"><div id="nc"></div><p id="ncHelp">Where does this card go? Tap a yellow <b>+</b> on your timeline.</p></div>
+  </section>
+  <div class="bar">
+    <button class="btn primary hide" id="checkBtn" disabled>Check my order</button>
+    <button class="btn primary hide" id="nextBtn">Next card ▶</button>
+  </div>
+  <div class="story" id="story" aria-live="polite"></div>
+  <div class="tlwrap">
+    <div class="tlhead"><b class="sys">Your timeline</b><small id="tlnote">Long ago on the left · Today on the right</small></div>
+    <div class="tl" id="tl"></div>
+    <div class="ends"><span id="endL"></span><span>Today</span></div>
+    <svg class="ruler" id="ruler" aria-hidden="true"></svg>
+  </div>
+</main>
+
+<div class="overlay show" id="start">
+  <div class="win"><div class="wt"><span>Which Came First?</span></div><div class="wb">
+    <h2>Build a timeline!</h2>
+    <p>You'll get picture cards about big moments in history. Put them in order, from <b>long ago</b> to <b>most recent</b>. Each card you place grows your timeline, and the ruler shows how far apart things really were.</p>
+    <div class="lab">Cards about</div>
+    <div class="opts" id="themeOpts"></div>
+    <div class="lab">Timeline length</div>
+    <div class="opts" id="lenOpts" style="grid-template-columns:repeat(3,1fr)"></div>
+    <button class="btn primary" id="go">Deal the cards</button>
+  </div></div>
+</div>
+<div class="overlay" id="end">
+  <div class="win"><div class="wt"><span>Timeline Complete</span></div><div class="wb">
+    <p class="big">🎉</p>
+    <h2 id="endTitle"></h2>
+    <p id="endMsg"></p>
+    <button class="btn primary" id="again">Play again</button>
+    <div style="height:8px"></div>
+    <button class="btn" id="look">Look at my timeline</button>
+    <div style="height:8px"></div>
+    <button class="btn" id="change">Pick new cards</button>
+  </div></div>
+</div>
+
+<script>
+{
+const NOW = new Date().getFullYear();
+// a:1 = date is approximate ("about"). Every date and story was checked against a reliable source before launch.
+const C = [
+{id:"writing",t:"People start writing",s:"Mesopotamia",y:-3200,a:1,th:"inv",ic:"scroll",st:"The first writing was pressed into wet clay with a pointed reed. Much of it kept track of things like grain and animals."},
+{id:"pyramid",t:"The Great Pyramid is built",s:"Egypt",y:-2560,a:1,th:"won",ic:"pyramid",st:"It was the tallest thing people had ever built, and it kept that record for almost 4,000 years."},
+{id:"olympics",t:"First Olympic Games",s:"Olympia, Greece",y:-776,th:"big",ic:"torch",st:"Ancient writers gave this year for the first Games. The only race was a short sprint."},
+{id:"qin",t:"China gets its first emperor",s:"Qin Shi Huang",y:-221,th:"big",ic:"crown",st:"He was buried with an army of thousands of life-size clay soldiers. Farmers digging a well found them in 1974."},
+{id:"vesuvius",t:"A volcano buries Pompeii",s:"Italy",y:79,th:"big",ic:"volcano",st:"Ash kept the city hidden for almost 1,700 years. People began digging it out in 1748."},
+{id:"colosseum",t:"The Colosseum opens",s:"Rome",y:80,th:"won",ic:"columns",st:"This giant arena held tens of thousands of people for shows and games."},
+{id:"paper",t:"Cai Lun improves paper-making",s:"China",y:105,th:"inv",ic:"scroll",st:"Before this, people in China mostly wrote on heavy bamboo strips or on silk, which cost a lot."},
+{id:"vikings",t:"Vikings live in North America",s:"Newfoundland, Canada",y:1021,th:"exp",ic:"ship",st:"Scientists counted tree rings in wood the Vikings cut and found the exact year: 1021. That's more than 470 years before Columbus."},
+{id:"magna",t:"King John agrees to Magna Carta",s:"England",y:1215,th:"big",ic:"scroll",st:"It said that even the king had to follow the law."},
+{id:"mansa",t:"Mansa Musa travels to Mecca",s:"Mali Empire, Africa",y:1324,th:"exp",ic:"crown",st:"He gave away so much gold in Cairo, Egypt, that gold became cheaper there for years."},
+{id:"machu",t:"Machu Picchu is built",s:"Peru",y:1450,a:1,th:"won",ic:"mountain",st:"The Inca built it high in the Andes Mountains, fitting the stones together without any mortar."},
+{id:"gutenberg",t:"Gutenberg prints a Bible",s:"Germany",y:1455,a:1,th:"inv",ic:"book",st:"Before printing presses, every single book had to be copied by hand."},
+{id:"columbus",t:"Columbus reaches the Americas",s:"Caribbean Sea",y:1492,th:"exp",ic:"ship",st:"He was trying to reach Asia by sailing west. Millions of people already lived in the Americas."},
+{id:"mona",t:"Leonardo starts the Mona Lisa",s:"Italy",y:1503,a:1,th:"won",ic:"frame",st:"Leonardo da Vinci kept working on this painting for many years."},
+{id:"magellan",t:"First trip around the world ends",s:"Magellan and Elcano",y:1522,th:"exp",ic:"ship",st:"Five ships set out in 1519. Only one ship and 18 men made it all the way around."},
+{id:"globe",t:"Shakespeare's Globe Theatre opens",s:"London",y:1599,th:"won",ic:"columns",st:"Many of William Shakespeare's plays were first acted on its stage."},
+{id:"galileo",t:"Galileo sees Jupiter's moons",s:"Italy",y:1610,th:"inv",ic:"star",st:"Looking through a telescope, he spotted four moons circling Jupiter."},
+{id:"mayflower",t:"The Mayflower lands",s:"Plymouth, Massachusetts",y:1620,th:"exp",ic:"ship",st:"The trip across the Atlantic Ocean took about two months."},
+{id:"taj",t:"Work on the Taj Mahal begins",s:"Agra, India",y:1632,th:"won",ic:"columns",st:"Emperor Shah Jahan built it in memory of his wife, Mumtaz Mahal."},
+{id:"declaration",t:"Declaration of Independence",s:"Philadelphia",y:1776,th:"big",ic:"scroll",st:"It was approved on July 4. That's why Americans celebrate on that day."},
+{id:"balloon",t:"People fly in a hot-air balloon",s:"Paris, France",y:1783,th:"inv",ic:"balloon",st:"Two months earlier, the very first passengers were a sheep, a duck and a rooster!"},
+{id:"jenner",t:"Jenner's smallpox vaccine",s:"England",y:1796,th:"inv",ic:"medicine",st:"Edward Jenner used a cow disease called cowpox to protect people. \"Vaccine\" comes from the Latin word for cow."},
+{id:"rosetta",t:"The Rosetta Stone is found",s:"Egypt",y:1799,th:"inv",ic:"scroll",st:"It shows the same message in three kinds of writing. That helped people learn to read Egyptian hieroglyphs."},
+{id:"lewis",t:"Lewis and Clark set out",s:"United States",y:1804,th:"exp",ic:"compass",st:"Sacagawea, a young Shoshone woman, helped them as an interpreter."},
+{id:"railway",t:"First public steam railway",s:"England",y:1825,th:"inv",ic:"train",st:"Its engine, Locomotion No. 1, pulled the very first train."},
+{id:"telegraph",t:"Morse sends a telegraph",s:"Washington to Baltimore",y:1844,th:"inv",ic:"waves",st:"The message zipped about 40 miles along a wire in an instant."},
+{id:"gold",t:"The Gold Rush begins",s:"California",y:1848,th:"big",ic:"star",st:"Gold was found at Sutter's Mill, and people rushed west to find more."},
+{id:"civilwar",t:"The U.S. Civil War ends",s:"Appomattox, Virginia",y:1865,th:"big",ic:"flag",st:"General Lee surrendered to General Grant after four years of war."},
+{id:"railroad",t:"Railroad crosses the country",s:"Promontory, Utah",y:1869,th:"inv",ic:"train",st:"A golden spike was tapped in to finish the first railroad across the United States."},
+{id:"telephone",t:"First telephone call",s:"Alexander Graham Bell",y:1876,th:"inv",ic:"waves",st:"Bell's first words on the phone were \"Mr. Watson, come here.\""},
+{id:"phonograph",t:"Edison records a voice",s:"New Jersey",y:1877,th:"inv",ic:"waves",st:"The first words he recorded and played back were \"Mary had a little lamb.\""},
+{id:"liberty",t:"Statue of Liberty is dedicated",s:"New York",y:1886,th:"won",ic:"torch",st:"It was a gift to the United States from the people of France."},
+{id:"eiffel",t:"The Eiffel Tower opens",s:"Paris",y:1889,th:"won",ic:"tower",st:"It was built for a world's fair, and it became the tallest structure in the world."},
+{id:"ferris",t:"The first Ferris wheel spins",s:"Chicago",y:1893,th:"inv",ic:"wheel",st:"George Ferris built it for a world's fair in Chicago."},
+{id:"olympics2",t:"The modern Olympics begin",s:"Athens, Greece",y:1896,th:"big",ic:"medal",st:"They were held in Greece to honor the ancient Games."},
+{id:"wright",t:"The Wright brothers fly",s:"Kitty Hawk, North Carolina",y:1903,th:"inv",ic:"plane",st:"Their first flight lasted just 12 seconds."},
+{id:"curie",t:"Marie Curie wins a Nobel Prize",s:"France",y:1903,th:"inv",ic:"medicine",st:"Later she won a second one. She was the first person ever to win two."},
+{id:"modelt",t:"Ford's Model T goes on sale",s:"Detroit",y:1908,th:"inv",ic:"car",st:"Ford later used a moving assembly line to build cars faster and cheaper."},
+{id:"titanic",t:"The Titanic sinks",s:"Atlantic Ocean",y:1912,th:"big",ic:"ship",st:"It sank on its very first trip after hitting an iceberg."},
+{id:"panama",t:"The Panama Canal opens",s:"Panama",y:1914,th:"won",ic:"ship",st:"Ships no longer had to sail all the way around South America."},
+{id:"vote",t:"U.S. women win the vote",s:"19th Amendment",y:1920,th:"big",ic:"scroll",st:"The 19th Amendment said no one could be stopped from voting because she is a woman."},
+{id:"penicillin",t:"Fleming finds penicillin",s:"London",y:1928,th:"inv",ic:"medicine",st:"He noticed that mold growing in a dish had killed the germs around it."},
+{id:"goldengate",t:"Golden Gate Bridge opens",s:"San Francisco",y:1937,th:"won",ic:"bridge",st:"On opening day, about 200,000 people walked across before any cars were allowed."},
+{id:"rushmore",t:"Mount Rushmore is finished",s:"South Dakota",y:1941,th:"won",ic:"mountain",st:"Each president's face is about 60 feet tall."},
+{id:"jackie",t:"Jackie Robinson plays in the Major Leagues",s:"Brooklyn Dodgers",y:1947,th:"big",ic:"medal",st:"Every Major League team now honors him by retiring his number, 42."},
+{id:"everest",t:"First climb to the top of Everest",s:"Nepal",y:1953,th:"exp",ic:"mountain",st:"Edmund Hillary and Tenzing Norgay reached the top together."},
+{id:"polio",t:"The polio vaccine works",s:"United States",y:1955,th:"inv",ic:"medicine",st:"Nearly 2 million children helped test it. They were called \"Polio Pioneers.\""},
+{id:"parks",t:"Rosa Parks keeps her bus seat",s:"Montgomery, Alabama",y:1955,th:"big",ic:"car",st:"After she was arrested, people stopped riding the city buses for more than a year."},
+{id:"sputnik",t:"First satellite circles Earth",s:"Sputnik",y:1957,th:"exp",ic:"rocket",st:"It was about the size of a beach ball, and people could hear its beeps on the radio."},
+{id:"tereshkova",t:"First woman in space",s:"Valentina Tereshkova",y:1963,th:"exp",ic:"rocket",st:"She circled Earth 48 times in almost three days."},
+{id:"moon",t:"People walk on the Moon",s:"Apollo 11",y:1969,th:"exp",ic:"rocket",st:"Neil Armstrong and Buzz Aldrin walked on the Moon while Michael Collins circled above."},
+{id:"email",t:"First email with an @ sign",s:"Ray Tomlinson",y:1971,th:"inv",ic:"waves",st:"He picked the @ sign to separate a person's name from the name of their computer."},
+{id:"berlin",t:"The Berlin Wall falls",s:"Germany",y:1989,th:"big",ic:"flag",st:"Families who had been split apart for years could visit each other again."},
+{id:"web",t:"First website goes public",s:"Tim Berners-Lee",y:1991,th:"inv",ic:"waves",st:"The very first website explained what the World Wide Web was and how to use it."},
+{id:"mandela",t:"Nelson Mandela becomes president",s:"South Africa",y:1994,th:"big",ic:"flag",st:"He had spent 27 years in prison before he was elected."},
+{id:"curiosity",t:"Curiosity rover lands on Mars",s:"NASA",y:2012,th:"exp",ic:"rocket",st:"The rover is about the size of a car."},
+{id:"constitution",t:"The U.S. Constitution is signed",s:"Philadelphia",y:1787,th:"big",ic:"scroll",st:"It begins with three famous words: \"We the People.\""},
+{id:"rights",t:"The Bill of Rights is added",s:"United States",y:1791,th:"big",ic:"scroll",st:"These first ten amendments protect rights like free speech and freedom of religion."},
+{id:"statehood",t:"California becomes a state",s:"United States",y:1850,th:"big",ic:"flag",st:"It became the 31st state, just two years after gold was found there."},
+{id:"timezones",t:"Railroads create time zones",s:"United States and Canada",y:1883,th:"inv",ic:"clock",st:"On the \"Day of Two Noons,\" clocks in many towns struck noon twice as they switched to the new time."},
+{id:"phonecoast",t:"First phone call across the country",s:"New York to San Francisco",y:1915,th:"inv",ic:"waves",st:"Bell said his famous words again: \"Mr. Watson, come here.\" Watson joked that it would take him a week!"},
+{id:"interstate",t:"Interstate highways begin",s:"United States",y:1956,th:"big",ic:"car",st:"The plan called for about 41,000 miles of highways linking the country."},
+{id:"gagarin",t:"First person in space",s:"Yuri Gagarin",y:1961,th:"exp",ic:"rocket",st:"He circled Earth once, in less than two hours."},
+{id:"march",t:"March on Washington",s:"Washington, D.C.",y:1963,th:"big",ic:"flag",st:"Martin Luther King Jr. gave his famous \"I Have a Dream\" speech there."},
+{id:"cra",t:"Civil Rights Act becomes law",s:"United States",y:1964,th:"big",ic:"scroll",st:"It made it against the law to treat people unfairly because of their race, religion, whether they are a man or a woman, or where their family comes from."},
+{id:"who1967",t:"The world teams up to end smallpox",s:"World Health Organization",y:1967,th:"inv",ic:"medicine",st:"Health workers in dozens of countries gave vaccines and tracked down every case."},
+{id:"smallpox",t:"Smallpox is wiped out",s:"Whole world",y:1980,th:"inv",ic:"medicine",st:"It is the only human disease that has ever been wiped out completely."}
+];
+// Cause-and-effect chains: three cards where each step led to the next. Only links that are widely accepted.
+const CH = [
+ {id:"books",cards:["writing","paper","gutenberg"],hint:"Hint: you can't print a book before people can write!",why:["Writing came first. Thousands of years later, paper gave people a lighter, cheaper thing to write on.","A printing press needs lots of paper to print many copies of a book."]},
+ {id:"time",cards:["railway","railroad","timezones"],hint:"Hint: trains had to be running before anyone needed train schedules.",why:["Once steam trains worked, railroads spread until they crossed the whole country.","Trains rushed through so many towns that every town's clock had to match, so railroads made time zones."]},
+ {id:"talk",cards:["telegraph","telephone","phonecoast"],hint:"Hint: messages traveled by wire before voices did.",why:["Bell was trying to improve the telegraph when he figured out how to send a voice over a wire.","Telephone lines kept growing until they reached all the way across the country."]},
+ {id:"space",cards:["sputnik","gagarin","moon"],hint:"Hint: what would you send into space first, a machine or a person?",why:["Once a satellite could circle Earth, the next step was sending a person.","After people could fly in space, the next big goal was the Moon."]},
+ {id:"california",cards:["gold","statehood","railroad"],hint:"Hint: what made so many people move to California?",why:["So many people rushed to California for gold that it soon had enough people to become a state.","The country wanted to connect California to the East, so it built a railroad all the way across."]},
+ {id:"smallpox",cards:["jenner","who1967","smallpox"],hint:"Hint: you need a vaccine before you can use it to beat a disease.",why:["Jenner's vaccine worked so well that, many years later, the world decided to beat smallpox everywhere.","Giving vaccines all around the world wiped smallpox out."]},
+ {id:"rules",cards:["declaration","constitution","rights"],hint:"Hint: a country has to exist before it can write its rules.",why:["The new country needed a plan for its government, so leaders wrote the Constitution.","Many people wanted their rights written down too, so the first ten amendments were added."]},
+ {id:"roads",cards:["modelt","goldengate","interstate"],hint:"Hint: people needed cars before they needed big roads for them.",why:["Once many families had cars, people needed big roads and bridges to drive on.","As driving kept growing, the country built highways linking cities coast to coast."]},
+ {id:"civil",cards:["parks","march","cra"],hint:"Hint: the movement grew step by step before the new law came.",why:["The bus boycott helped grow a movement for equal rights.","The march pushed leaders to pass a law against unfair treatment."]}
+];
+// Photos: list a card id here once cards/<id>.jpg is uploaded, and the photo replaces the drawn icon.
+const PHOTOS = [];
+
+const THEMES = {all:["Everything",""],chains:["Cause & Effect Chains","#7a4fd0"],inv:["Inventions & Discoveries","#3a7bd5"],exp:["Explorers","#2e9e5b"],big:["Big Moments","#d6453d"],won:["Wonders & Art","#d99a1e"]};
+const THNAME = {inv:"Invention",exp:"Explorer",big:"Big moment",won:"Wonder"};
+
+const S='stroke="#000" stroke-width="2" stroke-linejoin="round"';
+const IC = {
+ scroll:`<rect x="14" y="10" width="36" height="44" rx="3" fill="#fff6d6" ${S}/><rect x="10" y="6" width="44" height="8" rx="4" fill="#e9cf8a" ${S}/><rect x="10" y="50" width="44" height="8" rx="4" fill="#e9cf8a" ${S}/><path d="M20 22h24M20 29h24M20 36h18" stroke="#555" stroke-width="2"/>`,
+ pyramid:`<path d="M4 54h56" ${S}/><path d="M32 10L6 54h52z" fill="#f0c86b" ${S}/><path d="M32 10l10 44" stroke="#000" stroke-width="2"/><path d="M32 10l10 44h16z" fill="#c99a3c" ${S}/><circle cx="50" cy="14" r="6" fill="#ffd23f" ${S}/>`,
+ torch:`<path d="M24 28h16l-4 30h-8z" fill="#c9a45c" ${S}/><path d="M22 24h20v6H22z" fill="#9b7834" ${S}/><path d="M32 4c8 8 10 12 6 18-2 3-10 3-12 0-4-6 0-10 6-18z" fill="#ff8a2a" ${S}/><path d="M32 12c3 4 4 7 2 10h-4c-2-3-1-6 2-10z" fill="#ffd23f"/>`,
+ crown:`<path d="M8 46l4-28 12 12 8-16 8 16 12-12 4 28z" fill="#ffd23f" ${S}/><rect x="8" y="46" width="48" height="8" fill="#e8b21f" ${S}/><circle cx="32" cy="38" r="4" fill="#d6453d" ${S}/>`,
+ volcano:`<path d="M4 56l18-30h20l18 30z" fill="#8b6b4a" ${S}/><path d="M22 26l5 8 5-6 5 6 5-8" fill="#ff6a2a" ${S}/><circle cx="24" cy="14" r="6" fill="#999" ${S}/><circle cx="34" cy="10" r="7" fill="#aaa" ${S}/><circle cx="44" cy="15" r="5" fill="#999" ${S}/>`,
+ columns:`<path d="M6 18L32 6l26 12z" fill="#e8e1cf" ${S}/><rect x="6" y="18" width="52" height="5" fill="#d8cfb8" ${S}/><path d="M12 23v26M22 23v26M32 23v26M42 23v26M52 23v26" stroke="#000" stroke-width="5"/><path d="M12 23v26M22 23v26M32 23v26M42 23v26M52 23v26" stroke="#f3eee0" stroke-width="2.5"/><rect x="4" y="49" width="56" height="7" fill="#d8cfb8" ${S}/>`,
+ ship:`<path d="M6 40h52l-8 14H14z" fill="#9b5a2e" ${S}/><path d="M32 8v32" stroke="#000" stroke-width="2.5"/><path d="M32 10l18 24H32z" fill="#fff" ${S}/><path d="M30 12L14 34h16z" fill="#f3e6c4" ${S}/><path d="M2 58q6-4 12 0t12 0 12 0 12 0 12 0" fill="none" stroke="#3a7bd5" stroke-width="2.5"/>`,
+ mountain:`<path d="M2 56l20-34 10 14 8-12 22 32z" fill="#7c8da6" ${S}/><path d="M22 22l-6 10 4-2 3 3 3-4z" fill="#fff" ${S}/><path d="M40 24l-5 8 4-1 2 2 3-3z" fill="#fff" ${S}/>`,
+ book:`<path d="M32 14C24 8 14 8 6 10v40c8-2 18-2 26 4z" fill="#fff" ${S}/><path d="M32 14c8-6 18-6 26-4v40c-8-2-18-2-26 4z" fill="#fff6d6" ${S}/><path d="M12 20h14M12 27h14M12 34h14M38 20h14M38 27h14M38 34h10" stroke="#555" stroke-width="1.8"/>`,
+ frame:`<rect x="8" y="6" width="48" height="52" fill="#d9a43a" ${S}/><rect x="15" y="13" width="34" height="38" fill="#7aa36a" ${S}/><circle cx="32" cy="27" r="7" fill="#e9c39a" ${S}/><path d="M20 51c2-10 22-10 24 0z" fill="#3b2f25" ${S}/>`,
+ star:`<path d="M32 6l7 16 17 2-13 12 4 17-15-9-15 9 4-17L8 24l17-2z" fill="#ffd23f" ${S}/>`,
+ balloon:`<path d="M32 4c13 0 22 9 22 21 0 10-9 18-16 24H26c-7-6-16-14-16-24C10 13 19 4 32 4z" fill="#3a7bd5" ${S}/><path d="M32 4c-5 6-7 13-7 21s4 18 1 24M32 4c5 6 7 13 7 21s-4 18-1 24" fill="none" stroke="#ffd23f" stroke-width="3"/><path d="M26 49l2 6M38 49l-2 6" stroke="#000" stroke-width="2"/><rect x="26" y="54" width="12" height="7" fill="#9b5a2e" ${S}/>`,
+ medicine:`<path d="M24 6h16M28 6v16L14 50c-2 4 0 8 5 8h26c5 0 7-4 5-8L36 22V6" fill="#fff" ${S}/><path d="M20 40h24l6 10c2 4 0 8-5 8H19c-5 0-7-4-5-8z" fill="#2fbf71" ${S}/><circle cx="28" cy="48" r="2.5" fill="#fff"/><circle cx="37" cy="44" r="2" fill="#fff"/>`,
+ compass:`<circle cx="32" cy="32" r="26" fill="#fff6d6" ${S}/><circle cx="32" cy="32" r="20" fill="none" stroke="#000" stroke-width="1.5"/><path d="M32 12l6 20-6 20-6-20z" fill="#d6453d" ${S}/><path d="M32 32l6 0-6 20-6-20z" fill="#fff" ${S}/><circle cx="32" cy="32" r="3" fill="#000"/>`,
+ train:`<rect x="10" y="20" width="30" height="24" fill="#d6453d" ${S}/><rect x="40" y="10" width="16" height="34" fill="#444" ${S}/><rect x="44" y="15" width="8" height="8" fill="#aee0ff" ${S}/><rect x="14" y="10" width="8" height="10" fill="#444" ${S}/><circle cx="18" cy="48" r="6" fill="#ffd23f" ${S}/><circle cx="34" cy="48" r="6" fill="#ffd23f" ${S}/><circle cx="48" cy="48" r="6" fill="#ffd23f" ${S}/><circle cx="16" cy="5" r="3.5" fill="#ccc" ${S}/>`,
+ waves:`<rect x="22" y="22" width="20" height="34" rx="4" fill="#3a7bd5" ${S}/><rect x="26" y="27" width="12" height="16" fill="#aee0ff" ${S}/><path d="M14 18a22 22 0 0 1 36 0M20 13a16 16 0 0 1 24 0" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>`,
+ flag:`<path d="M14 4v56" stroke="#000" stroke-width="3"/><path d="M14 8c10-4 18 4 28 0s12-2 16 0v24c-4-2-8-4-16 0s-18-4-28 0z" fill="#d6453d" ${S}/><path d="M14 18c10-4 18 4 28 0s12-2 16 0" fill="none" stroke="#fff" stroke-width="3"/>`,
+ tower:`<path d="M32 4l-4 14h8z" fill="#9b7834" ${S}/><path d="M27 18h10l4 16H23z" fill="#c9a45c" ${S}/><path d="M23 34h18l14 24H43c-4-10-18-10-22 0H9z" fill="#c9a45c" ${S}/><path d="M20 34h24" stroke="#000" stroke-width="3"/>`,
+ wheel:`<circle cx="32" cy="28" r="22" fill="none" ${S}/><circle cx="32" cy="28" r="4" fill="#d6453d" ${S}/><path d="M32 6v44M10 28h44M16 12l32 32M48 12L16 44" stroke="#000" stroke-width="1.5"/><path d="M32 28L20 58M32 28l12 30" stroke="#000" stroke-width="3"/><circle cx="32" cy="6" r="3" fill="#ffd23f" ${S}/><circle cx="10" cy="28" r="3" fill="#2fbf71" ${S}/><circle cx="54" cy="28" r="3" fill="#3a7bd5" ${S}/><circle cx="32" cy="50" r="3" fill="#d6453d" ${S}/>`,
+ medal:`<path d="M20 4l12 18L44 4" fill="none" stroke="#3a7bd5" stroke-width="8"/><circle cx="32" cy="40" r="17" fill="#ffd23f" ${S}/><circle cx="32" cy="40" r="11" fill="none" stroke="#c99a1e" stroke-width="2"/><path d="M32 33l2 5h5l-4 3 2 5-5-3-5 3 2-5-4-3h5z" fill="#c99a1e"/>`,
+ plane:`<path d="M6 30h52" stroke="#000" stroke-width="2"/><rect x="6" y="20" width="52" height="6" fill="#f3e6c4" ${S}/><rect x="6" y="34" width="52" height="6" fill="#f3e6c4" ${S}/><path d="M16 26v8M48 26v8M32 26v8" stroke="#000" stroke-width="2"/><rect x="26" y="26" width="12" height="8" fill="#9b5a2e" ${S}/><path d="M32 40v10M26 54h12" stroke="#000" stroke-width="2"/>`,
+ car:`<path d="M6 42v-8l6-2 6-12h22l10 12 8 2v8z" fill="#2e9e5b" ${S}/><path d="M21 22h8v10H15zM33 22h6l7 10H33z" fill="#aee0ff" ${S}/><circle cx="17" cy="44" r="7" fill="#333" ${S}/><circle cx="47" cy="44" r="7" fill="#333" ${S}/><circle cx="17" cy="44" r="2.5" fill="#ccc"/><circle cx="47" cy="44" r="2.5" fill="#ccc"/>`,
+ bridge:`<path d="M2 40h60" stroke="#000" stroke-width="3"/><rect x="14" y="8" width="6" height="44" fill="#d6453d" ${S}/><rect x="44" y="8" width="6" height="44" fill="#d6453d" ${S}/><path d="M2 20q15 22 15 0M17 10q15 34 30 0M47 10q0 22 15 10" fill="none" stroke="#d6453d" stroke-width="2.5"/><path d="M2 56q8-4 16 0t16 0 16 0 14 0" fill="none" stroke="#3a7bd5" stroke-width="2.5"/>`,
+ clock:`<circle cx="32" cy="32" r="26" fill="#fff6d6" ${S}/><path d="M32 12v4M32 48v4M12 32h4M48 32h4" stroke="#000" stroke-width="3"/><path d="M32 32V18M32 32l10 6" stroke="#d6453d" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="32" r="3" fill="#000"/>`,
+ rocket:`<path d="M32 4c10 8 12 22 10 36H22c-2-14 0-28 10-36z" fill="#fff" ${S}/><circle cx="32" cy="22" r="5" fill="#aee0ff" ${S}/><path d="M22 32l-10 14 10-2zM42 32l10 14-10-2z" fill="#d6453d" ${S}/><path d="M26 42c0 8 3 14 6 18 3-4 6-10 6-18z" fill="#ff8a2a" ${S}/>`
+};
+const icon = c => PHOTOS.includes(c.id) ? `<img class="ph" src="cards/${c.id}.jpg" alt="">` : `<svg class="ic" viewBox="0 0 64 64" aria-hidden="true">${IC[c.ic]||IC.star}</svg>`;
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const store = {get(k,d){try{const v=localStorage.getItem("wcf_"+k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("wcf_"+k,JSON.stringify(v))}catch(e){}}};
+const byId = Object.fromEntries(C.map(c => [c.id, c]));
+const between = (a, b) => b - a - (a < 0 && b > 0 ? 1 : 0); // there was no year 0
+const ago = c => Math.max(1, between(c.y, NOW));
+const lg = c => Math.log(ago(c));
+const comma = n => n.toLocaleString("en-US");
+function yearText(c){ return (c.a ? "about " : "") + (c.y < 0 ? comma(-c.y) + " BC" : String(c.y)); }
+function agoText(c){
+  let n = between(c.y, NOW);
+  if (n >= 1000) return "about " + comma(Math.round(n/100)*100) + " years ago";
+  if (c.a) return "about " + comma(Math.round(n/10)*10) + " years ago";
+  return n === 1 ? "1 year ago" : comma(n) + " years ago";
+}
+function gapText(a, b){
+  let n = between(a.y, b.y); if (n <= 0) return "same year";
+  const about = a.a || b.a || n >= 200;
+  if (n >= 1000) n = Math.round(n/100)*100; else if (n >= 200) n = Math.round(n/10)*10;
+  return (about ? "about " : "") + comma(n) + (n === 1 ? " year" : " years") + " later";
+}
+const shuffle = a => { for (let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a; };
+
+/* ---------- sound & voice ---------- */
+let sound = store.get("sound", true), voice = store.get("voice", true), ac;
+function tone(f,d=.12,type="square",v=.06,w=0){ if(!sound) return; try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended") ac.resume();
+  const t=ac.currentTime+w,o=ac.createOscillator(),g=ac.createGain(); o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d+.02);}catch(e){} }
+const sfx = { pick(){tone(660,.05)}, put(){tone(440,.06)}, yes(){[523,659,784].forEach((f,i)=>tone(f,.18,"triangle",.1,i*.09))}, no(){tone(196,.25,"sawtooth",.06)}, win(){[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,.2,"triangle",.1,i*.12))} };
+function say(t){ if(!voice||!("speechSynthesis" in window)) return; try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.95;speechSynthesis.speak(u);}catch(e){} }
+function setTog(){ $("soundBtn").textContent=sound?"🔊":"🔇"; $("soundBtn").classList.toggle("off",!sound); $("voiceBtn").classList.toggle("off",!voice); }
+$("soundBtn").onclick=()=>{sound=!sound;store.set("sound",sound);setTog();};
+$("voiceBtn").onclick=()=>{voice=!voice;store.set("voice",voice);setTog();if(!voice&&"speechSynthesis" in window)speechSynthesis.cancel();};
+setTog();
+
+/* ---------- menu ---------- */
+let theme = store.get("theme","all"), length = store.get("len",8);
+function opts(el, items, cur, pick){
+  el.innerHTML = items.map(([v,a,b,dot]) => `<button class="opt${v===cur?" on":""}" data-v="${v}">${dot?`<i style="background:${dot}"></i>`:""}${a}${b?`<small>${b}</small>`:""}</button>`).join("");
+  el.onclick = e => { const b=e.target.closest(".opt"); if(!b) return; [...el.children].forEach(x=>x.classList.remove("on")); b.classList.add("on"); pick(isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v); };
+}
+const inChain = new Set(CH.flatMap(h => h.cards));
+const pool = th => C.filter(c => th==="all" || (th==="chains" ? inChain.has(c.id) : c.th===th));
+opts($("themeOpts"), Object.entries(THEMES).map(([k,[n,col]]) => [k, n, k==="chains" ? CH.length+" chains" : pool(k).length+" cards", col]), theme, v => theme=v);
+opts($("lenOpts"), [[5,"Short","5 cards"],[8,"Medium","8 cards"],[12,"Long","12 cards"]], length, v => length=v);
+
+/* ---------- game state ---------- */
+let chain = null, rounds = 0, deck = [], line = [], hand, slots, cur, tries, firstTry, placed, phase, diff, lastPlaced = [];
+
+function cardHTML(c, opts={}){
+  const yr = opts.year ? `<span class="yr">${yearText(c)}</span><span class="ago">${agoText(c)}</span>` : "";
+  return `<button class="card ${c.th} ${opts.cls||""}" data-id="${c.id}" aria-label="${c.t}${opts.year?", "+yearText(c):""}"><span class="band">${THNAME[c.th]}</span>${icon(c)}<span class="t">${c.t}</span><span class="s">${c.s}</span>${yr}</button>`;
+}
+function far(c, others, d){ return others.every(o => Math.abs(lg(c) - lg(o)) >= d); }
+function pickSet(n, d){
+  for (let k = 0; k < 400; k++){
+    const s = []; for (const c of shuffle(deck.slice())){ if (far(c, s, d)) s.push(c); if (s.length === n) return s; }
+    if (k % 40 === 39) d *= .8;
+  }
+  return shuffle(deck.slice()).slice(0, n);
+}
+function nextCard(){
+  const left = deck.filter(c => !line.includes(c));
+  let d = diff;
+  for (let k = 0; k < 8; k++){ const ok = left.filter(c => far(c, line, d)); if (ok.length) return ok[Math.random()*ok.length|0]; d *= .7; }
+  return left.find(c => line.every(o => o.y !== c.y)) || left[0];
+}
+
+function pickChain(){
+  const ok = CH.filter(h => h.cards.every(id => deck.includes(byId[id]) && !line.includes(byId[id])) && h.cards.every(id => line.every(o => o.y !== byId[id].y)));
+  return ok.length ? ok[Math.random()*ok.length|0] : null;
+}
+function newGame(){
+  deck = pool(theme); length = Math.min(length, deck.length); if (theme === "chains") length = Math.min(Math.ceil(length/3)*3, CH.length*3);
+  line = []; placed = 0; firstTry = 0; diff = .55; lastPlaced = []; rounds = 0;
+  $("story").classList.remove("show"); show("end", false);
+  startRound1();
+}
+function setMsg(t, cls){ const m=$("msg"); m.textContent=t; m.className="msg "+(cls||""); }
+function progress(){ $("prog").textContent = `Timeline: ${line.length} of ${length} cards`; }
+
+/* round 1: put three cards in order */
+function startRound1(ch){
+  phase = "r1"; tries = 0; rounds++;
+  chain = ch || (theme === "chains" ? pickChain() : null);
+  hand = chain ? shuffle(chain.cards.map(id => byId[id])) : pickSet(3, diff); slots = [null,null,null];
+  $("round1").classList.remove("hide"); $("round2").classList.add("hide");
+  $("checkBtn").classList.remove("hide"); $("nextBtn").classList.add("hide");
+  setMsg(chain ? "🔗 Chain round! These three are linked. Each one led to the next. Which came first?" : "Tap the cards to put them in order, from long ago to most recent.");
+  $("story").classList.remove("show"); $("nextBtn").classList.add("hide");
+  drawR1(); drawLine(); progress();
+}
+function drawR1(){
+  $("hand").innerHTML = hand.filter(c => !slots.includes(c)).map(c => cardHTML(c)).join("") || "";
+  const lab = ["1. Came first","2. In the middle","3. Most recent"];
+  $("slots").innerHTML = slots.map((c,i) => `<div class="slot"><b>${lab[i]}</b>${c?cardHTML(c,{cls:c._mark||""}):""}</div>${i<2?'<span class="arrow">→</span>':""}`).join("");
+  $("checkBtn").disabled = slots.includes(null);
+}
+$("round1").addEventListener("click", e => {
+  if (phase !== "r1") return;
+  const b = e.target.closest(".card"); if (!b) return;
+  const c = byId[b.dataset.id];
+  hand.forEach(h => delete h._mark);
+  const i = slots.indexOf(c);
+  if (i >= 0){ slots[i] = null; sfx.put(); }
+  else { const j = slots.indexOf(null); if (j < 0) return; slots[j] = c; sfx.pick(); say(c.t); }
+  drawR1();
+});
+$("checkBtn").onclick = () => {
+  if (phase !== "r1" || slots.includes(null)) return;
+  const right = slots.slice().sort((a,b) => a.y - b.y);
+  const nOk = slots.filter((c,i) => c === right[i]).length;
+  tries++;
+  if (nOk === 3){ finishR1(true); return; }
+  if (tries === 1){
+    sfx.no();
+    setMsg((nOk === 1 ? "Not quite! Only 1 card is in the right spot. " : "Not quite! None are in the right spot yet. ") + (chain ? chain.hint : "Try again."), "bad");
+    return;
+  }
+  finishR1(false);
+};
+function finishR1(ok){
+  phase = "wait";
+  const right = slots.slice().sort((a,b) => a.y - b.y);
+  right.forEach(c => line.push(c)); line.sort((a,b) => a.y - b.y);
+  lastPlaced = right.slice();
+  if (ok){ firstTry += tries === 1 ? 3 : 0; if (!chain) diff = Math.max(.15, diff - .07); sfx.yes(); setMsg(tries === 1 ? "You got it! Here's how far apart they were." : "Got it on the second try!", "good"); }
+  else { diff = Math.min(.8, diff + .05); sfx.no(); setMsg("Here's the right order. Look at how far apart they were!", "bad"); }
+  placed += 3;
+  $("round1").classList.add("hide"); $("checkBtn").classList.add("hide");
+  afterPlace();
+}
+
+/* later rounds: slot one new card into the timeline */
+function startRound2(){
+  phase = "r2"; tries = 0; rounds++; chain = null; cur = nextCard(); lastPlaced = [];
+  $("round2").classList.remove("hide"); $("round1").classList.add("hide"); $("checkBtn").classList.add("hide");
+  $("nc").innerHTML = cardHTML(cur);
+  $("ncHelp").innerHTML = "Where does this card go? Tap a yellow <b>+</b> on your timeline.";
+  $("story").classList.remove("show"); $("nextBtn").classList.add("hide");
+  setMsg("Did this happen before, after, or in between?");
+  say(cur.t);
+  drawLine(true); progress();
+}
+$("nc").addEventListener("click", () => { if (cur) say(cur.t); });
+function correctSpot(c){ let i = 0; while (i < line.length && line[i].y < c.y) i++; return i; }
+$("tl").addEventListener("click", e => {
+  const d = e.target.closest(".drop");
+  if (d && phase === "r2"){ tryDrop(+d.dataset.i, d); return; }
+  const b = e.target.closest(".card");
+  if (b){ const c = byId[b.dataset.id]; showStory([c]); say(c.t); }
+});
+function tryDrop(i, el){
+  const k = correctSpot(cur); tries++;
+  if (i === k){
+    line.splice(k, 0, cur); placed++; lastPlaced = [cur];
+    if (tries === 1){ firstTry++; diff = Math.max(.15, diff - .07); } else diff = Math.min(.8, diff + .03);
+    sfx.yes(); setMsg(tries === 1 ? "Yes! Right on the first try." : "Got it on the second try!", "good");
+    phase = "wait"; $("round2").classList.add("hide"); afterPlace(); return;
+  }
+  sfx.no(); el.classList.remove("no"); void el.offsetWidth; el.classList.add("no");
+  if (tries === 1){
+    el.disabled = true;
+    setMsg(i > k ? `Not there. It happened before that.` : `Not there. It happened after that.`, "bad");
+    return;
+  }
+  diff = Math.min(.8, diff + .05);
+  line.splice(k, 0, cur); placed++; lastPlaced = [cur]; cur._missed = true;
+  setMsg("Here's where it goes. Now you know!", "bad");
+  phase = "wait"; $("round2").classList.add("hide"); afterPlace();
+}
+
+function afterPlace(){
+  drawLine(false); progress(); showStory(lastPlaced);
+  const done = line.length >= length;
+  $("nextBtn").textContent = done ? "Finish ▶" : "Next card ▶";
+  $("nextBtn").classList.remove("hide"); $("nextBtn").focus({preventScroll:true});
+}
+$("nextBtn").onclick = () => {
+  if (phase === "end"){ C.forEach(c => delete c._missed); newGame(); return; }
+  if (line.length >= length) return finish();
+  if (theme === "chains"){ const h = pickChain(); if (h && length - line.length >= 3) return startRound1(h); }
+  else if (theme === "all" && rounds % 3 === 0 && length - line.length >= 3){ const h = pickChain(); if (h) return startRound1(h); }
+  startRound2();
+};
+function showStory(cs){
+  const el = $("story");
+  const h = chain && cs.length === 3 && cs.every(c => chain.cards.includes(c.id)) ? chain : null;
+  const links = h ? `<h3 class="sys">🔗 How they're linked</h3>` + h.why.map((w,i) => `<p><b>${byId[h.cards[i]].t} → ${byId[h.cards[i+1]].t}</b>${w}</p>`).join("") + `<div style="height:10px"></div>` : "";
+  el.innerHTML = links + `<h3 class="sys">${cs.length > 1 ? "True stories" : "True story"}</h3>` + cs.map(c => `<p><b>${c.t} · ${yearText(c)}</b>${c.st}</p>`).join("");
+  el.classList.add("show");
+}
+
+/* timeline strip + to-scale ruler */
+function drawLine(inserting){
+  const tl = $("tl"); tl.classList.toggle("inserting", !!inserting);
+  if (!line.length){ tl.innerHTML = `<p style="margin:10px auto;color:#666">Your cards will land here.</p>`; drawRuler(); return; }
+  let h = "";
+  const drop = i => `<button class="drop" data-i="${i}" aria-label="Put it here">+</button>`;
+  h += `<div class="gap">${drop(0)}</div>`;
+  line.forEach((c,i) => {
+    const cls = (lastPlaced.includes(c) && !inserting ? "newest " : "") + (c._missed ? "wrong" : "");
+    h += cardHTML(c, {year:true, cls});
+    h += `<div class="gap">${drop(i+1)}${i < line.length-1 ? `<span class="gl">${gapText(c, line[i+1])}</span>` : ""}</div>`;
+  });
+  tl.innerHTML = h;
+  const target = inserting ? null : tl.querySelector(".newest");
+  if (target) target.scrollIntoView({block:"nearest", inline:"center"});
+  drawRuler();
+}
+function drawRuler(){
+  const svg = $("ruler"), W = svg.clientWidth || 600, H = 70, pad = 16;
+  const lo = Math.min(-3300, ...line.map(c => c.y)), hi = NOW;
+  const x = y => pad + (y - lo) / (hi - lo) * (W - pad*2);
+  $("endL").textContent = lo < 0 ? comma(-lo) + " BC" : lo;
+  let s = `<line x1="${pad}" y1="40" x2="${W-pad}" y2="40" stroke="#000" stroke-width="2"/>`;
+  const step = 500;
+  for (let y = Math.ceil(lo/step)*step; y <= hi; y += step){
+    s += `<line x1="${x(y)}" y1="34" x2="${x(y)}" y2="46" stroke="#000" stroke-width="1"/>`;
+    if (W > 520 || y % 1000 === 0) s += `<text x="${x(y)}" y="62" font-size="11" text-anchor="middle" fill="#555">${y < 0 ? comma(-y)+" BC" : y === 0 ? "Year 1" : y}</text>`;
+  }
+  line.forEach(c => {
+    const n = lastPlaced.includes(c);
+    s += `<circle cx="${x(c.y)}" cy="40" r="${n?8:6}" fill="${n?"#ffe14d":THEMES[c.th][1]}" stroke="#000" stroke-width="1.5"/>`;
+  });
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = s;
+}
+addEventListener("resize", drawRuler);
+
+function finish(){
+  phase = "end"; sfx.win();
+  $("endTitle").textContent = "Your timeline is done!";
+  const lines = [`You placed <b>${firstTry} of ${line.length}</b> cards right on the first try.`];
+  const a = line[0], z = line[line.length-1], span = gapText(a, z).replace(" later", "");
+  lines.push(`Your cards cover <b>${span}</b> of history, from ${yearText(line[0])} to ${yearText(line[line.length-1])}.`);
+  $("endMsg").innerHTML = lines.join(" ");
+  $("nextBtn").classList.add("hide");
+  show("end", true);
+}
+function show(id, on){ $(id).classList.toggle("show", on); }
+$("go").onclick = () => { store.set("theme", theme); store.set("len", length); show("start", false); C.forEach(c => { delete c._missed; delete c._mark; }); newGame(); tone(880,.05); };
+$("again").onclick = () => { C.forEach(c => delete c._missed); length = store.get("len", 8); newGame(); };
+$("look").onclick = () => { show("end", false); setMsg("Tap any card to read its true story."); $("story").classList.remove("show"); lastPlaced = []; drawLine(false); $("nextBtn").textContent = "Play again"; $("nextBtn").classList.remove("hide"); };
+$("change").onclick = () => { show("end", false); show("start", true); };
+drawLine(false);
+window.WCF = { hand: () => hand.map(c => [c.id, c.y]), line: () => line.map(c => c.y), spot: () => correctSpot(cur) };
+}
+</script>
+</body>
+</html>

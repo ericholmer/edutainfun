@@ -9,7 +9,8 @@ index.html        Launcher (At Ease–style desktop)
 fonts/            Fonts shared by the launcher, the Gallery and Gone Fishing (self-hosted, no Google Fonts calls)
 map/              Mixed-Up Map
 gallery/          A Puzzling Presidential Gallery  (portraits/NN.jpg, 00 = Washington)
-first/            Which Came First?
+first/            Which Came First?  (the original flat-card version, still on the launcher)
+packs/            Which Came First? card-pack version, in testing  (art/ = frames, card pictures, packs, logo, back and joke items; data.js = the 67 cards and 9 chains; lib/ = three.js)
 chase/            The Big Map Chase
 bill/             Bill's Big Trip  (art/ = pixel art, fonts/ = Pixelify Sans + Atkinson Hyperlegible)
 fish/             Gone Fishing: Chesapeake Bay  (fish/<id>.webp = Duane Raver USFWS paintings, art/ = painted scenes, map, boat and props)
@@ -42,6 +43,10 @@ Then open http://localhost:8000. Opening the files directly (`file://`) mostly w
 - **Presidential portraits**: public-domain works.
 - **Fish paintings** (Gone Fishing): Duane Raver, U.S. Fish and Wildlife Service, public domain.
 - **Scenes, map, boat and props** (Gone Fishing): made for this project with Adobe Firefly.
+- **Barlow Condensed** (Which Came First? card packs): SIL Open Font License 1.1, license next to the font files.
+- **three.js** r160 (Which Came First? card packs): MIT License, `packs/lib/LICENSE-three.txt`.
+- **Card frames, foil packs, logo, card back and joke items** (Which Came First? card packs): made for this project with Adobe Firefly and Nano Banana Pro.
+- **Card pictures** (Which Came First? card packs): public-domain and openly licensed photos and paintings, mostly from Wikimedia Commons. The credits in `packs/data.js` are provisional until each one is checked against its source page.
 - **Map data** (The Big Map Chase): Natural Earth via world-atlas and us-atlas, public domain.
 - Pixel art for Bill's Big Trip was made for this project.
 

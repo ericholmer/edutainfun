@@ -103,5 +103,6 @@ const JUNK = {
  gum:"A stick of very old gum",
  cheese:"Beloved Cheeses of Our Nation: Pork-Ched-A-Rind",
  wagonette:"Vehicles of Tomorrow: Chebb Motors Wagonette",
- insurance:"Insurance Salesman of Indiana: Michael Molankowski"
+ insurance:"Insurance Salesman of Indiana: Michael Molankowski",
+ carpet:"Top Carpet Salesmen of the Midwest: Gary Trambini"
 };

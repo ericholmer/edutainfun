@@ -12,7 +12,7 @@ gallery/          A Puzzling Presidential Gallery  (portraits/NN.jpg, 00 = Washi
 first/            Which Came First?
 chase/            The Big Map Chase
 bill/             Bill's Big Trip  (art/ = pixel art, fonts/ = Pixelify Sans + Atkinson Hyperlegible)
-fish/             Gone Fishing: Chesapeake Bay  (fish/<id>.webp = Duane Raver USFWS paintings)
+fish/             Gone Fishing: Chesapeake Bay  (fish/<id>.webp = Duane Raver USFWS paintings, art/ = painted scenes, map, boat and props)
 ```
 
 Each game is a single self-contained `index.html`, plus its own fonts and images. Every game has the shared "edutain.fun" menu bar. Its config line `EB={id:"…",home:"/"}` sends Quit back to the launcher at `/#<id>`, which plays the zoom-shut into that game's tile.
@@ -41,6 +41,7 @@ Then open http://localhost:8000. Opening the files directly (`file://`) mostly w
 - **Atkinson Hyperlegible** (Braille Institute), **Pixelify Sans**, **Cormorant Garamond**, **Source Sans 3** and **Zilla Slab**: SIL Open Font License 1.1. License texts are next to the font files.
 - **Presidential portraits**: public-domain works.
 - **Fish paintings** (Gone Fishing): Duane Raver, U.S. Fish and Wildlife Service, public domain.
+- **Scenes, map, boat and props** (Gone Fishing): made for this project with Adobe Firefly.
 - **Map data** (The Big Map Chase): Natural Earth via world-atlas and us-atlas, public domain.
 - Pixel art for Bill's Big Trip was made for this project.
 

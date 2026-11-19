@@ -114,7 +114,7 @@
   /* ---------- notebook-paper cards ---------- */
   .overlay{position:fixed;inset:0;background:#141c18a8;display:none;place-items:center;padding:14px;z-index:5}
   .overlay.show{display:grid}
-  .card{position:relative;max-width:440px;width:100%;max-height:calc(100dvh - 70px);overflow:auto;padding:30px 20px 20px 58px;
+  .card{position:relative;max-width:440px;width:100%;max-height:calc(100dvh - 70px);overflow:auto;padding:28px 20px 28px 58px;
     border-radius:3px;box-shadow:0 12px 40px #000a;font-size:16px;line-height:28px;
     background:
       radial-gradient(circle at 24px 70px,#3a3f3c 0 8px,transparent 9px),
@@ -124,18 +124,22 @@
       repeating-linear-gradient(transparent 0 27px,var(--rule) 27px 28px),
       var(--paper);
     background-attachment:local}
-  .card h2{font-family:"Hand",cursive;font-weight:400;margin:0 0 0;font-size:36px;line-height:42px;color:#1c3d6b}
-  .card p{margin:0 0 14px}
-  .card ol{padding-left:20px;margin:0 0 14px}
-  .card li{margin-bottom:4px}
-  .lab{font-family:"Hand",cursive;font-size:21px;color:#1c3d6b;margin:4px 0 4px}
-  .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .card>*{margin-top:0}
+  .card h2{font-family:"Hand",cursive;font-weight:400;margin:0;font-size:38px;line-height:56px;color:#1c3d6b}
+  .card p{margin:0}
+  .card p+p{text-indent:1.4em}
+  .card ol{padding-left:20px;margin:0}
+  .card li{margin:0}
+  .lab{font-family:"Hand",cursive;font-size:22px;line-height:28px;color:#1c3d6b;margin:0}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
   .opt{border:2px solid transparent;background:#ffffffb0;padding:6px 8px;font-weight:700;font-size:15px;line-height:1.25;cursor:pointer;color:var(--ink);text-align:left;
     border-radius:255px 15px 225px 15px/15px 225px 15px 255px;outline:1px dashed #b8b0a0;outline-offset:-3px}
   .opt.on{border-color:#1c56a8;outline-color:transparent;background:#e9f1fb;box-shadow:1px 1px 0 #1c56a8}
   .opt small{display:block;font-weight:400;color:#555;font-size:13px}
   .card .btn{width:100%}
-  .note{position:relative;margin:4px 0 18px auto;width:max-content;max-width:88%;transform:rotate(2.5deg);
+  .card .gap{height:0}
+  .card .tail{height:28px}
+  .note{position:relative;margin:10px 0 0 auto;width:max-content;max-width:88%;transform:rotate(2.5deg);
     background:#fdf3a8;padding:10px 16px 8px;font-family:"Hand",cursive;font-size:21px;line-height:1.15;color:#3b3540;
     box-shadow:2px 3px 6px #0004;letter-spacing:.5px}
   .note::before{content:"";position:absolute;left:50%;top:-9px;width:60px;height:18px;transform:translateX(-50%) rotate(-3deg);background:#ffffffa0;box-shadow:0 0 0 1px #0000000d}
@@ -287,7 +291,6 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
     <p id="endMsg"></p>
     <div class="note" id="endNote"></div>
     <button class="btn primary" id="again">Play again</button>
-    <div style="height:10px"></div>
     <button class="btn ghost" id="review">Look at the map</button>
   </div>
 </div>
@@ -407,13 +410,13 @@ function starPath(cx,cy,r){let d='';for(let i=0;i<10;i++){const a=-Math.PI/2+i*M
 function sticker(parent,ab,txt,x,y,lay,state,left){
   const {fs,lines}=lay;
   const lw=Math.max(...lines.map(l=>l.length))*fs*0.6;
-  const px=fs*.42, py=fs*.28;
-  const w=lw+px*2, h=lines.length*fs*1.08+py*2;
-  const x0=left?x:x-w/2, y0=y-h/2, cx=x0+w/2;
+  const px=fs*.42, py=fs*.28, sw=state==='ok'?fs*1.1:0;   // room for the gold star, inside the sticker
+  const w=lw+px*2+sw, h=lines.length*fs*1.08+py*2;
+  const x0=left?x:x-w/2, y0=y-h/2, cx=x0+sw+(w-sw)/2;
   const outer=el('g',{class:'stk'+(G.sel===ab?' sel':'')+(state==='ok'?' ok':state==='no'?' no':'')},parent);
   outer.dataset.id=ab; outer.dataset.for=ab;
   const tilt=(state==='mix'&&!G.reveal)?((hash(ab+txt)%13)-6)*.9:0;
-  const inner=el('g',tilt?{transform:`rotate(${tilt} ${cx} ${y})`}:{},outer);
+  const inner=el('g',tilt?{transform:`rotate(${tilt} ${x0+w/2} ${y})`}:{},outer);
   const c=Math.min(h*.42,fs*.62);
   const flat=state!=='mix';
   const body=flat
@@ -425,7 +428,7 @@ function sticker(parent,ab,txt,x,y,lay,state,left){
   const t=el('text',{x:cx,y},inner); t.style.fontSize=fs+'px';
   if(lines.length===1) t.textContent=lines[0];
   else lines.forEach((p,i)=>{const sp=el('tspan',{x:cx,y:y+(i-(lines.length-1)/2)*fs*1.06},t);sp.textContent=p;});
-  if(state==='ok') el('path',{d:starPath(x0-fs*.2,y0-fs*.15,Math.max(4.5,fs*.85)),class:'star'},inner);
+  if(state==='ok') el('path',{d:starPath(x0+px*.55+fs*.5,y,fs*.56),class:'star'},inner);
   return {x:cx,y,w,h,y0};
 }
 
@@ -448,7 +451,7 @@ function draw(){
       const b=sticker(gC,s.ab,txt,s.cx-4,s.cy,{fs:Math.min(11,fitSize(txt,96,11)),lines:[txt]},state,true);
       if(G.reveal&&!right) addFix(gC,b.x,s.cy+b.h/2+7,s.name,10);
     } else {
-      const b=sticker(gL,s.ab,txt,s.lx,s.ly,layout(txt,s.slot),state,false);
+      const b=sticker(gL,s.ab,txt,s.lx,s.ly,layout(txt,state==='ok'?s.slot*.78:s.slot),state,false);
       if(G.reveal&&!right) addFix(gL,s.lx,s.ly+b.h/2+6,s.name,Math.max(8,Math.min(12,b.h*.6)));
     }
   });
@@ -634,6 +637,24 @@ $('zin').onclick=()=>zoomAt(1.5,...center());
 $('zout').onclick=()=>zoomAt(1/1.5,...center());
 $('zreset').onclick=fitView;
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&G&&G.sel){G.sel=null;draw();setStatus();}});
+
+/* keep notebook cards on the 28px ruled lines: pad each block so the next one starts on a line */
+const RULE=28;
+function snap(card){
+  [...card.children].forEach(c=>{
+    c.style.marginBottom='0px';
+    const cs=getComputedStyle(c); if(cs.display==='none') return;
+    const bottom=c.offsetTop+c.offsetHeight;
+    const pad=(RULE-bottom%RULE)%RULE;
+    c.style.marginBottom=pad+'px';
+  });
+}
+const snapAll=()=>document.querySelectorAll('.overlay.show .card').forEach(snap);
+const ro=new ResizeObserver(()=>requestAnimationFrame(snapAll));
+document.querySelectorAll('.card').forEach(c=>{ro.observe(c);[...c.children].forEach(k=>ro.observe(k));});
+const mo=new MutationObserver(()=>requestAnimationFrame(snapAll));
+['start','end'].forEach(id=>mo.observe($(id),{subtree:true,attributes:true,attributeFilter:['class'],childList:true}));
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(snapAll);
 
 /* start with the map rolled up behind the first card */
 setRolledInstant(true);

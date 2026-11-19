@@ -96,7 +96,22 @@ const PHOTOS = {
  goldengate:"Photo from Wikimedia Commons.",
  rushmore:"Photo by Dean Franklin.",
  moon:"Photo by Neil Armstrong, NASA, 1969.",
- gutenberg:"Drawing from a book printed in 1894."
+ gutenberg:"Drawing from a book printed in 1894.",
+ lewis:"Painting by Edgar S. Paxson, 1912. Montana State Capitol. An artist's idea.",
+ rosetta:"Engraving from the book Description de l'Egypte, 1822.",
+ jenner:"Old engraving. An artist's idea of Jenner at work.",
+ balloon:"Picture card from the 1800s of the first public balloon launch, at Annonay, France, in June 1783.",
+ taj:"Photo from Wikimedia Commons, 2018.",
+ mayflower:"Painting by William Halsall, 1882. An artist's idea.",
+ magellan:"Old engraving of ships in the Strait of Magellan. An artist's idea.",
+ machu:"Photo from Wikimedia Commons.",
+ magna:"Drawing from Cassell's History of England, about 1902. An artist's idea.",
+ vikings:"Painting by Hans Dahl. An artist's idea.",
+ paper:"Old Japanese painting of Cai Lun. Minobu Museum of History and Folklore.",
+ vesuvius:"Color photo print from about 1890 to 1900. Library of Congress.",
+ qin:"Portrait from an album made in the 1800s, long after his lifetime.",
+ olympics:"Drawing from an old children's book. An artist's idea.",
+ writing:"Drawing of an early clay tablet with picture-writing."
 };
 // Joke items that sometimes turn up in a pack. All made up.
 const JUNK = {

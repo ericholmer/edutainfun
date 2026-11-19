@@ -520,12 +520,23 @@ function renderOrder(){const w=$('work');w.innerHTML='';const ow=document.create
     const num=document.createElement('span');num.className='num';num.textContent=h.lock?'✓':i+1;
     const tx=document.createElement('span');tx.className='tx';tx.innerHTML='<b></b><small></small>';tx.firstChild.textContent=h.c.t;tx.lastChild.textContent=h.c.s;
     b.append(num,cardEl(h.c,h.fin,'','span'),tx);
-    b.onclick=()=>{if(h.lock)return;if(G.sel==null)G.sel=i;else if(G.sel===i)G.sel=null;else{const j=G.sel;[G.order[i],G.order[j]]=[G.order[j],G.order[i]];G.sel=null;beep(500,0,.06)}renderOrder();
+    b.onclick=()=>{if(h.lock)return;if(G.sel==null)G.sel=i;else if(G.sel===i)G.sel=null;else{swapAnim(i,G.sel);return}renderOrder();
       const nb=list.parentNode&&$('work').querySelectorAll('.oi')[i];nb&&nb.focus({preventScroll:true})};
     list.append(b)});
   const labs=document.createElement('div');labs.className='olabs';labs.innerHTML='<span>◀ Long ago</span><span>Most recent ▶</span>';ow.append(labs,list);
   const go=document.createElement('button');go.className='btn';go.id='bCheck';go.textContent='Check my order';go.onclick=checkOrder;
   w.append(ow,go)}
+// glide two cards past each other: the picked card arcs over the top, the other dips under
+let swapping=false;
+function swapAnim(i,j){if(swapping)return;const els=$('work').querySelectorAll('.oi'),a=els[i],b=els[j];
+  const done=()=>{[G.order[i],G.order[j]]=[G.order[j],G.order[i]];G.sel=null;swapping=false;renderOrder()};
+  if(calm||!a.animate){beep(500,0,.06);return done()}
+  swapping=true;const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect(),dx=rb.left-ra.left,h=ra.height*.22,ms=380,e='cubic-bezier(.45,0,.25,1)';
+  beep(420,0,.05);beep(620,.25,.07);[a,b].forEach(el=>{el.style.zIndex=el===b?3:2;el.style.position='relative';el.style.transition='none';el.querySelector('.tx').animate([{opacity:1},{opacity:0,offset:.2},{opacity:0}],{duration:ms,fill:'forwards'})});
+  // only the cards travel; numbers stay in their slots and titles fade. b (picked first) rides over the top
+  b.querySelector('.cd').animate([{transform:'translate(0,0) rotate(0deg)'},{transform:`translate(${-dx/2}px,${-h}px) rotate(${dx>0?-6:6}deg) scale(1.06)`},{transform:`translate(${-dx}px,0) rotate(0deg)`}],{duration:ms,easing:e,fill:'forwards'});
+  const an=a.querySelector('.cd').animate([{transform:'translate(0,0)'},{transform:`translate(${dx/2}px,${h*.45}px) scale(.94)`},{transform:`translate(${dx}px,0)`}],{duration:ms,easing:e,fill:'forwards'});
+  an.onfinish=done;setTimeout(()=>{if(swapping)done()},ms+300)}
 function checkOrder(){const sorted=[...G.hand].sort((a,b)=>a.c.y-b.c.y);G.otry++;G.sel=null;const ok=G.order.map((h,i)=>h===sorted[i]),n=ok.filter(Boolean).length;
   if(n==3){sfx.good();G.order.forEach(h=>settle(h,true,!h.miss1));results('You got it!');return}
   if(G.otry==1){sfx.bad();G.order.forEach((h,i)=>{if(ok[i])h.lock=true;else h.miss1=true});

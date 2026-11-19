@@ -35,9 +35,23 @@ button:focus-visible,.cd:focus-visible{outline:3px solid #fff;outline-offset:2px
 .top .cap{font-size:22px;margin-right:auto}
 .top small{color:var(--dim);font-size:15px}
 /* title */
-#sTitle{align-items:center;justify-content:center;gap:14px;padding:18px;text-align:center;overflow:auto}
-#sTitle img{width:min(86vw,520px);height:auto;filter:drop-shadow(0 8px 14px #000a)}
-#sTitle .tag{font-size:19px;max-width:30em;margin:0}
+#sTitle{align-items:center;gap:10px;padding:14px 12px 18px;text-align:center;overflow:auto;
+  background:radial-gradient(ellipse 75% 60% at 50% 46%,#ffd9a000 0,#1a1220a8 62%,#120c18f2 100%),linear-gradient(#120c1859,#120c1859),url(art/pegboard.jpg) 0 0/300px auto repeat #4a3a2c;background-attachment:local}
+#sTitle .logo{width:min(80vw,440px);height:auto;filter:drop-shadow(0 8px 14px #000c)}
+#sTitle .tag{font-size:18px;max-width:30em;margin:0;text-shadow:0 2px 6px #000}
+#wall{display:flex;flex-wrap:wrap;justify-content:center;gap:22px 18px;max-width:1100px;padding:14px 4px 6px}
+.peg{--pw:min(40vw,168px,calc((100dvh - 330px)/1.75));position:relative;width:var(--pw);padding:0;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink)}
+.peg::before{content:"";position:absolute;top:-14px;left:50%;width:10px;height:26px;margin-left:-5px;border-radius:5px;background:linear-gradient(90deg,#8a8f99,#eef1f5 45%,#7b808a);box-shadow:0 3px 4px #0009;z-index:2}
+.peg .tab{width:46%;height:22px;margin-bottom:-8px;border-radius:9px 9px 3px 3px;background:#d8e4ee38;border:1px solid #ffffff55;position:relative;z-index:1;backdrop-filter:blur(2px)}
+.peg .tab::after{content:"";position:absolute;left:50%;top:6px;width:16px;height:7px;margin-left:-8px;border-radius:4px;background:#120c18}
+.peg img{width:100%;height:auto;display:block;border-radius:4px;filter:drop-shadow(0 12px 14px #000c);transition:transform .2s}
+.peg:hover img,.peg:focus-visible img{transform:translateY(-6px) rotate(-1.5deg)}
+.peg:active img{transform:translateY(4px)}
+.peg .lbl{font:800 17px/1.05 "Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.05em;background:#f6f0e6;color:#1d1626;padding:4px 10px 3px;border-radius:4px;box-shadow:0 3px 6px #0008}
+.peg .lbl small{display:block;font:700 13px "Atkinson Hyperlegible",sans-serif;text-transform:none;letter-spacing:0;color:#5d5368}
+#ovLen .win{text-align:center}
+#ovLen img{width:min(46vw,190px);height:auto;filter:drop-shadow(0 10px 14px #000c);margin:4px auto 10px;display:block}
+#ovLen .row{margin-top:10px}
 .row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 /* pack */
 #stage{flex:1;position:relative;overflow:hidden;touch-action:none}
@@ -200,13 +214,9 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
 </script>
 <!-- /edutain.fun shared menu bar -->
 <section class="scr on" id="sTitle">
-  <img src="art/logo.webp" alt="Which Came First?" width="1031" height="398">
-  <p class="tag">Rip open a pack. Put history in order. Keep the cards you get right!</p>
-  <div class="row">
-    <button class="btn" data-packs="2">Quick game · 2 packs</button>
-    <button class="btn" data-packs="3">3 packs</button>
-    <button class="btn" data-packs="4">Long game · 4 packs</button>
-  </div>
+  <img class="logo" src="art/logo.webp" alt="Which Came First?" width="1031" height="398">
+  <p class="tag">Pick a pack off the wall. Put history in order. Keep the cards you get right!</p>
+  <div id="wall"></div>
   <div class="row">
     <button class="btn alt" id="bBinder">My binder</button>
     <button class="btn alt sm" id="bSound">Sound: on</button>
@@ -240,9 +250,11 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
 <div class="ov" id="ovRes"><div class="win"><h2 id="resT"></h2><div id="resB"></div><div class="acts"><button class="btn" id="resGo">Next ▶</button></div></div></div>
 <div class="ov" id="ovCard"><div id="cv"><div id="cvf"><div id="cvFront"></div><div id="cvb"></div></div><div class="row"><button class="btn" id="cvFlip">Flip it over</button><button class="btn alt" id="cvClose">Close</button></div></div></div>
 <div class="ov" id="ovEnd"><div class="win"><h2>Timeline complete!</h2><div id="endB"></div><div class="acts"><button class="btn alt" id="endBin">My binder</button><button class="btn alt" id="endLook">Look at my timeline</button><button class="btn" id="endAgain">Play again</button></div></div></div>
+<div class="ov" id="ovLen"><div class="win"><h2 id="lenT"></h2><img id="lenImg" alt=""><p id="lenP"></p><p>How many packs do you want to open?</p>
+  <div class="row" id="lenRow"></div><div class="acts" style="justify-content:center"><button class="btn alt sm" id="lenBack">Put it back</button></div></div></div>
 <div class="ov" id="ovGrown"><div class="win"><h2>For grown-ups</h2>
   <p><b>What it teaches.</b> Putting events in order, and seeing how one thing led to another. Every date and story on a real card was checked against a reliable source.</p>
-  <p><b>How cards are kept.</b> A card goes in the binder when your child places it correctly. A card missed twice goes back in the deck and will turn up again. There are 67 cards.</p>
+  <p><b>How cards are kept.</b> A card goes in the binder when your child places it correctly. A card missed twice goes back in the deck and will turn up again. There are 67 cards. The Everything pack deals from all of them; each theme pack deals only cards from its theme.</p>
   <p><b>Shiny cards.</b> Every card can turn up in three finishes: Standard (about 7 in 10), Shiny (about 1 in 4) and Rainbow (about 1 in 20). Placing a card right on the first try moves it up one finish. Finishes are only for fun. No event is "rarer" than another.</p>
   <p><b>Nothing to buy.</b> Packs are free and never run out. There are no coins, timers or daily limits.</p>
   <p><b>Joke items.</b> About 1 pack in 12 has a silly extra, like a stick of old gum or a card from the "wrong pack." These are made up, and the junk drawer says so.</p>
@@ -295,7 +307,11 @@ const FR={inventions:{win:[85,166,652,537],ty:903,plate:[84,750,658,306]},wonder
 const PH={exp:['#124a40','#6fc2ad'],inv:['#1c376b','#86aee8'],big:['#6e1f24','#e9b56a'],won:['#3a2466','#cfa97a']};
 const IMG={},loading={};
 function img(src){return loading[src]||(loading[src]=new Promise(r=>{const im=new Image();im.onload=()=>{IMG[src]=im;r(im)};im.onerror=()=>r(null);im.src=src}))}
-const BASE=['art/frame-inventions.webp','art/frame-wonders.webp','art/frame-moments.webp','art/frame-explorers.webp','art/back.jpg','art/logo.webp','art/pack-std.jpg','art/pack-chain.jpg'];
+const PACKS=[['all','Everything'],['inv','Inventions'],['exp','Explorers'],['big','Big Moments'],['won','Wonders & Art']];
+const PNAME=Object.fromEntries(PACKS);PNAME.chain='Cause & Effect';
+const PFILE={all:'art/pack-std.jpg',inv:'art/pack-inv.jpg',exp:'art/pack-exp.jpg',big:'art/pack-big.jpg',won:'art/pack-won.jpg',chain:'art/pack-chain.jpg'};
+const inTheme=(c,th)=>th=='all'||c.th==th;
+const BASE=['art/pack-inv.jpg','art/pack-exp.jpg','art/pack-big.jpg','art/pack-won.jpg','art/frame-inventions.webp','art/frame-wonders.webp','art/frame-moments.webp','art/frame-explorers.webp','art/back.jpg','art/logo.webp','art/pack-std.jpg','art/pack-chain.jpg'];
 function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
 function rr(g,x,y,w,h,r){g.beginPath();g.roundRect(x,y,w,h,r)}
 function lines(g,t,w){const ws=t.split(' ');let l='',ls=[];for(const s of ws){const n=l?l+' '+s:s;if(g.measureText(n).width>w&&l){ls.push(l);l=s}else l=n}ls.push(l);return ls}
@@ -318,8 +334,16 @@ function drawMask(c,fin){const k=cv(CWp,CHp),g=k.getContext('2d'),fr=FR[TH[c.th]
   g.fillStyle=fin>1?'#777':'#3c3c3c';rr(g,...fr.plate,40);g.fill();g.fillStyle='#555';rr(g,64,64,694,72,30);g.fill();return k}
 function logoAt(g,cx,cy,w){const L=IMG['art/logo.webp'];if(L){const h=w*L.height/L.width;g.drawImage(L,cx-w/2,cy-h/2,w,h)}}
 function drawBack(){const k=cv(CWp,CHp),g=k.getContext('2d');rr(g,0,0,CWp,CHp,34);g.clip();const b=IMG['art/back.jpg'];if(b)g.drawImage(b,0,0,CWp,CHp);else{g.fillStyle='#27307a';g.fillRect(0,0,CWp,CHp)}logoAt(g,411,613,286);return k}
-function drawPack(chain){const k=cv(728,1168),g=k.getContext('2d'),im=IMG[chain?'art/pack-chain.jpg':'art/pack-std.jpg'];if(im)g.drawImage(im,0,0,728,1168);else{g.fillStyle=chain?'#0d5a3a':'#16224f';g.fillRect(0,0,728,1168)}chain?logoAt(g,364,593,345):logoAt(g,364,590,430);return k}
-const ART={};
+function drawPack(kind){const k=cv(728,1168),g=k.getContext('2d'),im=IMG[PFILE[kind]];if(im)g.drawImage(im,0,0,728,1168);else{g.fillStyle='#16224f';g.fillRect(0,0,728,1168)}
+  kind=='chain'?logoAt(g,364,593,345):logoAt(g,364,590,430);
+  const sp=v=>{try{g.letterSpacing=v}catch(e){}};const cx=600,cy=1000,r=92;g.save();g.translate(cx,cy);g.rotate(-.18);
+  g.fillStyle='#fdf6e3';g.beginPath();for(let i=0;i<32;i++){const a=i/32*Math.PI*2,rr=i%2?r:r*1.1;g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}g.fill();
+  g.lineWidth=6;g.strokeStyle='#b8862a';g.beginPath();g.arc(0,0,r*.84,0,7);g.stroke();
+  g.fillStyle='#1d1626';g.textAlign='center';g.textBaseline='middle';const nm=PNAME[kind].toUpperCase().split(' ');
+  sp('1px');g.font='800 '+(nm.join(' ').length>11?28:34)+'px '+TF;const ls=nm.length>1&&nm.join(' ').length>10?[nm.slice(0,-1).join(' '),nm[nm.length-1]]:[nm.join(' ')];
+  ls.forEach((l,i)=>g.fillText(l,0,-14+(i-(ls.length-1)/2)*30));g.font='700 22px '+TF;sp('3px');g.fillStyle='#8a5a12';g.fillText('3 CARDS',0,ls.length>1?42:30);g.restore();return k}
+const ART={pack:{}};
+function packArt(){if(!ART.back)ART.back=drawBack();Object.keys(PFILE).forEach(k=>{if(!ART.pack[k])ART.pack[k]=drawPack(k)})}
 async function faceCanvas(c){if(PHOTOS[c.id])await img('art/card-'+c.id+'.jpg');return drawFace(c,cv(CWp,CHp))}
 const THUMB={},scratch=cv(CWp,CHp);
 async function thumb(c){if(THUMB[c.id])return THUMB[c.id];if(PHOTOS[c.id])await img('art/card-'+c.id+'.jpg');drawFace(c,scratch);const t=cv(440,606);t.getContext('2d').drawImage(scratch,0,0,440,606);
@@ -349,7 +373,7 @@ const Scene={ready:false,active:false,state:'idle',
   build(items,chain,bonus,onAll){const T=this.T,S3=this.scene;if(this.root){S3.remove(this.root);this.root.traverse(o=>{if(o.material){[].concat(o.material).forEach(m=>{m.map&&m.map!==this.backTex&&m.map.dispose();m.dispose()})}})}
     const root=this.root=new T.Group();S3.add(root);this.items=items;this.onAll=onAll;this.told=false;
     this.state='pack';this.p=0;this.dir=1;this.big=null;this.spin=0;this.tilt={x:0,y:0};this.anims=[];
-    const W=1.78,H=2.85,SH=.4,BH=H-SH,pt=this.tex(chain?ART.packChain:ART.packStd);
+    const W=1.78,H=2.85,SH=.4,BH=H-SH,pt=this.tex(ART.pack[chain?'chain':G.theme]);
     this.foilMat=new T.MeshStandardMaterial({map:pt,metalness:.5,roughness:.3,side:T.DoubleSide});
     const pack=this.pack=new T.Group();root.add(pack);
     const side=back=>{const gm=new T.PlaneGeometry(W,BH,20,24),ps=gm.attributes.position,uv=gm.attributes.uv;
@@ -452,13 +476,14 @@ new ResizeObserver(()=>Scene.fit()).observe(stage);
 /* ---------- game ---------- */
 let G=null;
 const la=y=>Math.log10(NOW-y+3);
-function startGame(n){audio();G={packs:n,pk:0,tl:[],hand:[],used:new Set(),years:new Set(),level:0,kept:0,seen:0,fresh:0,chain:null};nextPack()}
-function pickCards(){const pool=()=>C.filter(c=>!G.used.has(c.id)&&!G.years.has(c.y));
+function startGame(n,th){audio();G={theme:th||'all',packs:n,pk:0,tl:[],hand:[],used:new Set(),years:new Set(),level:0,kept:0,seen:0,fresh:0,chain:null};nextPack()}
+function pickCards(){const pool=()=>{const a=C.filter(c=>inTheme(c,G.theme)&&!G.used.has(c.id));const b=a.filter(c=>!G.years.has(c.y));return b.length>=3?b:a};
   const wantChain=G.pk==1&&(G.packs>=3||Math.random()<.5);G.chain=null;
   if(wantChain){const p=pool(),ids=new Set(p.map(c=>c.id)),av=CH.filter(ch=>ch.cards.every(id=>ids.has(id)));
     if(av.length){const fresh=av.filter(ch=>ch.cards.some(id=>S.own[id]==null));G.chain=(fresh.length?fresh:av)[rnd((fresh.length?fresh:av).length)];return G.chain.cards.map(id=>BY[id])}}
   const out=[];for(let k=0;k<3;k++){const p=pool().filter(c=>!out.includes(c)&&!out.some(o=>o.y==c.y)),others=[...G.tl.map(e=>e.c),...out];
     let g=[.9,.6,.4,.25,.12][G.level],cand=[];while(!cand.length){cand=p.filter(c=>others.every(o=>Math.abs(la(c.y)-la(o.y))>=g));g*=.6;if(g<.004&&!cand.length){cand=p;break}}
+    if(!cand.length)cand=C.filter(c=>inTheme(c,G.theme)&&!out.includes(c));
     const bag=[];cand.forEach(c=>{bag.push(c);if(S.own[c.id]==null)bag.push(c,c)});out.push(bag[rnd(bag.length)])}
   return out}
 async function nextPack(){const cards=pickCards();G.pk++;
@@ -468,11 +493,11 @@ async function nextPack(){const cards=pickCards();G.pk++;
   S.opened++;S.sb=(S.sb||0)+1;let bonus=null;
   if(Math.random()<1/12||(S.sb>=8&&!S.junk.length)){const all=Object.keys(JUNK),un=all.filter(k=>!S.junk.includes(k)),pick=un.length?un:all;bonus=pick[rnd(pick.length)];S.sb=0}
   save();
-  $('packTitle').textContent='Pack '+G.pk+' of '+G.packs+(G.chain?' · Chain pack':'');
+  $('packTitle').textContent=(G.chain?PNAME.chain:PNAME[G.theme])+' · Pack '+G.pk+' of '+G.packs;
   $('bGo').hidden=true;$('bAll').hidden=true;$('bRip').hidden=false;$('bGo').textContent=G.tl.length?'Place them ▶':'Put them in order ▶';
   show('sPack');say('Getting your pack ready…');
   await Promise.all(BASE.map(img));if(bonus)await img('art/bonus-'+bonus+'.webp');
-  if(!ART.back){ART.back=drawBack();ART.packStd=drawPack(false);ART.packChain=drawPack(true)}
+  packArt();
   await Promise.all(G.hand.map(async h=>{h.face=await faceCanvas(h.c);await thumb(h.c)}));
   const ready=()=>{$('bGo').hidden=false;if(G.chain)say('These three cards are linked. One led to the next! Tap a card to look closer, or go on.')};
   if(Scene.init()){Scene.fit();Scene.build(G.hand,!!G.chain,bonus,ready)}
@@ -538,7 +563,7 @@ function results(title){header();const list=G.hand.filter(h=>h.done&&!h.shown);l
   $('tlwrap').hidden=false;renderTL(null);$('work').innerHTML='';msg('');ov('ovRes',true);$('resGo').focus({preventScroll:true});$('ovRes').firstElementChild.scrollTop=0}
 $('resGo').onclick=()=>{ov('ovRes',false);if(cur())insertMode();else packDone()};
 function packDone(){if(G.pk<G.packs)nextPack();else{$('endB').innerHTML='<p>You kept <b>'+G.kept+' of '+G.seen+'</b> cards.</p><p>'+(G.fresh?G.fresh+' new '+(G.fresh==1?'card':'cards')+' for your binder! ':'')+'Your binder has <b>'+owned()+' of '+C.length+'</b>.</p>'+(G.kept<G.seen?'<p>The cards you missed went back in the deck. They will come around again.</p>':'');sfx.good();ov('ovEnd',true)}}
-$('endAgain').onclick=()=>{ov('ovEnd',false);startGame(G.packs)};
+$('endAgain').onclick=()=>{ov('ovEnd',false);startGame(G.packs,G.theme)};
 $('endLook').onclick=()=>{ov('ovEnd',false);msg('Tap any card to read its story.');const w=$('work');w.innerHTML='';const b=document.createElement('button');b.className='btn';b.textContent='Done';b.onclick=()=>ov('ovEnd',true);w.append(b)};
 $('endBin').onclick=()=>{ov('ovEnd',false);binder()};
 
@@ -562,8 +587,19 @@ async function binder(){show('sBinder');await Promise.all(BASE.map(img));$('binT
 function junkView(k){const f=$('cvFront');f.innerHTML='<img class="junkbig" alt="">';f.firstChild.src='art/bonus-'+k+'.webp';f.firstChild.alt=JUNK[k];$('cvf').classList.remove('back');$('cvFlip').hidden=true;ov('ovCard',true)}$('bSort').onclick=()=>{byTime=!byTime;binder()};
 
 /* ---------- title and wiring ---------- */
-function home(){ov('ovRes',false);ov('ovEnd',false);ov('ovCard',false);show('sTitle');$('bBinder').textContent='My binder · '+owned()+' of '+C.length}
-document.querySelectorAll('[data-packs]').forEach(b=>b.onclick=()=>startGame(+b.dataset.packs));
+function home(){ov('ovRes',false);ov('ovEnd',false);ov('ovCard',false);ov('ovLen',false);show('sTitle');wall();$('bBinder').textContent='My binder · '+owned()+' of '+C.length}
+const maxPacks=th=>Math.min(4,Math.floor((C.filter(c=>inTheme(c,th)).length-1)/3));
+const got=th=>C.filter(c=>inTheme(c,th)&&S.own[c.id]!=null).length,tot=th=>C.filter(c=>inTheme(c,th)).length;
+async function wall(){const w=$('wall');if(!w.children.length)PACKS.forEach(([k,nm])=>{const b=document.createElement('button');b.className='peg';b.dataset.pack=k;
+    b.innerHTML='<span class="tab"></span><img alt=""><span class="lbl"><span></span><small></small></span>';b.querySelector('.lbl span').textContent=nm;b.setAttribute('aria-label',nm+' pack');b.onclick=()=>pickLen(k);w.append(b)});
+  [...w.children].forEach(b=>b.querySelector('small').textContent=got(b.dataset.pack)+' of '+tot(b.dataset.pack)+' collected');
+  if(!ART.url){await Promise.all(BASE.map(img));packArt();ART.url={};Object.keys(PFILE).forEach(k=>{const t=cv(364,584);t.getContext('2d').drawImage(ART.pack[k],0,0,364,584);let u;try{u=t.toDataURL('image/webp',.88)}catch(e){u=t.toDataURL()}ART.url[k]=u})}
+  [...w.children].forEach(b=>b.querySelector('img').src=ART.url[b.dataset.pack])}
+function pickLen(k){audio();beep(440,0,.06);$('lenT').textContent=PNAME[k]+' pack';$('lenImg').src=ART.url&&ART.url[k]||'';
+  $('lenP').textContent=k=='all'?'Cards from every theme, plus a Cause & Effect pack now and then.':'Only '+PNAME[k]+' cards. You have '+got(k)+' of '+tot(k)+'.';
+  const r=$('lenRow');r.innerHTML='';[[2,'Quick · 2 packs'],[3,'3 packs'],[4,'Long · 4 packs']].filter(x=>x[0]<=maxPacks(k)).forEach(([n,t])=>{const b=document.createElement('button');b.className='btn';b.dataset.packs=n;b.textContent=t;b.onclick=()=>{ov('ovLen',false);startGame(n,k)};r.append(b)});
+  ov('ovLen',true)}
+$('lenBack').onclick=()=>ov('ovLen',false);
 document.querySelectorAll('[data-home]').forEach(b=>b.onclick=home);
 $('bBinder').onclick=binder;
 $('bRip').onclick=()=>Scene.autoRip();
@@ -573,7 +609,7 @@ const snd=()=>{$('bSound').textContent='Sound: '+(S.snd?'on':'off')};snd();
 $('bSound').onclick=()=>{S.snd=S.snd?0:1;save();snd();if(S.snd)audio();else crinkle(0)};
 $('bGrown').onclick=()=>ov('ovGrown',true);$('grownClose').onclick=()=>ov('ovGrown',false);
 let armed=0;$('bReset').onclick=e=>{if(!armed){armed=1;e.target.textContent='Tap again to erase everything';return}S.own={};S.junk=[];S.sb=0;save();armed=0;e.target.textContent='Empty the binder';ov('ovGrown',false);home()};
-document.addEventListener('keydown',e=>{if(e.key=='Escape'){ov('ovCard',false);ov('ovGrown',false)}});
+document.addEventListener('keydown',e=>{if(e.key=='Escape'){ov('ovCard',false);ov('ovGrown',false);ov('ovLen',false)}});
 BASE.forEach(img);home();
 window.__t={get G(){return G},S,Scene,C};
 }

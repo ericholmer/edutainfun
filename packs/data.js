@@ -111,7 +111,18 @@ const PHOTOS = {
  vesuvius:"Color photo print from about 1890 to 1900. Library of Congress.",
  qin:"Portrait from an album made in the 1800s, long after his lifetime.",
  olympics:"Drawing from an old children's book. An artist's idea.",
- writing:"Drawing of an early clay tablet with picture-writing."
+ writing:"Drawing of an early clay tablet with picture-writing.",
+ vote:"Photo of women raising money to win the vote, Boston, 1914.",
+ panama:"Old postcard of the Miraflores Locks, Panama Canal.",
+ modelt:"Photo of Henry Ford with a Model T.",
+ curie:"Photo of Marie Curie and Pierre Curie in their lab.",
+ olympics2:"Old colored picture of the 100-meter race at the 1896 Olympics.",
+ ferris:"Photo of the first Ferris wheel, Chicago, 1893.",
+ phonograph:"Photo of Thomas Edison with his phonograph, 1878.",
+ telephone:"Photo of Bell in 1892, opening the phone line from New York to Chicago. This is a later call, not his first.",
+ railroad:"Photo by Andrew J. Russell, May 10, 1869.",
+ civilwar:"Painting by Louis Guillaume. An artist's idea.",
+ telegraph:"Photo of Samuel Morse when he was older. Library of Congress."
 };
 // Joke items that sometimes turn up in a pack. All made up.
 const JUNK = {

@@ -122,7 +122,31 @@ const PHOTOS = {
  telephone:"Photo of Bell in 1892, opening the phone line from New York to Chicago. This is a later call, not his first.",
  railroad:"Photo by Andrew J. Russell, May 10, 1869.",
  civilwar:"Painting by Louis Guillaume. An artist's idea.",
- telegraph:"Photo of Samuel Morse when he was older. Library of Congress."
+ telegraph:"Photo of Samuel Morse when he was older. Library of Congress.",
+ curiosity:"Curiosity's own photo of itself on Mars, 2012. NASA.",
+ everest:"Photo of Mount Everest from the north, 2005.",
+ tereshkova:"Photo of Valentina Tereshkova in her space suit. San Diego Air and Space Museum.",
+ berlin:"Photo of Germans on the Berlin Wall at the Brandenburg Gate, 1989.",
+ web:"Photo of the computer that ran the very first website. It is now in a museum.",
+ mandela:"Photo of Nelson Mandela, 1994.",
+ constitution:"The first page of the U.S. Constitution. National Archives.",
+ rights:"The Bill of Rights. National Archives.",
+ gold:"Painting by William Sidney Mount, 1850: people reading news about gold in California.",
+ phonecoast:"Photo of Bell and others at the first phone call across the country, 1915.",
+ interstate:"Photo of Interstate 80 signs in Nevada, 2014. The first interstates were built in the 1950s.",
+ gagarin:"Painting of Yuri Gagarin, 1989. San Diego Air and Space Museum.",
+ march:"Photo of the March on Washington, 1963. National Archives.",
+ cra:"Photo of President Johnson signing the Civil Rights Act, July 2, 1964.",
+ who1967:"Poster asking people to get vaccinated against smallpox.",
+ mansa:"Mansa Musa on the Catalan Atlas, a map made in 1375.",
+ globe:"Old engraving of the Globe Theatre, from a view of London made about 1612.",
+ galileo:"Painting by Justus Sustermans, 1636.",
+ railway:"Drawing by J. R. Brown of the opening of the Stockton and Darlington Railway. An artist's idea.",
+ penicillin:"Photo of Alexander Fleming in his lab, about 1943. Imperial War Museum.",
+ jackie:"Photo of Jackie Robinson. National Portrait Gallery.",
+ polio:"Newspaper headlines from April 1955 saying the vaccine works.",
+ parks:"Photo of Rosa Parks on a bus in December 1956, after the boycott ended.",
+ sputnik:"Photo of a copy of Sputnik 1."
 };
 // Joke items that sometimes turn up in a pack. All made up.
 const JUNK = {

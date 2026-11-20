@@ -144,6 +144,10 @@
     box-shadow:2px 3px 6px #0004;letter-spacing:.5px}
   .note::before{content:"";position:absolute;left:50%;top:-9px;width:60px;height:18px;transform:translateX(-50%) rotate(-3deg);background:#ffffffa0;box-shadow:0 0 0 1px #0000000d}
   .note small{display:block;text-align:right;font-size:18px}
+  .villain{display:flex;align-items:flex-end;gap:4px;padding-top:6px}
+  .villain img{width:118px;height:auto;flex:none;filter:drop-shadow(2px 4px 3px #0005);transform-origin:50% 100%;transition:transform .4s}
+  .villain .note{margin:0 0 26px auto;flex:0 1 auto}
+  #end.win .villain img{transform:rotate(-9deg) translateX(-4px)}
   .small{font-size:14px;line-height:22px;color:#555}
 
   @media (max-width:520px){
@@ -270,7 +274,7 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
     <h2>Mixed-Up Map</h2>
     <p>Oh no! Somebody switched the stickers on the classroom map. Ms. Bell, the school custodian, found mop streaks where she didn't mop.</p>
     <p>It was <b>Bad Guy Bruce</b>. He hates maps, so he dressed up like a janitor and sneaked in!</p>
-    <div class="note">GOOD LUCK, MAP LOVERS. I HATE MAPS.<small>—B.B.</small></div>
+    <div class="villain"><img src="art/bruce.webp" alt="Bad Guy Bruce in his janitor disguise, holding a mop" width="338" height="520"><div class="note">GOOD LUCK, MAP LOVERS. I HATE MAPS.<small>—B.B.</small></div></div>
     <ol>
       <li>Tap a state to peel off its sticker. Tap another state to <b>swap</b> stickers.</li>
       <li><b>Check as I go:</b> a right sticker gets a gold star ⭐ and stays stuck.</li>
@@ -289,7 +293,7 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
   <div class="card">
     <h2 id="endTitle"></h2>
     <p id="endMsg"></p>
-    <div class="note" id="endNote"></div>
+    <div class="villain"><img src="art/bruce.webp" alt="Bad Guy Bruce in his janitor disguise, holding a mop" width="338" height="520"><div class="note" id="endNote"></div></div>
     <button class="btn primary" id="again">Play again</button>
     <button class="btn ghost" id="review">Look at the map</button>
   </div>
@@ -538,6 +542,7 @@ function submit(){
 function end(win,wrong){
   const n=G.active.size;
   $('endTitle').textContent=win?'You fixed the map!':'Struck out!';
+  $('end').classList.toggle('win',!!win);
   $('endNote').innerHTML=win?'CURSES! NEXT TIME I\'M MIXING UP THE OCEANS!<small>—B.B.</small>':'HA HA! MAPS ARE CONFUSING!<small>—B.B.</small>';
   if(G.live) $('endMsg').textContent=`All ${n} stickers have gold stars. You made ${G.swaps} swap${G.swaps===1?'':'s'}, and ${G.misses} missed. Ms. Bell says thank you! Want a bigger challenge? Try "Hand it in."`;
   else $('endMsg').textContent=win

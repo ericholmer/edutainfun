@@ -39,7 +39,7 @@ Then open http://localhost:8000. Opening the files directly (`file://`) mostly w
 ## Credits and licenses
 
 - **ChicagoFLF** by Robin Casady: public domain.
-- **Atkinson Hyperlegible** (Braille Institute), **Pixelify Sans**, **Cormorant Garamond**, **Source Sans 3** and **Zilla Slab**: SIL Open Font License 1.1. License texts are next to the font files.
+- **Atkinson Hyperlegible** (Braille Institute), **Pixelify Sans**, **Cormorant Garamond**, **Source Sans 3**, **Zilla Slab** and **EB Garamond** (startup wordmark): SIL Open Font License 1.1. License texts are next to the font files.
 - **Presidential portraits**: public-domain works.
 - **Fish paintings** (Gone Fishing): Duane Raver, U.S. Fish and Wildlife Service, public domain.
 - **Scenes, map, boat and props** (Gone Fishing): made for this project with Adobe Firefly.

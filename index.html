@@ -84,6 +84,7 @@ button{font:inherit;color:inherit}
 .sticky.beta .sb{background:repeating-linear-gradient(90deg,#f3a9c6 0 2px,#ffc9dd 2px 4px)}
 .betatag{display:none}
 @media(max-width:1179px){.tb{position:relative}.betatag{display:block;position:absolute;right:6px;top:50%;transform:translateY(-50%) rotate(3deg);background:#ffc9dd;border:1px solid #000;font:700 11px/1 "Atkinson Hyperlegible",system-ui,sans-serif;letter-spacing:1.5px;padding:3px 6px;box-shadow:1px 1px 0 rgba(0,0,0,.35)}}
+.sticky .em{font-size:13px}.sticky .em a,.dlg a{color:#1a3fb0;font-weight:700;overflow-wrap:anywhere}
 .sticky.beta b{display:block;font-size:26px;letter-spacing:3px;line-height:1.1}
 @media(max-width:1179px){.sticky{position:static;margin:26px auto 0;width:min(300px,90%);transform:rotate(-1deg)}.sticky.beta{margin-top:14px;width:min(240px,80%);transform:rotate(1.5deg)}}
 
@@ -143,6 +144,7 @@ button{font:inherit;color:inherit}
     <div class="dd" role="menu">
       <button role="menuitem" data-do="about">About edutain.fun…</button>
       <button role="menuitem" data-do="grown">For Grown-Ups…</button>
+      <button role="menuitem" data-do="mail">Send Feedback…</button>
     </div>
   </div>
   <div class="mi">
@@ -167,7 +169,7 @@ button{font:inherit;color:inherit}
   </section>
 
   <aside class="sticky" aria-label="Note"><div class="sb"></div><p>Hi! Pick a game to play.<small>Games about maps, history, and how our country works.</small></p></aside>
-  <aside class="sticky beta" aria-label="Beta note"><div class="sb"></div><p><b>BETA</b><small>We are still building this site. Some things may change!</small></p></aside>
+  <aside class="sticky beta" aria-label="Beta note"><div class="sb"></div><p><b>BETA</b><small>We are still building this site. Some things may change!</small><small class="em">Tell us what you think:<br><a href="mailto:hello@edutain.fun?subject=edutain.fun%20feedback">hello@edutain.fun</a></small></p></aside>
 
   <div class="icons">
     <button class="di" data-do="grown">
@@ -286,7 +288,7 @@ document.addEventListener("click",closeMenus);
 const veil=$("#veil"),okb=$("#okb");let back=null;
 const TEXT={
   about:["About edutain.fun",`<p><b>edutain.fun</b> has free games about people, places, and the past.</p><p>Every game teaches something true. When you get one right, you unlock a real story!</p><p>Made in Madison, Wisconsin.</p>`],
-  grown:["For Grown-Ups",`<p>Maybe you remember the games you played in the computer lab. Maybe you wish your kids could play something similar? But maybe you also noticed that while there are plenty of interactive STEM games and sites, there are fewer options when it comes to history, geography and social studies.</p><p>These games are designed to both educate and entertain - have some fun while learning about states and dates and democracy and the like.</p><p>Every fact is checked before a game goes up, against sources like government agencies, museums and published research. If historians disagree about something, the game says so. If you ever spot a mistake, let me know and I'll fix it.</p><p>There's no account or login required. No subscription. No downloads.</p><p>The games are designed to be enjoyed equally on desktops, tablets or phones.</p><p>Thanks for stopping by and I hope you and your whole family enjoy your time!</p>`]
+  grown:["For Grown-Ups",`<p>Maybe you remember the games you played in the computer lab. Maybe you wish your kids could play something similar? But maybe you also noticed that while there are plenty of interactive STEM games and sites, there are fewer options when it comes to history, geography and social studies.</p><p>These games are designed to both educate and entertain - have some fun while learning about states and dates and democracy and the like.</p><p>Every fact is checked before a game goes up, against sources like government agencies, museums and published research. If historians disagree about something, the game says so. If you ever spot a mistake, write to <a href="mailto:whoops@edutain.fun">whoops@edutain.fun</a> and I'll fix it.</p><p>There's no account or login required. No subscription. No downloads.</p><p>The games are designed to be enjoyed equally on desktops, tablets or phones.</p><p>Questions, ideas, or something not working? Write to <a href="mailto:hello@edutain.fun">hello@edutain.fun</a>.</p><p>Thanks for stopping by and I hope you and your whole family enjoy your time!</p>`]
 };
 function dialog(kind,title,body){
   back=document.activeElement;
@@ -300,6 +302,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeMenus();if(vei
 
 function act(what){
   if(what==="about"||what==="grown"){blip();dialog("info",...TEXT[what])}
+  if(what==="mail"){blip();location.href="mailto:hello@edutain.fun?subject=edutain.fun%20feedback"}
   if(what==="all"){blip(520);pick(TABS[0])}
   if(what==="restart")boot(true);
 }

@@ -33,8 +33,6 @@ Then open http://localhost:8000. Opening the files directly (`file://`) mostly w
 ## Notes
 
 - Saved progress lives in each player's browser (localStorage) and never leaves it.
-- `bill/art/palette.png` is the shared 48-color sprite palette. It isn't loaded by the game; new Bill's Big Trip sprites get snapped to it.
-- Not in this repo on purpose: the MIDI files (rights unclear) and the retired first-sheet Bill sprites (`bill-front`, `bill-3q`, `bill-side`).
 
 ## Credits and licenses
 

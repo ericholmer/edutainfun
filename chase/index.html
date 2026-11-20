@@ -21,14 +21,15 @@
   html,body{margin:0;height:100%;color:#fff;font-family:"Hyper",ui-rounded,system-ui,sans-serif}
   body{display:flex;flex-direction:column;height:100dvh;overflow:hidden;
     background:radial-gradient(ellipse 80% 60% at 50% 35%,#34317a,transparent 70%),linear-gradient(var(--night),var(--night2))}
-  header{display:flex;align-items:center;gap:10px;padding:6px 12px;flex:none}
+  header{display:flex;align-items:center;gap:10px;padding:6px 12px;flex:none;position:relative;z-index:4;pointer-events:none}
+  header>*{pointer-events:auto}
   header .logo{height:40px;width:auto;display:block;filter:drop-shadow(2px 2px 0 #0006)}
   .hright{margin-left:auto;display:flex;gap:8px;align-items:center}
   .tog{border:2px solid #0b0b1e;background:#f2ecd9;border-radius:6px;height:36px;min-width:42px;font-size:17px;cursor:pointer;box-shadow:2px 2px 0 #0b0b1e;padding:0 8px;color:var(--ink)}
   .tog.off{opacity:.45}
 
   /* main area: case file (big screens) + tracker */
-  .main{flex:1;min-height:0;display:flex;gap:14px;padding:0 12px}
+  .main{flex:1;min-height:0;display:flex;gap:14px;padding:0 12px;position:relative}
   .stage{flex:1;min-width:0;position:relative}
   .frame{position:absolute;pointer-events:none;z-index:2}
   .frame div{position:absolute;background-repeat:no-repeat}
@@ -43,7 +44,7 @@
   .tbtn:focus-visible{outline:2px dashed #fff;outline-offset:2px}
 
   /* the CRT status line at the top of the screen */
-  .banner{flex:none;display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:1px solid #1e5a3b;background:#031009cc;min-height:52px;
+  .banner{flex:none;position:relative;z-index:2;display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:1px solid #1e5a3b;background:#031009;min-height:52px;
     color:var(--glow);text-shadow:0 0 6px #3dff8a88}
   .bsmall{font:12px/1.1 "EduChicago","Chicago",Geneva,sans-serif;letter-spacing:1px;text-transform:uppercase;color:#9dffc4;-webkit-font-smoothing:none}
   .bname{font:700 24px/1.1 "Pixie","Hyper",sans-serif}
@@ -58,7 +59,7 @@
   .lt.good{background:var(--glow);border-color:var(--glow);box-shadow:0 0 6px #3dff8a}
   .lt.bad{background:var(--bad);border-color:var(--bad)}
 
-  .mapwrap{flex:1;position:relative;min-height:0}
+  .mapwrap{flex:1;position:relative;min-height:0;overflow:hidden}
   #map{width:100%;height:100%;display:block;overflow:visible;touch-action:manipulation;user-select:none;-webkit-user-select:none}
   .landg{filter:drop-shadow(0 0 1.5px #3dff8a99)}
   .grid{fill:none;stroke:#174a30;stroke-width:.7}
@@ -105,7 +106,7 @@
   .count.show{display:grid}
 
   /* case file (big screens only): Eric's folder art as a stretchy border around a paper page */
-  .case{flex:none;width:300px;align-self:center;display:none;position:relative;
+  .case{flex:none;width:300px;align-self:center;display:none;position:relative;z-index:4;
     border-style:solid;border-width:57px 31px 97px 21px;border-image:url(art/casefile.webp) 111 60 191 42 stretch}
   .case .page{background:#fffdf3;color:var(--ink);padding:8px 10px 10px;
     background-image:repeating-linear-gradient(transparent 0 21px,#cfe0f2 21px 22px)}
@@ -122,7 +123,7 @@
   .case li.ok{color:#14753f}.case li.no{color:#b3122c;text-decoration:line-through}
   @media(min-width:1100px) and (min-height:700px){.case.on{display:block}}
 
-  footer{flex:none;display:flex;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));align-items:center;flex-wrap:wrap}
+  footer{flex:none;position:relative;z-index:4;display:flex;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom));align-items:center;flex-wrap:wrap}
   .chips{display:flex;gap:6px;overflow-x:auto;flex:1 1 100%;padding-bottom:2px;scrollbar-width:thin}
   .wide .chips{display:none}
   .chip{flex:none;border:2px solid #0b0b1e;background:#fffdf3;border-radius:3px;padding:5px 10px;font:700 14px/1.1 "Hyper",sans-serif;cursor:pointer;color:var(--ink);box-shadow:1px 2px 0 #0b0b1e}
@@ -171,6 +172,19 @@
   .res li{padding:2px 0;break-inside:avoid}
   .badge{display:inline-block;background:#ffe24d;color:var(--ink);border:2px solid #0b0b1e;border-radius:999px;padding:2px 10px;font-weight:700}
   @media(max-width:520px){header .logo{height:32px}.bname{font-size:19px}.lights{max-width:76px}.banner{padding:5px 8px;min-height:46px}}
+  /* short screens (phones held sideways): the header floats over the tracker and everything else slims down */
+  @media(max-height:520px){
+    header{position:absolute;left:0;right:0;top:35px;padding:4px 8px}
+    header .logo{height:26px}
+    .tog{height:30px;min-width:34px;font-size:15px}
+    .main{padding-top:4px}
+    footer{padding:4px 10px calc(4px + env(safe-area-inset-bottom));gap:6px}
+    .btn{padding:6px 12px;font-size:14px}
+    .chip{padding:3px 8px;font-size:13px}
+    .banner{min-height:34px;padding:3px 10px}
+    .bname{font-size:17px}.bsmall{font-size:10px}
+    .try{width:10px;height:10px}.lt{width:10px;height:10px}
+  }
   @media(prefers-reduced-motion:reduce){.sweep{display:none}.phone,.press{animation:none}}
 </style>
 </head>
@@ -359,28 +373,37 @@ const FRAMES = {
     screen: [72, 290, 401, 814], readout: [228, 1054, 434, 1134], yellow: [96, 988, 176, 1056, 'A'], blue: [95, 1091, 177, 1169, 'A'] }
 };
 let FR = null;
+/* The map gets as much of the window as possible. The tracker is drawn around it and may run off the edges;
+   only the edge with the clock (top on the wide frame, bottom on the tall one) always stays in view. */
+const BLEED = 14;   // px of plastic still showing at an edge that runs off the window
 function layoutFrame() {
   const stage = $('stage'), W0 = stage.clientWidth, H0 = stage.clientHeight;
   if (!W0 || !H0) return;
-  const F = W0 / H0 >= 1.05 ? FRAMES.wide : FRAMES.tall;
+  const F = W0 / H0 >= 1.05 ? FRAMES.wide : FRAMES.tall, wide = F === FRAMES.wide;
   const A = R ? R.w / R.h : 2, bannerH = $('banner').offsetHeight || 50;
   const [sx0, sy0, sx1, sy1] = F.screen;
   const fixedSum = segs => segs.reduce((t, [p, q, st]) => t + (st ? 0 : q - p), 0);
   const fixW = fixedSum(F.cols), fixH = Math.max(...Object.values(F.rows).map(fixedSum));
   const chromeW = fixW - F.cols.reduce((t, [p, q, st]) => t + (st ? 0 : Math.max(0, Math.min(q, sx1) - Math.max(p, sx0))), 0);
-  const chromeH = sy0 + (F.h - sy1);       // every row-stretch sits inside the screen
-  const s = Math.max(.18, Math.min(1.25, W0 / fixW, H0 / fixH, .3 * W0 / chromeW, .3 * H0 / chromeH));
-  // size the screen to the map's shape, as big as the stage allows
-  let sw = W0 - chromeW * s, sh = sw / A + bannerH;
-  if (sh + chromeH * s > H0) { sh = H0 - chromeH * s; sw = (sh - bannerH) * A; }
-  const W = Math.max(fixW * s, Math.min(W0, sw + chromeW * s)), H = Math.max(fixH * s, Math.min(H0, sh + chromeH * s));
-  const L = Math.round((W0 - W) / 2), T = Math.round((H0 - H) / 2);
+  const chromeH = sy0 + (F.h - sy1);
+  // plastic scale: chunky enough to read as a gadget, never so big it eats the map
+  const s = Math.max(.2, Math.min(.75, Math.min(W0, H0) / (wide ? 1400 : 1500)));
+  const keep = wide ? sy0 * s : (F.h - sy1) * s;          // the clock edge stays fully visible
+  const availW = W0 - 2 * BLEED, availH = H0 - keep - BLEED;
+  let sw = Math.min(availW, (availH - bannerH) * A), sh = Math.min(availH, sw / A + bannerH);
+  const W = Math.max(fixW * s, sw + chromeW * s), H = Math.max(fixH * s, sh + chromeH * s);
+  sw = W - chromeW * s; sh = H - chromeH * s;
   const place = (segs, total) => {
     const str = segs.reduce((t, [p, q, st]) => t + (st ? q - p : 0), 0), extra = total - fixedSum(segs) * s; let d = 0;
     return segs.map(([p, q, st, key]) => { const len = st ? extra * (q - p) / str : (q - p) * s; const seg = { p, q, d, len, key }; d += len; return seg; });
   };
   const cs = place(F.cols, W), rsets = {};
   for (const k in F.rows) rsets[k] = place(F.rows[k], H);
+  const along = (segs, v) => { const g = segs.find(g => v >= g.p && v <= g.q) || segs[segs.length - 1]; return g.d + (v - g.p) * g.len / (g.q - g.p); };
+  const rs0 = rsets[Object.keys(rsets)[0]];
+  // centre the screen; if the whole gadget fits, centre the gadget instead
+  const L = Math.round(W <= W0 ? (W0 - W) / 2 : W0 / 2 - (along(cs, sx0) + sw / 2));
+  const T = Math.round(H <= H0 ? (H0 - H) / 2 : wide ? 0 : H0 - H);
   const fr = $('frame'); fr.innerHTML = '';
   Object.assign(fr.style, { left: L + 'px', top: T + 'px', width: W + 'px', height: H + 'px' });
   cs.forEach(c => rsets[c.key].forEach(r => {
@@ -391,8 +414,7 @@ function layoutFrame() {
       `background-size:${F.w * kx}px ${F.h * ky}px;background-position:${-c.p * kx}px ${-r.p * ky}px`;
     fr.appendChild(d);
   }));
-  const along = (segs, v) => { const g = segs.find(g => v >= g.p && v <= g.q) || segs[segs.length - 1]; return g.d + (v - g.p) * g.len / (g.q - g.p); };
-  const mx = x => L + along(cs, x), my = (y, key) => T + along(rsets[key || Object.keys(rsets)[0]], y);
+  const mx = x => L + along(cs, x), my = (y, key) => T + along(rsets[key] || rs0, y);
   const put = (id, [a, b, c, d, key], pad = 0) => Object.assign($(id).style, { left: mx(a) - pad + 'px', top: my(b, key) - pad + 'px', width: mx(c) - mx(a) + 2 * pad + 'px', height: my(d, key) - my(b, key) + 2 * pad + 'px' });
   put('screen', F.screen, 2); put('clock', F.readout); put('btnY', F.yellow); put('btnB', F.blue);
   $('clock').style.fontSize = Math.max(11, (my(F.readout[3]) - my(F.readout[1])) * .62) + 'px';
@@ -552,6 +574,7 @@ $('callGo').onclick = () => { show('call', false); startStudy(); };
 
 function startStudy() {
   phase = 'study';
+  if (innerHeight > innerWidth && innerWidth < 700 && R.w / R.h > 1.4) setTimeout(() => toast('Tip: turn your phone sideways for a bigger map!', 3200), 400);
   ['chips', 'prevBtn', 'nextBtn', 'readyBtn'].forEach(id => $(id).classList.remove('hide')); $('giveBtn').classList.add('hide');
   const ch = $('chips'); ch.innerHTML = '';
   list.forEach((i, k) => { const c = document.createElement('button'); c.className = 'chip'; c.textContent = R.shapes[i].n; c.onclick = () => { stopTour(); studyShow(k, true); }; ch.appendChild(c); });

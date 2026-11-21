@@ -58,6 +58,10 @@ button{font:inherit;color:var(--ink);cursor:pointer}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .scenewrap{border:2px solid var(--ink);border-radius:6px;overflow:hidden;line-height:0;background:#2f6f88}
 #sea{display:block;width:100%;height:420px;touch-action:none;cursor:crosshair}
+/* game screens: no text selection, no long-press menu, no image drag (kids hold the screen a lot) */
+.app{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.app img,.app canvas{-webkit-user-drag:none;-webkit-touch-callout:none}
+.app footer{-webkit-user-select:text;user-select:text}
 #sea:focus-visible{outline-offset:-3px}
 .shake{animation:shake .4s}
 @keyframes shake{20%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-4px,-2px)}80%{transform:translate(3px,2px)}}
@@ -74,6 +78,7 @@ button{font:inherit;color:var(--ink);cursor:pointer}
 @keyframes wig{25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
 @media (prefers-reduced-motion:reduce){.fishbox.cele .rays,.fishbox.cele img{animation:none}}
 .choices{display:grid;gap:10px}
+.choices.wait{pointer-events:none}
 .choices .btn{text-align:left;font-size:20px}
 .choices .btn.no{background:#eee;text-decoration:line-through}
 .choices .btn.yes{background:#dff0dc;border-color:var(--good)}
@@ -636,6 +641,12 @@ cv.addEventListener("pointerdown", function(e){
 });
 cv.addEventListener("pointermove", function(e){ if(W.state === "fishing" && (e.pointerType === "mouse" || e.buttons || e.pressure > 0)) setTarget(e); });
 function pUp(){ P.down = false; }
+/* stop the phone's long-press menu, text selection and magnifier while fishing */
+cv.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+cv.addEventListener("touchstart", function(e){ e.preventDefault(); }, {passive:false});
+document.addEventListener("contextmenu", function(e){ if(e.target.closest && e.target.closest(".app") && !e.target.closest("footer")) e.preventDefault(); });
+document.addEventListener("selectstart", function(e){ if(e.target.closest && e.target.closest(".app") && !e.target.closest("footer")) e.preventDefault(); });
+function clearSel(){ try{ var g = window.getSelection && window.getSelection(); if(g && g.removeAllRanges) g.removeAllRanges(); }catch(e){} }
 cv.addEventListener("pointerup", pUp); cv.addEventListener("pointercancel", pUp);
 document.addEventListener("keydown", function(e){
   if(!W.run) return;
@@ -654,7 +665,8 @@ function startQuiz(){
   $("quizSay").textContent = "What kind of fish is it?";
   fanfare();
   $("quizNext").hidden = true;
-  var box = $("choices"); box.innerHTML = "";
+  clearSel(); P.down = false; keyHold = false;
+  var box = $("choices"); box.innerHTML = ""; box.classList.add("wait"); setTimeout(function(){ box.classList.remove("wait"); }, 700);
   quizOptions(cur.fish).forEach(function(id){
     var b = document.createElement("button");
     b.type = "button"; b.className = "btn"; b.textContent = FISH[id].name;

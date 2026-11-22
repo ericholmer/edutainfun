@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>/* folder pages need a trailing slash so relative links work */if(!/\/$|\.html?$/.test(location.pathname))location.replace(location.pathname+"/"+location.search+location.hash)</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Puzzling Presidential Gallery (Simple view) · edutain.fun</title><link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" type="image/png" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/cormorant-garamond-latin-500-normal.woff2) format("woff2")}@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/cormorant-garamond-latin-600-normal.woff2) format("woff2")}@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/cormorant-garamond-latin-700-normal.woff2) format("woff2")}@font-face{font-family:"Source Sans 3";font-style:normal;font-weight:400;font-display:swap;src:url(../fonts/source-sans-3-latin-400-normal.woff2) format("woff2")}@font-face{font-family:"Source Sans 3";font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/source-sans-3-latin-600-normal.woff2) format("woff2")}@font-face{font-family:"Source Sans 3";font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/source-sans-3-latin-700-normal.woff2) format("woff2")}</style>
+<style>
+/* VOICE: a stately museum after hours, warm and a little playful — you are the curator walking the halls
+   IDEA: first-person walk through four rooms of the Presidential Portrait Gallery, one portrait at a time
+   PICTURE: the wall in front of you, a gilt frame lit from above, the next frames peeking in at the edges
+   COLOUR and TYPE: each room has its own wall colour; gilt, cream card stock, oxblood seal; Cormorant + Source Sans
+   LAYOUT: room bar, the wall, placard desk below (beside on wide screens), floor plan on demand */
+:root{--gilt:#c9a45c;--gilt2:#8a6a2e;--card:#f7f0df;--ink:#231d14;--seal:#8e1f24;--ok:#2f7d4f;--bad:#b23a2e;--ui:#f3ead6;--muted:#d4ccb6;
+  --wall:#1f3a33;--wall2:#14271f;--trim:#0e1c17;--light:#ffe8b0}
+body.r0{--wall:#2b4a3c;--wall2:#162a21;--trim:#0d1a14;--light:#ffd98a}
+body.r1{--wall:#5a2027;--wall2:#33121a;--trim:#1f0a0f;--light:#ffe2a8}
+body.r2{--wall:#1e3352;--wall2:#111e33;--trim:#0a1222;--light:#e9f1ff}
+body.r3{--wall:#e9e6df;--wall2:#cfcac0;--trim:#9b958a;--light:#ffffff}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{color:var(--ui);font:16px/1.5 "Source Sans 3",system-ui,sans-serif;overflow-x:clip;min-height:100vh;background:var(--wall2);transition:background .6s}
+.serif{font-family:"Cormorant Garamond",Georgia,serif}
+.top{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:10px max(3vw,12px);background:var(--trim)}
+.top h1{font:700 clamp(20px,3.4vw,30px)/1.05 "Cormorant Garamond",Georgia,serif;margin:0;color:#f6e7c1}
+.room{font-size:14px;color:var(--muted)}
+.room b{color:#f6e7c1}
+.tbtn{margin-left:auto;display:flex;gap:8px}
+.btn{border:0;border-radius:10px;padding:10px 16px;font:700 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:44px}
+.btn.g{background:var(--gilt);color:#20180a}.btn.q{background:#ffffff1c;color:var(--ui)}
+.btn:focus-visible,.nav:focus-visible,.dot:focus-visible{outline:3px solid #f6e7c1;outline-offset:3px}
+/* the hall */
+.stage{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+@media(min-width:960px){.stage{grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr);align-items:start}}
+.hall{position:relative;overflow:hidden;min-height:clamp(400px,60vh,520px);
+  background:
+   radial-gradient(ellipse 40% 55% at 50% 30%,color-mix(in srgb,var(--light) 30%,transparent),transparent 70%),
+   repeating-linear-gradient(90deg,#ffffff06 0 2px,transparent 2px 46px),
+   linear-gradient(var(--wall),var(--wall2) 82%,var(--trim) 82%,#000 100%);
+  transition:background .6s}
+body.r3 .hall{color:#231d14}
+.hall:before{content:"";position:absolute;left:0;right:0;top:calc(82% - 14px);height:14px;background:linear-gradient(#0003,#0006)}
+.lamp{position:absolute;left:50%;top:0;width:120px;height:14px;margin-left:-60px;background:linear-gradient(#b48a3c,#6d521f);border-radius:0 0 30px 30px;box-shadow:0 10px 40px 10px color-mix(in srgb,var(--light) 35%,transparent);z-index:2}
+.track{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:transform .45s ease}
+.slot{position:absolute;top:7%;width:min(46vw,280px);transition:transform .45s ease,opacity .45s;display:flex;flex-direction:column;align-items:center}
+@media(min-width:960px){.slot{width:min(28vw,320px)}.hall{min-height:min(78vh,640px)}}
+.slot.side{opacity:.55;pointer-events:none}
+.frame{position:relative;width:100%;aspect-ratio:4/5;padding:12px;border-radius:4px;
+  background:linear-gradient(135deg,#f0d38f,var(--gilt) 30%,var(--gilt2) 55%,#e8c77e 75%,#9b7834);
+  box-shadow:0 22px 30px -12px #000c,inset 0 0 0 2px #0004}
+.frame:before{content:"";position:absolute;inset:6px;border:1px solid #0003;border-radius:2px}
+.mat{position:relative;height:100%;background:#efe3c4;overflow:hidden;box-shadow:inset 0 0 12px #0006}
+.mat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:sepia(.12) contrast(1.02)}
+.glass{position:absolute;inset:0;transform:translateY(-102%);background:linear-gradient(120deg,transparent 30%,#ffffff66 42%,transparent 50%,transparent 62%,#ffffff33 68%,transparent 74%),#ffffff10;transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.sealed .glass{transform:none}
+.wax{position:absolute;right:-10px;bottom:-12px;width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#c5414a,var(--seal) 60%,#5d1115);color:#f6d9c8;display:none;place-items:center;
+  font:700 20px "Cormorant Garamond",serif;box-shadow:0 3px 6px #0008;transform:rotate(-12deg)}
+.sealed .wax{display:grid;animation:stamp .5s .8s both}
+@keyframes stamp{0%{transform:scale(2.2) rotate(-30deg);opacity:0}100%{transform:rotate(-12deg) scale(1);opacity:1}}
+.plate{margin-top:14px;padding:4px 12px;border-radius:3px;font:600 14px "Source Sans 3",sans-serif;color:#2a1d08;
+  background:linear-gradient(#ead18f,#b48a3c);box-shadow:0 2px 3px #0006;text-align:center;transition:box-shadow .6s}
+.sealed .plate{box-shadow:0 2px 3px #0006,0 0 22px 4px #ffd98a99}
+.plate b{display:block;font:700 18px/1.1 "Cormorant Garamond",Georgia,serif}
+.door{position:relative;width:78%;aspect-ratio:3/5;margin-top:4%;border-radius:120px 120px 4px 4px;border:10px solid var(--gilt2);
+  background:linear-gradient(90deg,#3a2614,#5b3b1f 50%,#3a2614);box-shadow:0 22px 30px -12px #000c;display:grid;place-items:center;text-align:center}
+.door.open{background:radial-gradient(ellipse at 50% 70%,color-mix(in srgb,var(--light) 60%,#fff),#c9b98f 70%);}
+.door .lock{font-size:46px}
+.doorlab{margin-top:14px;text-align:center;font-weight:700;max-width:30ch;line-height:1.35}
+.nav{position:absolute;top:38%;z-index:3;width:56px;height:56px;border-radius:50%;border:2px solid #f6e7c1aa;background:#0008;color:#f6e7c1;font-size:28px;cursor:pointer;display:grid;place-items:center}
+.nav:disabled{opacity:.25;cursor:default}
+#prev{left:10px}#next{right:10px}
+@media(max-width:600px){.nav{width:46px;height:46px;font-size:24px}.doorlab{font-size:14px}}
+.dots{position:absolute;left:0;right:0;bottom:4%;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:0 60px;z-index:3}
+.dot{width:16px;height:16px;border-radius:50%;border:2px solid #f6e7c1aa;background:transparent;cursor:pointer;padding:0}
+.dot.s{background:var(--gilt);border-color:var(--gilt)}
+.dot.here{outline:2px solid #fff;outline-offset:2px}
+.dot.d{border-radius:4px;width:14px}
+.walkhint{position:absolute;left:12px;top:10px;font-size:13px;color:#ffffffaa;z-index:3}
+body.r3 .walkhint{color:#0008}
+/* placard desk */
+.desk{padding:16px max(3vw,14px) 40px;background:linear-gradient(#0b1512,#0b1512ee)}
+@media(min-width:960px){.desk{min-height:min(78vh,640px);max-height:min(78vh,640px);overflow-y:auto}}
+.desk h2{margin:0 0 4px;font:700 26px/1.1 "Cormorant Garamond",serif;color:#f6e7c1}
+.desk .sub{margin:0 0 12px;color:var(--muted);font-size:15px}
+.cards{display:grid;gap:12px}
+.card{background:var(--card);color:var(--ink);border-radius:6px;padding:12px 14px;box-shadow:0 8px 18px -8px #000;position:relative}
+.card .k{font:700 12px "Source Sans 3",sans-serif;letter-spacing:.6px;color:#7d6a45;text-transform:uppercase}
+.card .v{font:600 22px/1.2 "Cormorant Garamond",Georgia,serif;margin:2px 0 8px;text-wrap:balance}
+.card.ach .v{font-size:19px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts .btn{flex:1;min-width:110px;font-size:14px;padding:9px}
+.ok{background:#dcefe2;color:#1d5133}.no{background:#f5dcd6;color:#7d241b}
+.card.done{background:#e9f4ea;outline:2px solid #2f7d4f55}
+.card.done .acts{display:none}
+.stamp{position:absolute;right:12px;top:10px;font:700 12px "Source Sans 3";color:var(--ok);display:none}
+.card.done .stamp{display:block}
+.card.fix{outline:3px solid #d99a2b}
+.msg{font-weight:700;margin:0 0 8px;font-size:15px}
+.choices{display:grid;gap:8px}
+.choices button{background:#fff;border:2px solid #d9cba9;border-radius:8px;padding:10px 12px;text-align:left;color:var(--ink);font:600 18px/1.25 "Cormorant Garamond",Georgia,serif;cursor:pointer;min-height:44px}
+.choices button:disabled{opacity:.45;text-decoration:line-through;cursor:default}
+.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.banner{background:linear-gradient(90deg,#3b2a0e,#5b4214);border:1px solid var(--gilt);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.banner h3{margin:0;font:700 24px "Cormorant Garamond",serif;color:#f6e7c1}
+.banner .lede{color:#e9dcbc;font-size:14px}
+.story{font-size:21px;line-height:1.3;color:#fff6dc;margin:8px 0 0}
+.label{background:var(--card);color:var(--ink);border-radius:4px;overflow:hidden;box-shadow:0 6px 14px -6px #000;margin-bottom:12px}
+.label .ln{padding:8px 12px 6px;background:linear-gradient(#ead18f,#b48a3c);color:#2a1d08;font:700 22px/1.1 "Cormorant Garamond",serif}
+.label .lt{background:#2a1d08;color:#ead18f;font:600 13px/1.3 "Source Sans 3",sans-serif;padding:5px 12px}
+.label .lc{padding:10px 12px;font-size:15px}
+.label .lc b{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#7d6a45;margin-right:4px}
+.label .la{font:600 17px/1.25 "Cormorant Garamond",serif;margin-top:4px}
+.note{color:var(--muted);font-size:14px;margin:10px 0 0}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,30px);opacity:0;background:#f7f0df;color:var(--ink);
+  padding:10px 16px;border-radius:10px;font-weight:700;box-shadow:0 8px 20px #0008;transition:.3s;z-index:9;max-width:92vw;text-align:center;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+/* floor plan */
+.overlay{position:fixed;inset:0;background:#0b1512ee;display:none;overflow:auto;z-index:8;padding:16px}
+.overlay.show{display:block}
+.plan{max-width:760px;margin:0 auto;background:#f7f0df;color:var(--ink);border-radius:10px;padding:18px;box-shadow:0 10px 40px #000a}
+.plan h2{margin:0 0 4px;font:700 28px "Cormorant Garamond",serif}
+.plan p{margin:0 0 12px}
+.rooms{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.rm{border:3px solid #2a1d08;border-radius:6px;padding:10px;background:#fff}
+.rm.locked{opacity:.5;background:#e7e1d1}
+.rm h3{margin:0;font:700 19px/1.1 "Cormorant Garamond",serif}
+.rm small{display:block;color:#6d5d3c;margin-bottom:8px}
+.sq{display:inline-grid;place-items:center;width:30px;height:30px;margin:2px;border:2px solid #2a1d08;border-radius:4px;background:#fff;font:700 11px "Source Sans 3";cursor:pointer;color:#2a1d08}
+.sq.s{background:var(--gilt)}
+.sq.here{outline:3px solid #d6453d}
+.sq:disabled{cursor:default}
+.legend{font-size:13px;color:#6d5d3c;margin-top:10px}
+.fin{display:none;text-align:center;padding:30px 16px}
+.fin.show{display:block}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body class="r0">
+<!-- edutain.fun shared menu bar: keep this block identical across games except the EB config line -->
+<style>
+@font-face{font-family:"EduChicago";src:url("ChicagoFLF.woff") format("woff");font-display:swap}
+.eb{position:relative;z-index:10;flex:none;display:flex;align-items:center;height:34px;background:#fff;color:#111;border-bottom:1px solid #000;padding:0 6px;
+  font:15px/1 "EduChicago","Chicago","Charcoal",Geneva,Verdana,sans-serif;-webkit-font-smoothing:none;user-select:none;-webkit-user-select:none}
+.eb *{box-sizing:border-box}
+.eb svg{width:18px;height:18px;flex:none;cursor:inherit;touch-action:auto;display:block}
+.eb-mi{position:relative}
+.eb-mt{background:none;border:0;height:34px;padding:0 11px;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;border-radius:0;margin:0}
+.eb-mt[aria-expanded=true]{background:#111;color:#fff}
+.eb-dd{position:absolute;left:0;top:34px;min-width:220px;background:#fff;border:1px solid #000;box-shadow:1px 1px 0 #000;padding:3px 0;display:none}
+.eb-mt[aria-expanded=true]+.eb-dd{display:block}
+.eb-dd a{display:flex;align-items:center;min-height:40px;padding:0 16px;color:#111;text-decoration:none}
+.eb-dd a:hover,.eb-dd a:focus-visible{background:#111;color:#fff;outline:0}
+.eb-app{margin-left:auto;display:flex;align-items:center;gap:7px;padding:0 10px;white-space:nowrap;overflow:hidden}
+.eb-app span{overflow:hidden;text-overflow:ellipsis}
+.eb-quit{display:flex;align-items:center;height:26px;padding:0 14px;border:1px solid #000;border-radius:8px;background:#fff;color:#111;text-decoration:none;box-shadow:1px 1px 0 #000;margin-right:2px}
+.eb-quit:active{background:#111;color:#fff}
+.eb :focus-visible{outline:2px dashed #2a2aa8;outline-offset:1px}
+.eb-z{position:fixed;border:1px solid #000;outline:1px solid #fff;pointer-events:none;z-index:2147483000}
+@media(max-width:520px){.eb-app span{display:none}.eb-file{display:none}}
+.eb{position:sticky;top:0}
+.overlay{top:35px}
+</style>
+<div class="eb" role="menubar" aria-label="edutain.fun menu bar">
+  <div class="eb-mi">
+    <button class="eb-mt" aria-expanded="false" aria-haspopup="true" aria-label="edutain.fun menu">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="#3a7bd5" stroke="#000"/><path d="M4 4.5c1.5-.5 2.5.5 2 2s-2 1-2.5 2.5S5 12 6.5 12.5M10 3.5c-.5 1.5 1 2 2.5 1.5M9.5 9c1-.5 2.5 0 2.5 1.5s-1 2-2 2" fill="none" stroke="#4fc14f" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="eb-dd" role="menu"><a role="menuitem" class="eb-go" href="#">Back to the Desktop</a></div>
+  </div>
+  <div class="eb-mi eb-file">
+    <button class="eb-mt" aria-expanded="false" aria-haspopup="true">File</button>
+    <div class="eb-dd" role="menu"><a role="menuitem" class="eb-go" href="#">Quit A Puzzling Presidential Gallery</a></div>
+  </div>
+  <div class="eb-app" aria-hidden="true"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="2.5" width="24" height="27" fill="#d9a43a" stroke="#000"/><rect x="6" y="4.5" width="20" height="23" fill="#b9821f"/><rect x="8" y="6.5" width="16" height="17" fill="#9cc3ee" stroke="#000"/><path d="M10.5 23.5q5.5-8 11 0z" fill="#333"/><circle cx="16" cy="13.5" r="3.6" fill="#f0c49c" stroke="#000" stroke-width=".8"/><path d="M12.6 12.4q3.4-4 6.8 0" fill="#7a5130"/><rect x="12" y="24.6" width="8" height="2" fill="#fff3c4" stroke="#000" stroke-width=".6"/></svg><span>A Puzzling Presidential Gallery</span></div>
+  <a class="eb-quit eb-go" href="#">Quit</a>
+</div>
+<script>
+{
+/* EB config: on the live site set home to "/" */
+const EB={id:"gallery",home:"../"};
+const bar=document.currentScript.previousElementSibling;
+const url=EB.home+"#"+EB.id;
+const mts=bar.querySelectorAll(".eb-mt");
+const closeAll=()=>mts.forEach(m=>m.setAttribute("aria-expanded","false"));
+mts.forEach(m=>m.addEventListener("click",e=>{e.stopPropagation();const o=m.getAttribute("aria-expanded")==="true";closeAll();if(!o)m.setAttribute("aria-expanded","true")}));
+document.addEventListener("click",closeAll);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll()});
+let busy=false;
+bar.querySelectorAll(".eb-go").forEach(a=>{
+  a.href=url;
+  a.addEventListener("click",e=>{
+    e.stopPropagation();
+    if(a.dataset.go){delete a.dataset.go;return}
+    e.preventDefault();closeAll();if(busy)return;busy=true;
+    const done=()=>{busy=false;a.dataset.go="1";a.click()};
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches)return done();
+    const W=innerWidth,H=innerHeight,N=7,boxes=[];
+    for(let i=0;i<N;i++)setTimeout(()=>{
+      const p=i/(N-1),w=W*(1-p)+40*p,h=H*(1-p)+30*p;
+      const z=document.createElement("div");z.className="eb-z";
+      Object.assign(z.style,{left:(W-w)/2+"px",top:(H-h)/2+"px",width:w+"px",height:h+"px"});
+      document.body.appendChild(z);boxes.push(z);if(boxes.length>3)boxes.shift().remove();
+      if(i===N-1)setTimeout(()=>{boxes.forEach(b=>b.remove());done()},60);
+    },i*38);
+  });
+});
+}
+</script>
+<!-- /edutain.fun shared menu bar -->
+<div class="top">
+  <h1>A Puzzling Presidential Gallery</h1>
+  <span class="room" id="roomName"></span>
+  <div class="tbtn"><a class="btn q" href="./" style="text-decoration:none;display:inline-flex;align-items:center">🏛️ 3D view</a><button class="btn q" id="planBtn">🗺️ Floor plan</button><button class="btn q" id="sndBtn" aria-label="Sound">🔊</button></div>
+</div>
+<div class="stage">
+  <section class="hall" id="hall" aria-label="Gallery wall">
+    <div class="lamp"></div>
+    <div class="track" id="track"></div>
+    <button class="nav" id="prev" aria-label="Walk left">‹</button>
+    <button class="nav" id="next" aria-label="Walk right">›</button>
+    <div class="dots" id="dots"></div>
+    <div class="walkhint" id="walkhint">← → or swipe to walk</div>
+  </section>
+  <section class="desk" id="desk" aria-live="polite"></section>
+</div>
+<div class="overlay" id="planOv" role="dialog" aria-modal="true" aria-labelledby="planTitle">
+  <div class="plan">
+    <h2 id="planTitle">Floor plan</h2>
+    <p>Gold squares are sealed under glass. Tap a square to walk there. Seal every portrait in a room to unlock the next one.</p>
+    <div class="rooms" id="rooms"></div>
+    <div class="legend">The plate on each frame (years in office) is always correct. Use it as your guide.</div>
+    <div style="height:12px"></div>
+    <button class="btn g" id="planClose">Back to the gallery</button>
+    <button class="btn" id="resetAll" style="background:#e7e1d1;color:#2a1d08;margin-left:6px">Start the whole gallery over</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+{
+const P=[
+[1,"George Washington","Virginia","1789–1797","Stepped down after two terms, setting the precedent for a peaceful transfer of power","He never lived in the White House. It wasn't finished until after he left office."],
+[2,"John Adams","Massachusetts","1797–1801","Created the Department of the Navy (1798)","He was the first president to live in the White House, moving in before it was even finished."],
+[3,"Thomas Jefferson","Virginia","1801–1809","Doubled the nation's size with the Louisiana Purchase (1803)","He and John Adams both died on the same day: July 4, 1826, exactly 50 years after the Declaration of Independence."],
+[4,"James Madison","Virginia","1809–1817","Brought the War of 1812 to a close with the Treaty of Ghent (1815)","At about 5 feet 4 inches, he was the shortest president ever."],
+[5,"James Monroe","Virginia","1817–1825","Acquired Florida peacefully through the Adams–Onís Treaty (1819)","He was the third president to die on the Fourth of July."],
+[6,"John Quincy Adams","Massachusetts","1825–1829","Broke ground on the Chesapeake & Ohio Canal (1828)","He liked to go swimming in the Potomac River early in the morning."],
+[7,"Andrew Jackson","the Carolinas","1829–1837","Paid off the entire national debt, the only time in U.S. history (1835)","He was born near the North Carolina–South Carolina line, and historians still argue about which side!"],
+[8,"Martin Van Buren","New York","1837–1841","Set a 10-hour workday for laborers on federal public works (1840)","He was the first president born a U.S. citizen, and his first language was Dutch."],
+[9,"William Henry Harrison","Virginia","1841","Called Congress into special session to address the nation's finances (1841)","He was president for only about a month, the shortest time of anyone."],
+[10,"John Tyler","Virginia","1841–1845","Settled the Maine–Canada border with the Webster–Ashburton Treaty (1842)","He had 15 children, more than any other president."],
+[11,"James K. Polk","North Carolina","1845–1849","Peacefully settled the Oregon border with Britain (1846)","He promised to serve just one term, and he kept that promise."],
+[12,"Zachary Taylor","Virginia","1849–1850","Signed the Clayton–Bulwer Treaty keeping a future Central American canal neutral (1850)","His old war horse, Old Whitey, grazed on the White House lawn."],
+[13,"Millard Fillmore","New York","1850–1853","Sent Commodore Perry's expedition to open trade with Japan (1852)","He and his wife Abigail started the first White House library."],
+[14,"Franklin Pierce","New Hampshire","1853–1857","Completed the Gadsden Purchase, adding land in Arizona and New Mexico (1854)","He gave his whole inaugural speech from memory, with no notes."],
+[15,"James Buchanan","Pennsylvania","1857–1861","Exchanged the first transatlantic telegraph messages with Queen Victoria (1858)","He is the only president who never married. His niece Harriet Lane served as White House hostess."],
+[16,"Abraham Lincoln","Kentucky","1861–1865","Issued the Emancipation Proclamation (1863)","He is the only president with a patent, for an invention that lifted boats over sandbars."],
+[17,"Andrew Johnson","North Carolina","1865–1869","Purchased Alaska from Russia (1867)","He never went to school. He worked as a tailor and kept learning on his own."],
+[18,"Ulysses S. Grant","Ohio","1869–1877","Signed the law creating Yellowstone, the first national park (1872)","He was stopped by police for driving his horse and carriage too fast in Washington."],
+[19,"Rutherford B. Hayes","Ohio","1877–1881","Signed a law letting women lawyers argue before the Supreme Court (1879)","He started the White House Easter Egg Roll in 1878, and kids still roll eggs on the lawn today."],
+[20,"James A. Garfield","Ohio","1881","Launched an investigation into the Star Route postal fraud (1881)","Before he was president, he came up with his own proof of the Pythagorean theorem."],
+[21,"Chester A. Arthur","Vermont","1881–1885","Signed the Pendleton Act so federal jobs were earned on merit (1883)","He hired the artist Louis Comfort Tiffany to make a giant stained-glass screen for the White House."],
+[[22,24],"Grover Cleveland","New Jersey","1885–1889 & 1893–1897","Signed the Interstate Commerce Act, creating the first federal regulatory agency (1887)","He is the only president to get married inside the White House."],
+[23,"Benjamin Harrison","Ohio","1889–1893","Signed the Sherman Antitrust Act (1890)","Electric lights were put in the White House while he lived there, and his family was afraid to touch the switches."],
+[25,"William McKinley","Ohio","1897–1901","Signed the Erdman Act to mediate railroad labor disputes (1898)","He wore a red carnation for good luck. Ohio later made the scarlet carnation its state flower in his honor."],
+[26,"Theodore Roosevelt","New York","1901–1909","Won the Nobel Peace Prize for helping end the Russo-Japanese War (1906)","The teddy bear is named after him, after he refused to shoot a bear on a hunting trip."],
+[27,"William Howard Taft","Ohio","1909–1913","Signed the law creating the Department of Labor (1913)","He was the first president to throw out the first pitch on baseball's Opening Day."],
+[28,"Woodrow Wilson","Virginia","1913–1921","Signed the law creating the National Park Service (1916)","During World War I, sheep grazed on the White House lawn, and their wool was sold to help the Red Cross."],
+[29,"Warren G. Harding","Ohio","1921–1923","Created the Bureau of the Budget to plan federal spending (1921)","His dog, Laddie Boy, had his own chair at important meetings."],
+[30,"Calvin Coolidge","Vermont","1923–1929","Signed the Indian Citizenship Act (1924)","He had a pet raccoon named Rebecca who lived at the White House."],
+[31,"Herbert Hoover","Iowa","1929–1933","Made “The Star-Spangled Banner” the national anthem (1931)","He and his wife translated a 400-year-old book about mining from Latin into English."],
+[32,"Franklin D. Roosevelt","New York","1933–1945","Signed the Social Security Act (1935)","He is the only president elected four times."],
+[33,"Harry S. Truman","Missouri","1945–1953","Ordered the desegregation of the armed forces (1948)","The “S” in his name doesn't stand for anything. It honors both of his grandfathers."],
+[34,"Dwight D. Eisenhower","Texas","1953–1961","Launched the Interstate Highway System (1956)","He loved golf so much that he had a putting green built outside the Oval Office."],
+[35,"John F. Kennedy","Massachusetts","1961–1963","Founded the Peace Corps (1961)","At 43, he was the youngest person ever elected president."],
+[36,"Lyndon B. Johnson","Texas","1963–1969","Signed the Civil Rights Act of 1964","He had two beagles named Him and Her."],
+[37,"Richard Nixon","California","1969–1974","Created the Environmental Protection Agency (1970)","He talked on the phone with astronauts while they were standing on the Moon."],
+[38,"Gerald Ford","Nebraska","1974–1977","Guaranteed a public education for children with disabilities (1975)","He is the only president who was never elected president or vice president."],
+[39,"Jimmy Carter","Georgia","1977–1981","Brokered the Camp David Accords between Egypt and Israel (1978)","He was a peanut farmer, and he lived to 100, longer than any other president."],
+[40,"Ronald Reagan","Illinois","1981–1989","Signed the INF Treaty, eliminating a whole class of nuclear missiles (1987)","Before politics, he was a radio sports announcer and a Hollywood actor."],
+[41,"George H. W. Bush","Massachusetts","1989–1993","Signed the Americans with Disabilities Act (1990)","He went skydiving to celebrate his 75th, 80th, 85th and 90th birthdays."],
+[42,"Bill Clinton","Arkansas","1993–2001","Created the Children's Health Insurance Program (1997)","He played the saxophone on a late-night TV show while running for president."],
+[43,"George W. Bush","Connecticut","2001–2009","Launched PEPFAR, the global AIDS relief program (2003)","He grew up in Texas but was born in Connecticut. After the White House, he became a painter."],
+[44,"Barack Obama","Hawaii","2009–2017","Signed the 21st Century Cures Act to speed medical research (2016)","He is the only president born in Hawaii, and he collected Spider-Man comics as a kid."],
+[[45,47],"Donald Trump","New York","2017–2021 & 2025–present","Signed the Great American Outdoors Act to fund national parks (2020)","He and Grover Cleveland are the only presidents to serve two terms that weren't back to back."],
+[46,"Joe Biden","Pennsylvania","2021–2025","Signed the bipartisan Infrastructure Investment and Jobs Act (2021)","He had a stutter as a kid and practiced reading poetry in front of a mirror to overcome it."]
+].map((r,i)=>({i,num:Array.isArray(r[0])?r[0]:[r[0]],name:r[1],state:r[2],term:r[3],ach:r[4],story:r[5]}));
+
+// The hall runs in order. Four rooms, each with its own look.
+const ROOMS=[["Founders & Frontier","1789–1849",0,10],["Union & Rebuilding","1849–1889",11,21],["Progress & World Wars","1889–1961",22,32],["The Modern Era","1961–today",33,44]];
+const KEYS=["name","state","num","ach"], LABEL={name:"Name",state:"Born in",num:"President number",ach:"Achievement in office"};
+const STATES=["Alabama","Arkansas","California","Connecticut","Georgia","Hawaii","Illinois","Indiana","Iowa","Kentucky","Maryland","Massachusetts","Missouri","Nebraska","New Hampshire","New Jersey","New York","North Carolina","Ohio","Pennsylvania","South Carolina","Tennessee","Texas","Vermont","Virginia"];
+const $=id=>document.getElementById(id);
+const rnd=n=>Math.floor(Math.random()*n), pick=a=>a[rnd(a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const ord=n=>n+(n%100>10&&n%100<14?"th":["th","st","nd","rd"][n%10]||"th");
+const truth=(p,k)=>k==="name"?p.name:k==="ach"?p.ach:k==="num"?p.num.map(ord).join(" & "):p.state;
+function fake(p,k){
+  const near=(span)=>{let j;do{j=p.i+(rnd(2)?1:-1)*(1+rnd(span))}while(j<0||j>=P.length||j===p.i);return P[j]};
+  if(k==="name") return near(4).name;
+  if(k==="ach") return near(6).ach;
+  if(k==="num"){let d;do{d=(rnd(2)?1:-1)*(1+rnd(3))}while(p.num.some(n=>n+d<1||n+d>47));return p.num.map(n=>ord(n+d)).join(" & ")}
+  const pool=p.state==="the Carolinas"?STATES.filter(x=>!x.includes("Carolina")):STATES;
+  return pick(pool);
+}
+function fakeDistinct(p,k,avoid){for(let t=0;t<60;t++){const f=fake(p,k);if(!avoid.includes(f))return f}return null}
+
+/* ---------- saving (carries over portraits already sealed in the old wall version) ---------- */
+let S;
+function load(){
+  try{S=JSON.parse(localStorage.getItem("pgw-v1"))}catch(e){}
+  if(!S||!S.ps){
+    S={room:0,pos:0,miss:0,ps:{},snd:true};
+    try{const old=JSON.parse(localStorage.getItem("mug-v2")); if(old&&old.ps){S.ps=old.ps;S.miss=old.miss||0}}catch(e){}
+  }
+}
+function save(){try{localStorage.setItem("pgw-v1",JSON.stringify(S))}catch(e){}}
+function deal(p){
+  const nWrong=1+rnd(3), wrong=shuffle(KEYS).slice(0,nWrong), c={};
+  KEYS.forEach(k=>{const t=truth(p,k);c[k]=wrong.includes(k)?{shown:fakeDistinct(p,k,[t]),ok:false,done:false}:{shown:t,ok:true,done:false}});
+  return {c,sealed:false};
+}
+const st=p=>S.ps[p.i]||(S.ps[p.i]=deal(p));
+const roomList=r=>P.slice(ROOMS[r][2],ROOMS[r][3]+1);
+const roomDone=r=>roomList(r).every(p=>st(p).sealed);
+const unlocked=r=>r===0||roomDone(r-1);
+const sealedCount=r=>roomList(r).filter(p=>st(p).sealed).length;
+
+/* ---------- sound ---------- */
+let ac;
+function tone(f,d=.15,type="sine",v=.06,w=0){ if(!S.snd) return; try{ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended")ac.resume();
+  const t=ac.currentTime+w,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d+.02)}catch(e){} }
+function steps(){ if(!S.snd) return; try{ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended")ac.resume();
+  [0,.18].forEach(w=>{const n=ac.sampleRate*.06,b=ac.createBuffer(1,n,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+  const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();f.type="lowpass";f.frequency.value=500;g.gain.value=.5;s.buffer=b;s.connect(f).connect(g).connect(ac.destination);s.start(ac.currentTime+w)})}catch(e){} }
+const sfx={ok(){tone(660,.12,"triangle",.07)},no(){tone(180,.25,"sawtooth",.04)},seal(){[523,659,784,1047].forEach((f,i)=>tone(f,.5,"triangle",.07,i*.12))},door(){[392,523,659].forEach((f,i)=>tone(f,.4,"sine",.08,i*.15))}};
+function setSnd(){$("sndBtn").textContent=S.snd?"🔊":"🔇"}
+$("sndBtn").onclick=()=>{S.snd=!S.snd;setSnd();save()};
+
+/* ---------- walking ---------- */
+// Positions in a room: -1 = door back (rooms 2-4), 0..n-1 = portraits, n = door forward (rooms 1-3)
+let pending={};
+const room=()=>S.room, list=()=>roomList(S.room);
+const minPos=()=>S.room>0?-1:0, maxPos=()=>S.room<ROOMS.length-1?list().length:list().length-1;
+function frameHTML(p,cls=""){
+  const s=st(p);
+  return `<div class="slot ${cls} ${s.sealed?"sealed":""}"><div class="frame"><div class="mat"><img src="portraits/${String(p.i).padStart(2,"0")}.jpg" alt="Portrait of the president who served ${p.term}"><div class="glass"></div></div><div class="wax">✓</div></div>
+    <div class="plate">${s.sealed?`<b>${p.name}</b>`:""}In office ${p.term}</div></div>`;
+}
+function doorHTML(dir,cls=""){
+  if(dir<0){const r=ROOMS[S.room-1];return `<div class="slot ${cls}"><div class="door open"><span class="lock">🚪</span></div><div class="doorlab">Back to<br>${r[0]}</div></div>`}
+  if(S.room>=ROOMS.length-1) return "";
+  const r=ROOMS[S.room+1], ok=roomDone(S.room);
+  return `<div class="slot ${cls}"><div class="door ${ok?"open":""}"><span class="lock">${ok?"✨":"🔒"}</span></div><div class="doorlab">${ok?`Open! Walk into<br>${r[0]}`:`Locked. Seal every portrait in this room to open it.<br>${sealedCount(S.room)} of ${list().length} sealed`}</div></div>`;
+}
+function itemHTML(pos,cls){ if(pos<minPos()||pos>maxPos()) return ""; if(pos===-1) return doorHTML(-1,cls); if(pos===list().length) return doorHTML(1,cls); return frameHTML(list()[pos],cls); }
+function drawHall(dir){
+  document.body.className="r"+S.room;
+  const w=$("hall").clientWidth, gap=Math.min(w*.62, 420);
+  $("track").innerHTML=[-1,0,1].map(o=>{const h=itemHTML(S.pos+o, o?"side":""); return h?h.replace('class="slot',`style="transform:translateX(${o*gap}px)${o?" scale(.8)":""}" class="slot`):""}).join("");
+  if(dir){ const t=$("track"); t.style.transition="none"; t.style.transform=`translateX(${dir*60}px)`; t.style.opacity=".4"; void t.offsetWidth; t.style.transition=""; t.style.transform=""; t.style.opacity=""; }
+  $("prev").disabled=S.pos<=minPos(); $("next").disabled=S.pos>=maxPos();
+  $("roomName").innerHTML=`Room ${S.room+1} of 4: <b>${ROOMS[S.room][0]}</b> · ${sealedCount(S.room)}/${list().length} sealed`;
+  // little strip of dots for this room
+  let d=""; if(S.room>0) d+=`<button class="dot d ${S.pos===-1?"here":""}" data-pos="-1" aria-label="Door back"></button>`;
+  list().forEach((p,k)=>d+=`<button class="dot ${st(p).sealed?"s":""} ${S.pos===k?"here":""}" data-pos="${k}" aria-label="Portrait ${k+1}${st(p).sealed?", sealed":""}"></button>`);
+  if(S.room<ROOMS.length-1) d+=`<button class="dot d ${S.pos===list().length?"here":""}" data-pos="${list().length}" aria-label="Door forward"></button>`;
+  $("dots").innerHTML=d;
+}
+function go(pos,dir){ if(pos<minPos()||pos>maxPos()) return; S.pos=pos; pending={}; steps(); save(); drawHall(dir); drawDesk(); }
+function walk(d){ go(S.pos+d, d); }
+function enterRoom(r,pos){ S.room=r; S.pos=pos; pending={}; save(); sfx.door(); drawHall(r>0?1:-1); drawDesk(); toast(`Room ${r+1}: ${ROOMS[r][0]}`); }
+$("prev").onclick=()=>walk(-1); $("next").onclick=()=>walk(1);
+$("dots").addEventListener("click",e=>{const b=e.target.closest("[data-pos]"); if(b) go(+b.dataset.pos, +b.dataset.pos>S.pos?1:-1)});
+document.addEventListener("keydown",e=>{ if($("planOv").classList.contains("show")){ if(e.key==="Escape") closePlan(); return; }
+  if(e.key==="ArrowLeft") walk(-1); if(e.key==="ArrowRight") walk(1); });
+let tx=null; $("hall").addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
+$("hall").addEventListener("touchend",e=>{ if(tx===null) return; const dx=e.changedTouches[0].clientX-tx; tx=null; if(Math.abs(dx)>40) walk(dx<0?1:-1); });
+addEventListener("resize",()=>drawHall());
+
+/* ---------- the placard desk ---------- */
+function drawDesk(){
+  const D=$("desk");
+  if(S.pos===-1){ D.innerHTML=`<h2>A doorway</h2><p class="sub">This door leads back to <b>${ROOMS[S.room-1][0]}</b>.</p><button class="btn g" id="doorGo">Walk back through</button>`; $("doorGo").onclick=()=>enterRoom(S.room-1, roomList(S.room-1).length); return; }
+  if(S.pos===list().length){
+    const r=ROOMS[S.room+1], ok=roomDone(S.room);
+    if(ok){ D.innerHTML=`<h2>The door is open!</h2><p class="sub">Every portrait in ${ROOMS[S.room][0]} is sealed under glass. The next room is <b>${r[0]}</b> (${r[1]}).</p><button class="btn g" id="doorGo">Walk into the next room →</button>`; $("doorGo").onclick=()=>enterRoom(S.room+1,0); }
+    else{ const left=list().filter(p=>!st(p).sealed).length;
+      D.innerHTML=`<h2>This door is locked</h2><p class="sub">Seal every portrait in this room to open it. ${left} still need checking.</p><button class="btn g" id="findNext">Walk to the next unsealed portrait</button>`; $("findNext").onclick=()=>{const k=list().findIndex(p=>!st(p).sealed); if(k>=0) go(k,-1);}; }
+    return;
+  }
+  const p=list()[S.pos], s=st(p);
+  if(s.sealed){
+    const more=nextUnsealed();
+    D.innerHTML=`<div class="banner"><h3>Sealed under glass</h3><div class="lede">Every placard is checked. Here is a true story from the museum archives:</div><p class="story serif">📜 ${p.story}</p></div>
+      <div class="label"><div class="ln">${p.name}</div><div class="lt">${truth(p,"num")} President · ${p.term}</div><div class="lc"><div><b>Born in</b>${p.state}</div><div class="la">${p.ach}</div></div></div>
+      ${more!==null?`<button class="btn g" id="nextUn">Walk to the next unsealed portrait →</button>`:roomDone(S.room)&&S.room<ROOMS.length-1?`<button class="btn g" id="toDoor">Walk to the open door →</button>`:""}`;
+    const b=$("nextUn"); if(b) b.onclick=()=>go(more, more>S.pos?1:-1);
+    const dbt=$("toDoor"); if(dbt) dbt.onclick=()=>go(list().length,1);
+    return;
+  }
+  D.innerHTML=`<h2>Check the placards</h2><p class="sub">Someone mixed up the signs! Mark each one <b>Correct</b> or <b>Wrong</b>. The plate on the frame (years in office) is always right.</p><div class="cards">`+
+    KEYS.map(k=>{const c=s.c[k], fix=pending[k];
+      let body=`<div class="acts"><button class="btn ok" data-a="yes" data-k="${k}">✓ Correct</button><button class="btn no" data-a="no" data-k="${k}">✗ Wrong</button></div>`;
+      if(fix) body=`<p class="msg">${fix.msg}</p><div class="choices">${fix.opts.map((o,j)=>`<button data-k="${k}" data-o="${j}" ${fix.tried.includes(j)?"disabled":""}>${o}</button>`).join("")}</div>`;
+      return `<div class="card ${k==="ach"?"ach":""} ${c.done?"done":""} ${fix?"fix":""}" id="c-${k}"><span class="stamp">VERIFIED ✓</span><div class="k">${LABEL[k]}</div><div class="v">${c.shown}</div>${c.done?"":body}</div>`;
+    }).join("")+`</div><p class="note">Slip-ups so far: ${S.miss}. Mistakes are how curators learn!</p>`;
+}
+function nextUnsealed(){ const L=list(); for(let n=1;n<=L.length;n++){const k=(S.pos+n)%L.length; if(!st(L[k]).sealed) return k;} return null; }
+function startFix(k,msg){
+  const p=list()[S.pos],t=truth(p,k),shown=st(p).c[k].shown,opts=[t];
+  while(opts.length<3){const f=fakeDistinct(p,k,[...opts,shown]); if(!f)break; opts.push(f)}
+  pending[k]={msg,opts:shuffle(opts),tried:[]};
+}
+function miss(k,text){S.miss++; save(); sfx.no(); toast(text); const el=$("c-"+k); if(el){el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake")}}
+function act(k,a){
+  const p=list()[S.pos], c=st(p).c[k];
+  if(a==="yes"){
+    if(c.ok){c.done=true; sfx.ok(); toast("Verified.")}
+    else{startFix(k,"Not so fast: this placard is wrong. Which is right?"); drawDesk(); miss(k,"Look again: that placard is wrong."); return}
+  } else {
+    if(!c.ok){startFix(k,"Good eye! This one is wrong. Pick the correct "+LABEL[k].toLowerCase()+":"); sfx.ok();}
+    else{c.done=true; drawDesk(); miss(k,"That one was actually correct."); return after()}
+  }
+  drawDesk(); after();
+}
+function choose(k,j){
+  const p=list()[S.pos], f=pending[k], t=truth(p,k);
+  if(f.opts[j]===t){const c=st(p).c[k]; c.shown=t; c.done=true; c.ok=true; delete pending[k]; sfx.ok(); toast("Fixed and verified!"); drawDesk(); after();}
+  else{f.tried.push(j); drawDesk(); miss(k,"Not that one. Try again.");}
+}
+function after(){
+  const p=list()[S.pos], s=st(p);
+  if(!s.sealed&&KEYS.every(k=>s.c[k].done)){
+    s.sealed=true; save();
+    setTimeout(()=>{ drawHall(); drawDesk(); sfx.seal(); toast("Sealed under glass ✨");
+      if(roomDone(S.room)) setTimeout(()=>{ sfx.door(); toast(S.room<ROOMS.length-1?`Room complete! The door to ${ROOMS[S.room+1][0]} is open.`:"You sealed the whole gallery! 🏛️"); drawHall(); }, 1600);
+      $("desk").scrollIntoView({behavior:"smooth",block:"nearest"}); }, 200);
+  }
+  save();
+}
+$("desk").addEventListener("click",e=>{const b=e.target.closest("button"); if(!b||!b.dataset.k) return;
+  if(b.dataset.a) act(b.dataset.k,b.dataset.a); else if(b.dataset.o!=null) choose(b.dataset.k,+b.dataset.o);});
+let tt; function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2000);}
+
+/* ---------- floor plan ---------- */
+function openPlan(){
+  $("rooms").innerHTML=ROOMS.map((r,ri)=>{const ok=unlocked(ri);
+    return `<div class="rm ${ok?"":"locked"}"><h3>${ok?"":"🔒 "}${r[0]}</h3><small>${r[1]} · ${sealedCount(ri)}/${roomList(ri).length} sealed</small>`+
+      roomList(ri).map((p,k)=>`<button class="sq ${st(p).sealed?"s":""} ${ri===S.room&&k===S.pos?"here":""}" data-r="${ri}" data-k="${k}" ${ok?"":"disabled"} aria-label="${st(p).sealed?p.name:"Unsealed portrait"}">${st(p).sealed?p.num[0]:""}</button>`).join("")+`</div>`}).join("");
+  $("planOv").classList.add("show"); $("planClose").focus();
+}
+function closePlan(){$("planOv").classList.remove("show")}
+$("planBtn").onclick=openPlan; $("planClose").onclick=closePlan;
+$("rooms").addEventListener("click",e=>{const b=e.target.closest(".sq"); if(!b||b.disabled) return; closePlan(); const r=+b.dataset.r,k=+b.dataset.k; if(r!==S.room){S.room=r;S.pos=k;pending={};save();sfx.door();drawHall(1);drawDesk();} else go(k, k>S.pos?1:-1);});
+$("resetAll").onclick=()=>{ S={room:0,pos:0,miss:0,ps:{},snd:S.snd}; save(); closePlan(); drawHall(); drawDesk(); toast("The placards have been shuffled again!"); };
+
+load(); if(!unlocked(S.room)){S.room=0;S.pos=0} setSnd(); drawHall(); drawDesk();
+}
+</script>
+</body>
+</html>

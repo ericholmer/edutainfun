@@ -277,7 +277,7 @@ const calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const rnd=n=>Math.floor(Math.random()*n);
 const FIN=['Standard','Shiny','Rainbow'];
-const TH={exp:['explorers','Explorers'],inv:['inventions','Inventions'],big:['moments','Big Moments'],won:['wonders','Wonders & Art']};
+const TH={exp:['explorers','Explorers'],inv:['inventions','Inventions'],big:['moments','Big Moments'],won:['wonders','Wonders & Arts']};
 const BY={};C.forEach(c=>BY[c.id]=c);
 // card numbers: by theme, then by title, so a number never hints at the date
 [...C].sort((a,b)=>'exp inv big won'.indexOf(a.th)-'exp inv big won'.indexOf(b.th)||a.t.localeCompare(b.t)).forEach((c,i)=>c.no=i+1);
@@ -313,7 +313,7 @@ const FR={inventions:{win:[85,166,652,537],ty:903,plate:[84,750,658,306]},wonder
 const PH={exp:['#124a40','#6fc2ad'],inv:['#1c376b','#86aee8'],big:['#6e1f24','#e9b56a'],won:['#3a2466','#cfa97a']};
 const IMG={},loading={};
 function img(src){return loading[src]||(loading[src]=new Promise(r=>{const im=new Image();im.onload=()=>{IMG[src]=im;r(im)};im.onerror=()=>r(null);im.src=src}))}
-const PACKS=[['all','Everything'],['inv','Inventions'],['exp','Explorers'],['big','Big Moments'],['won','Wonders & Art']];
+const PACKS=[['all','Everything'],['inv','Inventions'],['exp','Explorers'],['big','Big Moments'],['won','Wonders & Arts']];
 const PNAME=Object.fromEntries(PACKS);PNAME.chain='Cause & Effect';
 const PFILE={all:'art/pack-std.webp',inv:'art/pack-inv.webp',exp:'art/pack-exp.webp',big:'art/pack-big.webp',won:'art/pack-won.webp',chain:'art/pack-chain.jpg'};
 // each wrapper is from a different made-up company (Explorers is Eric's own design with its words baked in). logo: [x,y,width] on the 728x1168 wrapper;

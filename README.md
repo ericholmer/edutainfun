@@ -46,7 +46,7 @@ Then open http://localhost:8000. Opening the files directly (`file://`) mostly w
 - **three.js** r170 (Presidential Gallery 3D rooms): MIT License, `gallery/lib/LICENSE-three.txt`.
 - **Card frames, foil packs, logo, card back and joke items** (Which Came First? card packs): made for this project with Adobe Firefly and Nano Banana Pro.
 - **Card pictures** (Which Came First? card packs): public-domain and openly licensed photos and paintings, mostly from Wikimedia Commons. The credits in `packs/data.js` are provisional until each one is checked against its source page.
-- **Pack wrappers** (Which Came First? card packs): designed by Eric Holmer. The Explorers ship painting and the Wonders & Art gallery photo are CC0 (public domain dedication) from Wikimedia Commons.
+- **Pack wrappers** (Which Came First? card packs): designed by Eric Holmer. The Explorers ship painting and the Wonders & Arts gallery photo are CC0 (public domain dedication) from Wikimedia Commons.
 - **Map data** (The Big Map Chase): Natural Earth via world-atlas and us-atlas, public domain.
 - Pixel art for Bill's Big Trip was made for this project.
 

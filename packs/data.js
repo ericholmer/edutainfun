@@ -146,7 +146,11 @@ const PHOTOS = {
  jackie:"Photo of Jackie Robinson. National Portrait Gallery.",
  polio:"Newspaper headlines from April 1955 saying the vaccine works.",
  parks:"Photo of Rosa Parks on a bus in December 1956, after the boycott ended.",
- sputnik:"Photo of a copy of Sputnik 1."
+ sputnik:"Photo of a copy of Sputnik 1.",
+ email:"Photo of the two computers at BBN, about 1970. The first email went from the back one to the front one.",
+ statehood:"Painting of San Francisco in 1850 by George Henry Burgess, who came to California that year. He painted it in 1878.",
+ timezones:"Railroad map from 1892, nine years after the time zones began. Library of Congress, Geography and Map Division.",
+ smallpox:"Photo of three leaders of the smallpox fight reading the news that it was gone, 1980. CDC."
 };
 // Joke items that sometimes turn up in a pack. All made up.
 const JUNK = {

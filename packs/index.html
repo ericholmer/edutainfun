@@ -142,6 +142,10 @@ button:focus-visible,.cd:focus-visible{outline:3px solid #fff;outline-offset:2px
 @media (min-width:700px){:root{--cw:150px}#tl{--cw:128px}#binGrid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}}
 @media (max-height:640px){:root{--cw:96px}#tl{--cw:84px}#msg{min-height:40px;font-size:17px}}
 @media (prefers-reduced-motion:reduce){.cd::after,.plus{animation:none!important}#cvf{transition:none}}
+/* no widows or orphans: balance short text, keep the last line of longer text from being one lonely word */
+h1,h2,h3,.tag,.cap,.btn,.lbl,.chip,.yr,.olabs span,.tx b{text-wrap:balance}
+p,li,small,.st,#msg,#phint{text-wrap:pretty}
+.nw,.btn.sm{white-space:nowrap}.bcount{opacity:.7;font-size:.8em}
 </style>
 </head>
 <body>
@@ -217,7 +221,7 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
 <!-- /edutain.fun shared menu bar -->
 <section class="scr on" id="sTitle">
   <img class="logo" src="art/logo.webp" alt="Which Came First?" width="1031" height="398">
-  <p class="tag">Pick a pack off the wall. Put history in order. Keep the cards you get right!</p>
+  <p class="tag"><span class="nw">Pick a pack off the wall.</span> <span class="nw">Put history in order.</span> <span class="nw">Keep the cards you get right!</span></p>
   <div id="wall"></div>
   <div class="row">
     <button class="btn alt" id="bBinder">My binder</button>
@@ -244,7 +248,7 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
 </section>
 
 <section class="scr" id="sBinder">
-  <div class="top"><span class="cap" id="binTitle">My binder</span><button class="btn alt sm" id="bSort">In time order</button><button class="btn alt sm" data-home>Home</button></div>
+  <div class="top"><span class="cap" id="binTitle">My binder</span><button class="btn alt sm" id="bSort">By year</button><button class="btn alt sm" data-home>Home</button></div>
   <div id="binGrid"></div>
   <div id="junk"><h3>Junk drawer</h3><p>Made-up cards, just for laughs. Nothing in this drawer is real history!</p><div class="row" id="junkRow"></div></div>
 </section>
@@ -325,7 +329,8 @@ const inTheme=(c,th)=>th=='all'||c.th==th;
 const BASE=['art/pack-inv.webp','art/pack-exp.webp','art/pack-big.webp','art/pack-won.webp','art/frame-inventions.webp','art/frame-wonders.webp','art/frame-moments.webp','art/frame-explorers.webp','art/back.jpg','art/logo.webp','art/pack-std.webp','art/pack-chain.jpg'];
 function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
 function rr(g,x,y,w,h,r){g.beginPath();g.roundRect(x,y,w,h,r)}
-function lines(g,t,w){const ws=t.split(' ');let l='',ls=[];for(const s of ws){const n=l?l+' '+s:s;if(g.measureText(n).width>w&&l){ls.push(l);l=s}else l=n}ls.push(l);return ls}
+function lines(g,t,w){const ws=t.split(' ');let l='',ls=[];for(const s of ws){const n=l?l+' '+s:s;if(g.measureText(n).width>w&&l){ls.push(l);l=s}else l=n}ls.push(l);
+  const k=ls.length-1;if(k>0&&!ls[k].includes(' ')){const p=ls[k-1].split(' ');if(p.length>1){const m=p.pop()+' '+ls[k];if(g.measureText(m).width<=w){ls[k-1]=p.join(' ');ls[k]=m}}}return ls}
 function balance(g,t,w){if(g.measureText(t).width<=w)return[t];const ws=t.split(' ');let best=null,bw=1e9;for(let i=1;i<ws.length;i++){const a=ws.slice(0,i).join(' '),b=ws.slice(i).join(' '),m=Math.max(g.measureText(a).width,g.measureText(b).width);if(m<bw&&m<=w){bw=m;best=[a,b]}}return best||lines(g,t,w)}
 function drawFace(c,k){const g=k.getContext('2d'),name=TH[c.th][0],fr=FR[name],fi=IMG['art/frame-'+name+'.webp'],[wx,wy,ww,wh]=fr.win,x=wx-5,y=wy-5,w=ww+10,h=wh+10;
   g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,CWp,CHp);const sp=v=>{try{g.letterSpacing=v}catch(e){}};sp('0px');
@@ -602,7 +607,7 @@ $('ovCard').onclick=e=>{if(e.target.id=='ovCard')ov('ovCard',false)};
 
 /* ---------- binder ---------- */
 let byTime=false;
-async function binder(){show('sBinder');await Promise.all(BASE.map(img));$('binTitle').textContent='My binder · '+owned()+' of '+C.length;$('bSort').textContent=byTime?'By number':'In time order';
+async function binder(){show('sBinder');await Promise.all(BASE.map(img));$('binTitle').innerHTML='<span class="nw">My binder</span> <span class="nw bcount">'+owned()+' of '+C.length+'</span>';$('bSort').textContent=byTime?'By number':'By year';
   const g=$('binGrid');g.innerHTML='';const list=byTime?C.filter(c=>S.own[c.id]!=null).sort((a,b)=>a.y-b.y):[...C].sort((a,b)=>a.no-b.no);
   if(!list.length)g.innerHTML='<p style="grid-column:1/-1">No cards yet. Play a game and place cards right to keep them!</p>';
   for(const c of list){const d=document.createElement('div');d.className='bc';if(S.own[c.id]!=null){const b=cardEl(c,S.own[c.id]);b.onclick=()=>cardView(c,S.own[c.id],true);d.append(b);if(byTime)d.insertAdjacentHTML('beforeend','<b>'+yr(c)+'</b>')}
@@ -638,6 +643,16 @@ document.addEventListener('keydown',e=>{if(e.key=='Escape'){ov('ovCard',false);o
 BASE.forEach(img);home();
 window.__t={get G(){return G},S,Scene,C};
 }
+// No widows: tie the last two words of reading text together with a no-break space, as a backstop
+// for browsers without text-wrap:pretty. Runs again whenever the game changes text.
+{const SEL='p,h2,h3,li,small,#msg,.tag,.st,.why';
+ const tie=el=>{if(el.closest('svg,.eb'))return;if(el.textContent.trim().split(/\s+/).length<4)return;
+   const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let last=null,n;while(n=w.nextNode())if(n.nodeValue.trim())last=n;
+   if(!last||/ \S+\s*$/.test(last.nodeValue))return;const v=last.nodeValue,m=v.match(/ (\S+\s*)$/);
+   if(m){const i=v.length-m[0].length;last.nodeValue=v.slice(0,i)+' '+v.slice(i+1)}};
+ const run=root=>{const el=root.nodeType===3?root.parentElement:root;if(!el||!el.querySelectorAll)return;
+   const top=el.closest(SEL);if(top)tie(top);el.querySelectorAll(SEL).forEach(tie)};
+ run(document.body);new MutationObserver(ms=>ms.forEach(m=>run(m.target))).observe(document.body,{childList:true,subtree:true,characterData:true})}
 </script>
 </body>
 </html>

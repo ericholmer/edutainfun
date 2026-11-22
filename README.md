@@ -9,8 +9,8 @@ index.html        Launcher (At Ease–style desktop)
 fonts/            Fonts shared by the launcher, the Gallery and Gone Fishing (self-hosted, no Google Fonts calls)
 map/              Mixed-Up Map
 gallery/          A Puzzling Presidential Gallery, 3D walk-through  (portraits/NN.jpg, 00 = Washington; simple.html = the flat "Simple view"; lib/ = three.js)
-first/            Which Came First?  (the original flat-card version, still on the launcher)
-packs/            Which Came First? card-pack version, in testing  (art/ = frames, card pictures, packs, logo, back and joke items; data.js = the 67 cards and 9 chains; lib/ = three.js)
+first/            Which Came First?  (the original flat-card version, no longer on the launcher; kept so old links work)
+packs/            Which Came First? card-pack version, on the launcher  (art/ = frames, card pictures, packs, logo, back and joke items; data.js = the 67 cards and 9 chains; lib/ = three.js)
 chase/            The Big Map Chase
 bill/             Bill's Big Trip  (art/ = pixel art, fonts/ = Pixelify Sans + Atkinson Hyperlegible)
 fish/             Gone Fishing: Chesapeake Bay  (fish/<id>.webp = Duane Raver USFWS paintings, art/ = painted scenes, map, boat and props)

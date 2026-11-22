@@ -7,83 +7,55 @@
 <title>A Puzzling Presidential Gallery · edutain.fun</title><link rel="icon" href="/favicon.ico" sizes="48x48"><link rel="icon" type="image/png" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:500;font-display:swap;src:url(../fonts/cormorant-garamond-latin-500-normal.woff2) format("woff2")}@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/cormorant-garamond-latin-600-normal.woff2) format("woff2")}@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/cormorant-garamond-latin-700-normal.woff2) format("woff2")}@font-face{font-family:"Source Sans 3";font-style:normal;font-weight:400;font-display:swap;src:url(../fonts/source-sans-3-latin-400-normal.woff2) format("woff2")}@font-face{font-family:"Source Sans 3";font-style:normal;font-weight:600;font-display:swap;src:url(../fonts/source-sans-3-latin-600-normal.woff2) format("woff2")}@font-face{font-family:"Source Sans 3";font-style:normal;font-weight:700;font-display:swap;src:url(../fonts/source-sans-3-latin-700-normal.woff2) format("woff2")}</style>
 <style>
-/* VOICE: a stately museum after hours, warm and a little playful — you are the curator walking the halls
-   IDEA: first-person walk through four rooms of the Presidential Portrait Gallery, one portrait at a time
-   PICTURE: the wall in front of you, a gilt frame lit from above, the next frames peeking in at the edges
-   COLOUR and TYPE: each room has its own wall colour; gilt, cream card stock, oxblood seal; Cormorant + Source Sans
-   LAYOUT: room bar, the wall, placard desk below (beside on wide screens), floor plan on demand */
-:root{--gilt:#c9a45c;--gilt2:#8a6a2e;--card:#f7f0df;--ink:#231d14;--seal:#8e1f24;--ok:#2f7d4f;--bad:#b23a2e;--ui:#f3ead6;--muted:#d4ccb6;
-  --wall:#1f3a33;--wall2:#14271f;--trim:#0e1c17;--light:#ffe8b0}
-body.r0{--wall:#2b4a3c;--wall2:#162a21;--trim:#0d1a14;--light:#ffd98a}
-body.r1{--wall:#5a2027;--wall2:#33121a;--trim:#1f0a0f;--light:#ffe2a8}
-body.r2{--wall:#1e3352;--wall2:#111e33;--trim:#0a1222;--light:#e9f1ff}
-body.r3{--wall:#e9e6df;--wall2:#cfcac0;--trim:#9b958a;--light:#ffffff}
+/* VOICE: a stately museum after hours, warm and a little playful; you are the curator
+   IDEA: a Myst / QuickTime VR walk-through: stand in a spot, drag to look, tap to go
+   PICTURE: the Founders & Frontier room itself, green walls, gilt frames, picture lights
+   COLOUR and TYPE: room green, gilt, cream card stock, oxblood seal; Cormorant + Source Sans
+   LAYOUT: full-screen room; stepping up to a portrait slides in the placard desk (side or bottom) */
+:root{--gilt:#c9a45c;--card:#f7f0df;--ink:#231d14;--seal:#8e1f24;--ok:#2f7d4f;--ui:#f3ead6;--muted:#d4ccb6;--wall:#2b4a3c;--trim:#0d1a14;
+  --point:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M11 2.5c1.4 0 2.5 1.1 2.5 2.5v8.2l.6-.2c1.3-.4 2.6.3 3 1.5 1.2-.6 2.7-.1 3.2 1.2 1.3-.5 2.8.2 3.2 1.6l1 3.6c.9 3.3.2 6.2-2 8.4H12.7l-5.4-7.6c-.8-1.1-.6-2.6.5-3.4 1-.7 2.3-.6 3.2.3V5c0-1.4-.9-2.5 0-2.5z' fill='%23fff' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M14 13v5M17.2 14.4v4M20.4 15.8v3' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E") 11 2,pointer;
+  --grab:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M8 13c0-1.3 1-2.2 2.2-2.2.3 0 .6 0 .8.2V7.2c0-1.3 1-2.2 2.2-2.2s2.2 1 2.2 2.2V6c0-1.3 1-2.2 2.2-2.2s2.2 1 2.2 2.2v1.6c.3-.2.7-.3 1-.3 1.3 0 2.2 1 2.2 2.2V20c0 4.6-3 8-7.4 8h-1.2c-3 0-5-1.4-6.5-3.8L4.6 18c-.6-1.1-.2-2.4.9-3 1-.5 2.1-.2 2.5.6z' fill='%23fff' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M11 11v6M15.4 7v9M19.8 7v9M24.2 10v6' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E") 16 16,grab}
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
-html,body{margin:0}
-body{color:var(--ui);font:16px/1.5 "Source Sans 3",system-ui,sans-serif;overflow-x:clip;min-height:100vh;background:var(--wall2);transition:background .6s}
+html,body{margin:0;height:100%;overflow:hidden;background:#0b1512}
+body{color:var(--ui);font:16px/1.5 "Source Sans 3",system-ui,sans-serif}
 .serif{font-family:"Cormorant Garamond",Georgia,serif}
-.top{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:10px max(3vw,12px);background:var(--trim)}
-.top h1{font:700 clamp(20px,3.4vw,30px)/1.05 "Cormorant Garamond",Georgia,serif;margin:0;color:#f6e7c1}
-.room{font-size:14px;color:var(--muted)}
-.room b{color:#f6e7c1}
-.tbtn{margin-left:auto;display:flex;gap:8px}
-.btn{border:0;border-radius:10px;padding:10px 16px;font:700 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:44px}
-.btn.g{background:var(--gilt);color:#20180a}.btn.q{background:#ffffff1c;color:var(--ui)}
-.btn:focus-visible,.nav:focus-visible,.dot:focus-visible{outline:3px solid #f6e7c1;outline-offset:3px}
-/* the hall */
-.stage{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
-@media(min-width:960px){.stage{grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr);align-items:start}}
-.hall{position:relative;overflow:hidden;min-height:clamp(400px,60vh,520px);
-  background:
-   radial-gradient(ellipse 40% 55% at 50% 30%,color-mix(in srgb,var(--light) 30%,transparent),transparent 70%),
-   repeating-linear-gradient(90deg,#ffffff06 0 2px,transparent 2px 46px),
-   linear-gradient(var(--wall),var(--wall2) 82%,var(--trim) 82%,#000 100%);
-  transition:background .6s}
-body.r3 .hall{color:#231d14}
-.hall:before{content:"";position:absolute;left:0;right:0;top:calc(82% - 14px);height:14px;background:linear-gradient(#0003,#0006)}
-.lamp{position:absolute;left:50%;top:0;width:120px;height:14px;margin-left:-60px;background:linear-gradient(#b48a3c,#6d521f);border-radius:0 0 30px 30px;box-shadow:0 10px 40px 10px color-mix(in srgb,var(--light) 35%,transparent);z-index:2}
-.track{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:transform .45s ease}
-.slot{position:absolute;top:7%;width:min(46vw,280px);transition:transform .45s ease,opacity .45s;display:flex;flex-direction:column;align-items:center}
-@media(min-width:960px){.slot{width:min(28vw,320px)}.hall{min-height:min(78vh,640px)}}
-.slot.side{opacity:.55;pointer-events:none}
-.frame{position:relative;width:100%;aspect-ratio:4/5;padding:12px;border-radius:4px;
-  background:linear-gradient(135deg,#f0d38f,var(--gilt) 30%,var(--gilt2) 55%,#e8c77e 75%,#9b7834);
-  box-shadow:0 22px 30px -12px #000c,inset 0 0 0 2px #0004}
-.frame:before{content:"";position:absolute;inset:6px;border:1px solid #0003;border-radius:2px}
-.mat{position:relative;height:100%;background:#efe3c4;overflow:hidden;box-shadow:inset 0 0 12px #0006}
-.mat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:sepia(.12) contrast(1.02)}
-.glass{position:absolute;inset:0;transform:translateY(-102%);background:linear-gradient(120deg,transparent 30%,#ffffff66 42%,transparent 50%,transparent 62%,#ffffff33 68%,transparent 74%),#ffffff10;transition:transform 1s cubic-bezier(.2,.8,.2,1)}
-.sealed .glass{transform:none}
-.wax{position:absolute;right:-10px;bottom:-12px;width:46px;height:46px;border-radius:50%;
-  background:radial-gradient(circle at 35% 30%,#c5414a,var(--seal) 60%,#5d1115);color:#f6d9c8;display:none;place-items:center;
-  font:700 20px "Cormorant Garamond",serif;box-shadow:0 3px 6px #0008;transform:rotate(-12deg)}
-.sealed .wax{display:grid;animation:stamp .5s .8s both}
-@keyframes stamp{0%{transform:scale(2.2) rotate(-30deg);opacity:0}100%{transform:rotate(-12deg) scale(1);opacity:1}}
-.plate{margin-top:14px;padding:4px 12px;border-radius:3px;font:600 14px "Source Sans 3",sans-serif;color:#2a1d08;
-  background:linear-gradient(#ead18f,#b48a3c);box-shadow:0 2px 3px #0006;text-align:center;transition:box-shadow .6s}
-.sealed .plate{box-shadow:0 2px 3px #0006,0 0 22px 4px #ffd98a99}
-.plate b{display:block;font:700 18px/1.1 "Cormorant Garamond",Georgia,serif}
-.door{position:relative;width:78%;aspect-ratio:3/5;margin-top:4%;border-radius:120px 120px 4px 4px;border:10px solid var(--gilt2);
-  background:linear-gradient(90deg,#3a2614,#5b3b1f 50%,#3a2614);box-shadow:0 22px 30px -12px #000c;display:grid;place-items:center;text-align:center}
-.door.open{background:radial-gradient(ellipse at 50% 70%,color-mix(in srgb,var(--light) 60%,#fff),#c9b98f 70%);}
-.door .lock{font-size:46px}
-.doorlab{margin-top:14px;text-align:center;font-weight:700;max-width:30ch;line-height:1.35}
-.nav{position:absolute;top:38%;z-index:3;width:56px;height:56px;border-radius:50%;border:2px solid #f6e7c1aa;background:#0008;color:#f6e7c1;font-size:28px;cursor:pointer;display:grid;place-items:center}
-.nav:disabled{opacity:.25;cursor:default}
-#prev{left:10px}#next{right:10px}
-@media(max-width:600px){.nav{width:46px;height:46px;font-size:24px}.doorlab{font-size:14px}}
-.dots{position:absolute;left:0;right:0;bottom:4%;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:0 60px;z-index:3}
-.dot{width:16px;height:16px;border-radius:50%;border:2px solid #f6e7c1aa;background:transparent;cursor:pointer;padding:0}
-.dot.s{background:var(--gilt);border-color:var(--gilt)}
-.dot.here{outline:2px solid #fff;outline-offset:2px}
-.dot.d{border-radius:4px;width:14px}
-.walkhint{position:absolute;left:12px;top:10px;font-size:13px;color:#ffffffaa;z-index:3}
-body.r3 .walkhint{color:#0008}
+.btn{border:0;border-radius:10px;padding:10px 16px;font:700 15px "Source Sans 3",sans-serif;cursor:pointer;min-height:44px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.g{background:var(--gilt);color:#20180a}.btn.q{background:#0b1512cc;color:var(--ui);border:1px solid #f6e7c140;backdrop-filter:blur(4px)}
+.btn:focus-visible,.turn:focus-visible{outline:3px solid #f6e7c1;outline-offset:3px}
+#app{position:fixed;top:35px;left:0;right:0;bottom:0;display:grid;grid-template-columns:minmax(0,1fr) 0px;grid-template-rows:minmax(0,1fr);transition:grid-template-columns .5s ease,grid-template-rows .5s ease}
+body.focus #app{grid-template-columns:minmax(0,1fr) 400px}
+@media(max-width:819px){#app{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 0px}
+  body.focus #app{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,42fr) minmax(0,58fr)}}
+#view{position:relative;overflow:hidden;background:#000}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:var(--grab)}
+#c.hot{cursor:var(--point)}
+#c.drag{cursor:grabbing}
+.hud{position:absolute;left:10px;right:10px;top:10px;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;pointer-events:none;z-index:2}
+.hud>*{pointer-events:auto}
+.where{background:#0b1512cc;border:1px solid #f6e7c140;border-radius:10px;padding:6px 12px;backdrop-filter:blur(4px);line-height:1.2}
+.where b{display:block;font:700 20px/1.1 "Cormorant Garamond",serif;color:#f6e7c1}
+.where small{color:var(--muted);font-size:13px}
+.hud .r{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.hud .btn{min-height:40px;padding:8px 12px;font-size:14px}
+body.focus .hide-f{display:none}
+.hint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:#0b1512cc;border-radius:18px;padding:8px 16px;font-size:14px;line-height:1.3;color:#f3ead6;text-align:center;width:max-content;transition:opacity .6s;pointer-events:none;z-index:2;max-width:calc(100% - 140px);overflow:hidden;text-overflow:ellipsis}
+.hint.gone{opacity:0}
+.turn{position:absolute;bottom:12px;z-index:2;width:52px;height:52px;border-radius:50%;border:2px solid #f6e7c1aa;background:#0b1512cc;color:#f6e7c1;font-size:24px;cursor:pointer;display:grid;place-items:center}
+#tl{left:12px}#tr{right:12px}
+body.focus .turn,body.focus .hint{display:none}
+@media(max-width:819px){body.focus .where{display:none}}
+#fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .25s;z-index:1}
 /* placard desk */
-.desk{padding:16px max(3vw,14px) 40px;background:linear-gradient(#0b1512,#0b1512ee)}
-@media(min-width:960px){.desk{min-height:min(78vh,640px);max-height:min(78vh,640px);overflow-y:auto}}
-.desk h2{margin:0 0 4px;font:700 26px/1.1 "Cormorant Garamond",serif;color:#f6e7c1}
-.desk .sub{margin:0 0 12px;color:var(--muted);font-size:15px}
+#desk{overflow-y:auto;background:#0b1512;border-left:1px solid #f6e7c130;padding:0 14px 30px;overscroll-behavior:contain}
+@media(max-width:819px){#desk{border-left:0;border-top:2px solid var(--gilt)}}
+.dhead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;padding:10px 0;background:#0b1512}
+.dhead .t{flex:1;text-align:center;font:700 18px/1.1 "Cormorant Garamond",serif;color:#f6e7c1}
+.dhead .t small{display:block;font:600 12px "Source Sans 3";color:var(--muted)}
+.sq-b{width:44px;height:44px;border-radius:50%;border:2px solid #f6e7c1aa;background:transparent;color:#f6e7c1;font-size:22px;cursor:pointer;flex:none}
+.sq-b:disabled{opacity:.25}
+.back{background:#ffffff14;color:var(--ui);font-size:14px;padding:8px 12px;min-height:44px}
+.desk h2{margin:4px 0 4px;font:700 26px/1.1 "Cormorant Garamond",serif;color:#f6e7c1}
+.sub{margin:0 0 12px;color:var(--muted);font-size:15px}
 .cards{display:grid;gap:12px}
 .card{background:var(--card);color:var(--ink);border-radius:6px;padding:12px 14px;box-shadow:0 8px 18px -8px #000;position:relative}
 .card .k{font:700 12px "Source Sans 3",sans-serif;letter-spacing:.6px;color:#7d6a45;text-transform:uppercase}
@@ -93,7 +65,6 @@ body.r3 .walkhint{color:#0008}
 .acts .btn{flex:1;min-width:110px;font-size:14px;padding:9px}
 .ok{background:#dcefe2;color:#1d5133}.no{background:#f5dcd6;color:#7d241b}
 .card.done{background:#e9f4ea;outline:2px solid #2f7d4f55}
-.card.done .acts{display:none}
 .stamp{position:absolute;right:12px;top:10px;font:700 12px "Source Sans 3";color:var(--ok);display:none}
 .card.done .stamp{display:block}
 .card.fix{outline:3px solid #d99a2b}
@@ -114,31 +85,44 @@ body.r3 .walkhint{color:#0008}
 .label .lc b{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#7d6a45;margin-right:4px}
 .label .la{font:600 17px/1.25 "Cormorant Garamond",serif;margin-top:4px}
 .note{color:var(--muted);font-size:14px;margin:10px 0 0}
-.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,30px);opacity:0;background:#f7f0df;color:var(--ink);
+.toast{position:fixed;left:50%;top:96px;transform:translate(-50%,-20px);opacity:0;background:#f7f0df;color:var(--ink);
   padding:10px 16px;border-radius:10px;font-weight:700;box-shadow:0 8px 20px #0008;transition:.3s;z-index:9;max-width:92vw;text-align:center;pointer-events:none}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-/* floor plan */
-.overlay{position:fixed;inset:0;background:#0b1512ee;display:none;overflow:auto;z-index:8;padding:16px}
+/* overlays */
+.overlay{position:fixed;inset:35px 0 0 0;background:#0b1512e6;display:none;overflow:auto;z-index:8;padding:16px}
 .overlay.show{display:block}
-.plan{max-width:760px;margin:0 auto;background:#f7f0df;color:var(--ink);border-radius:10px;padding:18px;box-shadow:0 10px 40px #000a}
-.plan h2{margin:0 0 4px;font:700 28px "Cormorant Garamond",serif}
-.plan p{margin:0 0 12px}
-.rooms{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
-.rm{border:3px solid #2a1d08;border-radius:6px;padding:10px;background:#fff}
-.rm.locked{opacity:.5;background:#e7e1d1}
-.rm h3{margin:0;font:700 19px/1.1 "Cormorant Garamond",serif}
-.rm small{display:block;color:#6d5d3c;margin-bottom:8px}
-.sq{display:inline-grid;place-items:center;width:30px;height:30px;margin:2px;border:2px solid #2a1d08;border-radius:4px;background:#fff;font:700 11px "Source Sans 3";cursor:pointer;color:#2a1d08}
-.sq.s{background:var(--gilt)}
-.sq.here{outline:3px solid #d6453d}
-.sq:disabled{cursor:default}
-.legend{font-size:13px;color:#6d5d3c;margin-top:10px}
-.fin{display:none;text-align:center;padding:30px 16px}
-.fin.show{display:block}
+.paper{margin:0 auto;width:min(560px,100%);background:#f7f0df;color:var(--ink);border-radius:10px;padding:20px;box-shadow:0 10px 40px #000a}
+.paper h2{margin:0 0 6px;font:700 30px/1.05 "Cormorant Garamond",serif}
+.paper p{margin:0 0 12px}
+.how{display:grid;gap:10px;margin:14px 0 18px;padding:0;list-style:none}
+.how li{display:flex;gap:12px;align-items:center;font-size:16px}
+.how .ic{flex:none;width:44px;height:44px;border-radius:50%;background:#2b4a3c;display:grid;place-items:center}
+.how .ic svg{width:26px;height:26px}
+.plan{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:520px){.plan{grid-template-columns:minmax(0,1fr)}.plan>div:last-child{order:-1}}
+.mapbox{position:relative;width:min(220px,60vw);aspect-ratio:10/24;max-height:46vh;margin:0 auto;background:repeating-linear-gradient(0deg,#e2d3b2 0 6px,#d8c7a3 6px 7px);border:6px solid #2b4a3c;border-radius:3px}
+.mapbox .door{position:absolute;left:38%;width:24%;top:-8px;height:10px;border-radius:2px}
+.mapbox .ms{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border:2px solid #2a1d08;border-radius:4px;background:#fff;font:700 12px "Source Sans 3";color:#2a1d08;cursor:pointer;padding:0}
+.mapbox .ms.s{background:var(--gilt)}
+.mapbox .mn{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:3px solid #b48a3c;background:#fff8;cursor:pointer;padding:0}
+.mapbox .you{position:absolute;width:0;height:0;pointer-events:none}
+.mapbox .you i{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;background:#d6453d;border:3px solid #fff;box-shadow:0 1px 4px #0008}
+.mapbox .you b{position:absolute;left:-6px;top:-26px;border:6px solid transparent;border-bottom:12px solid #d6453d}
+.mapbox .bench{position:absolute;left:38%;width:24%;height:3%;background:#6b3a22;border-radius:2px}
+.tabs{display:grid;gap:6px;margin-bottom:10px}
+.tab{text-align:left;border:2px solid #d9cba9;background:#fff;border-radius:8px;padding:8px 10px;font:700 15px "Source Sans 3";color:#2a1d08;cursor:pointer;min-height:44px}
+.tab small{display:block;font-weight:600;color:#7d6a45}
+.tab.on{border-color:#2a1d08;background:#f3e3b8}
+.tab:disabled{opacity:.5;cursor:default}
+.mapbox .mt{position:absolute;width:32px;height:32px;margin:-16px 0 0 -16px;border-radius:50%;border:2px dashed #b48a3c;background:#fff8;font:700 16px "Source Sans 3";color:#8a6a2e;cursor:pointer;padding:0}
+.mapbox .mt.f{border-style:solid;background:#e8c77e;color:#2a1d08}
+.legend{font-size:14px;color:#6d5d3c;margin:8px 0 14px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.nogl{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;z-index:3}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
-<body class="r0">
+<body>
 <!-- edutain.fun shared menu bar: keep this block identical across games except the EB config line -->
 <style>
 @font-face{font-family:"EduChicago";src:url("ChicagoFLF.woff") format("woff");font-display:swap}
@@ -160,8 +144,6 @@ body.r3 .walkhint{color:#0008}
 .eb :focus-visible{outline:2px dashed #2a2aa8;outline-offset:1px}
 .eb-z{position:fixed;border:1px solid #000;outline:1px solid #fff;pointer-events:none;z-index:2147483000}
 @media(max-width:520px){.eb-app span{display:none}.eb-file{display:none}}
-.eb{position:sticky;top:0}
-.overlay{top:35px}
 </style>
 <div class="eb" role="menubar" aria-label="edutain.fun menu bar">
   <div class="eb-mi">
@@ -210,37 +192,62 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
 }
 </script>
 <!-- /edutain.fun shared menu bar -->
-<div class="top">
-  <h1>A Puzzling Presidential Gallery</h1>
-  <span class="room" id="roomName"></span>
-  <div class="tbtn"><button class="btn q" id="planBtn">🗺️ Floor plan</button><button class="btn q" id="sndBtn" aria-label="Sound">🔊</button></div>
-</div>
-<div class="stage">
-  <section class="hall" id="hall" aria-label="Gallery wall">
-    <div class="lamp"></div>
-    <div class="track" id="track"></div>
-    <button class="nav" id="prev" aria-label="Walk left">‹</button>
-    <button class="nav" id="next" aria-label="Walk right">›</button>
-    <div class="dots" id="dots"></div>
-    <div class="walkhint" id="walkhint">← → or swipe to walk</div>
+
+<div id="app">
+  <section id="view" aria-label="The presidential portrait gallery">
+    <canvas id="c"></canvas>
+    <div id="fade"></div>
+    <div class="hud">
+      <div class="where"><b id="roomName">Founders &amp; Frontier</b><small id="count"></small></div>
+      <div class="r">
+        <button class="btn q" id="planBtn">Floor plan</button>
+        <button class="btn q" id="sndBtn" aria-label="Sound">🔊</button>
+        <button class="btn q hide-f" id="helpBtn" aria-label="How to play">?</button>
+        <a class="btn q hide-f" id="simple" href="simple.html">Simple view</a>
+      </div>
+    </div>
+    <div class="hint" id="hint">Drag to look around. Tap a portrait to step up to it.</div>
+    <button class="turn" id="tl" aria-label="Turn left">⟲</button>
+    <button class="turn" id="tr" aria-label="Turn right">⟳</button>
   </section>
-  <section class="desk" id="desk" aria-live="polite"></section>
+  <aside id="desk" class="desk" aria-live="polite"></aside>
 </div>
-<div class="overlay" id="planOv" role="dialog" aria-modal="true" aria-labelledby="planTitle">
-  <div class="plan">
-    <h2 id="planTitle">Floor plan</h2>
-    <p>Gold squares are sealed under glass. Tap a square to walk there. Seal every portrait in a room to unlock the next one.</p>
-    <div class="rooms" id="rooms"></div>
-    <div class="legend">The plate on each frame (years in office) is always correct. Use it as your guide.</div>
-    <div style="height:12px"></div>
-    <button class="btn g" id="planClose">Back to the gallery</button>
-    <button class="btn" id="resetAll" style="background:#e7e1d1;color:#2a1d08;margin-left:6px">Start the whole gallery over</button>
+
+<div class="overlay show" id="intro" role="dialog" aria-modal="true" aria-labelledby="introT">
+  <div class="paper">
+    <h2 id="introT">Welcome, Curator!</h2>
+    <p>Four rooms, 45 presidents, and someone mixed up the signs under the portraits! Check every one and seal each portrait under glass. Seal a whole room to open the door to the next one.</p>
+    <ul class="how">
+      <li><span class="ic"><svg viewBox="0 0 26 26"><path d="M4 13h18M4 13l4-4M4 13l4 4M22 13l-4-4M22 13l-4 4" stroke="#f6e7c1" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></span>Drag (or use ⟲ ⟳) to look around the room.</li>
+      <li><span class="ic"><svg viewBox="0 0 26 26"><rect x="7" y="4" width="12" height="15" rx="1" fill="none" stroke="#c9a45c" stroke-width="2.4"/><circle cx="13" cy="10" r="2.6" fill="#f6e7c1"/></svg></span>Tap a portrait to walk up to it and check its signs.</li>
+      <li><span class="ic"><svg viewBox="0 0 26 26"><ellipse cx="13" cy="16" rx="9" ry="4" fill="none" stroke="#c9a45c" stroke-width="2.4"/></svg></span>Tap a gold circle on the floor to walk there.</li>
+      <li><span class="ic"><svg viewBox="0 0 26 26"><path d="M13 3l2.6 7.4L23 13l-7.4 2.6L13 23l-2.6-7.4L3 13l7.4-2.6z" fill="#f6e7c1"/></svg></span>Every room hides one museum treasure. Look for the sparkle!</li>
+    </ul>
+    <button class="btn g" id="startBtn">Step inside</button>
+  </div>
+</div>
+
+<div class="overlay" id="planOv" role="dialog" aria-modal="true" aria-labelledby="planT">
+  <div class="paper">
+    <h2 id="planT">Floor plan</h2>
+    <div class="plan">
+      <div class="mapbox" id="map"></div>
+      <div>
+        <div class="tabs" id="tabs"></div>
+        <p id="planNote"></p>
+        <p class="legend">The plate on each frame (years in office) is always correct. Use it as your guide.</p>
+        <div class="row"><button class="btn g" id="planClose">Back to the room</button>
+        <button class="btn" id="resetAll" style="background:#e7e1d1;color:#2a1d08">Start the whole gallery over</button></div>
+      </div>
+    </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import * as THREE from "./lib/three.module.min.js";
 {
+/* ---------- the presidents (same facts as the live Gallery) ---------- */
 const P=[
 [1,"George Washington","Virginia","1789–1797","Stepped down after two terms, setting the precedent for a peaceful transfer of power","He never lived in the White House. It wasn't finished until after he left office."],
 [2,"John Adams","Massachusetts","1797–1801","Created the Department of the Navy (1798)","He was the first president to live in the White House, moving in before it was even finished."],
@@ -288,9 +295,16 @@ const P=[
 [[45,47],"Donald Trump","New York","2017–2021 & 2025–present","Signed the Great American Outdoors Act to fund national parks (2020)","He and Grover Cleveland are the only presidents to serve two terms that weren't back to back."],
 [46,"Joe Biden","Pennsylvania","2021–2025","Signed the bipartisan Infrastructure Investment and Jobs Act (2021)","He had a stutter as a kid and practiced reading poetry in front of a mirror to overcome it."]
 ].map((r,i)=>({i,num:Array.isArray(r[0])?r[0]:[r[0]],name:r[1],state:r[2],term:r[3],ach:r[4],story:r[5]}));
-
-// The hall runs in order. Four rooms, each with its own look.
-const ROOMS=[["Founders & Frontier","1789–1849",0,10],["Union & Rebuilding","1849–1889",11,21],["Progress & World Wars","1889–1961",22,32],["The Modern Era","1961–today",33,44]];
+const ROOMS=[
+ {name:"Founders & Frontier",years:"1789–1849",a:0,b:10},
+ {name:"Union & Rebuilding",years:"1849–1889",a:11,b:21},
+ {name:"Progress & World Wars",years:"1889–1961",a:22,b:32},
+ {name:"The Modern Era",years:"1961–today",a:33,b:44}];
+const THEMES=[
+ {wall:"#2b4a3c",pat:"damask",ink:"#ffffff12",wain:"#173024",wainEdge:"#2d5141",floor:[24,60],ceil:"#e9dfc7",coffer:"#c8b98f",frame:0xc9a45c,B:.13,plate:["#efd896","#a57d33"],light:0xffe2b0,hemi:0xfff3dc,pool:0xffe6b0,trim:0x0f2119,mold:0xd9ccaa,fog:0x14231c},
+ {wall:"#5a2027",pat:"damask",ink:"#ffffff10",wain:"#2e0f14",wainEdge:"#6e2c34",floor:[20,52],ceil:"#efe2c8",coffer:"#c9a87a",frame:0xc9a45c,B:.13,plate:["#efd896","#a57d33"],light:0xffdcaa,hemi:0xfff0dc,pool:0xffe0a8,trim:0x1f0a0f,mold:0xd8c5a0,fog:0x22100f},
+ {wall:"#1e3352",pat:"stripe",ink:"#ffffff0d",wain:"#101c30",wainEdge:"#2c4468",floor:[28,58],ceil:"#eef0ee",coffer:"#bcc4cc",frame:0xc2a060,B:.11,plate:["#efd896","#a57d33"],light:0xfff0d8,hemi:0xf3f6ff,pool:0xfff2dc,trim:0x0a1222,mold:0xe6e6e0,fog:0x0e1828},
+ {wall:"#ecebe6",pat:"plain",ink:"#00000008",wain:null,floor:[34,74],ceil:"#f7f7f4",coffer:null,frame:0x2a211a,B:.05,plate:["#f2f2ef","#bdbdb6"],light:0xffffff,hemi:0xffffff,pool:0xffffff,trim:0xd8d6cf,mold:0xffffff,fog:0xc9c7c0}];
 const KEYS=["name","state","num","ach"], LABEL={name:"Name",state:"Born in",num:"President number",ach:"Achievement in office"};
 const STATES=["Alabama","Arkansas","California","Connecticut","Georgia","Hawaii","Illinois","Indiana","Iowa","Kentucky","Maryland","Massachusetts","Missouri","Nebraska","New Hampshire","New Jersey","New York","North Carolina","Ohio","Pennsylvania","South Carolina","Tennessee","Texas","Vermont","Virginia"];
 const $=id=>document.getElementById(id);
@@ -299,166 +313,500 @@ const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[
 const ord=n=>n+(n%100>10&&n%100<14?"th":["th","st","nd","rd"][n%10]||"th");
 const truth=(p,k)=>k==="name"?p.name:k==="ach"?p.ach:k==="num"?p.num.map(ord).join(" & "):p.state;
 function fake(p,k){
-  const near=(span)=>{let j;do{j=p.i+(rnd(2)?1:-1)*(1+rnd(span))}while(j<0||j>=P.length||j===p.i);return P[j]};
+  const near=span=>{let j;do{j=p.i+(rnd(2)?1:-1)*(1+rnd(span))}while(j<0||j>=P.length||j===p.i);return P[j]};
   if(k==="name") return near(4).name;
   if(k==="ach") return near(6).ach;
   if(k==="num"){let d;do{d=(rnd(2)?1:-1)*(1+rnd(3))}while(p.num.some(n=>n+d<1||n+d>47));return p.num.map(n=>ord(n+d)).join(" & ")}
-  const pool=p.state==="the Carolinas"?STATES.filter(x=>!x.includes("Carolina")):STATES;
-  return pick(pool);
+  return pick(p.state==="the Carolinas"?STATES.filter(x=>!x.includes("Carolina")):STATES);
 }
 function fakeDistinct(p,k,avoid){for(let t=0;t<60;t++){const f=fake(p,k);if(!avoid.includes(f))return f}return null}
 
-/* ---------- saving (carries over portraits already sealed in the old wall version) ---------- */
+/* ---------- museum treasures: one per room, every fact checked ---------- */
+const TREASURES=[
+ {id:"writebox",room:0,title:"Thomas Jefferson's writing box",where:"Smithsonian's National Museum of American History, Washington, D.C.",
+  story:"In 1776, years before he became president, Thomas Jefferson wrote the Declaration of Independence on this little wooden writing box. He drew the plans himself, and a furniture maker in Philadelphia built it. A writing board folds open on top, and a drawer holds paper, pens and ink. It was a laptop, 250 years ago!"},
+ {id:"resolute",room:1,title:"The Resolute desk",where:"The White House, in the Oval Office",
+  story:"This giant desk was once a ship! The British ship Resolute got stuck in Arctic ice, and its crew had to leave it behind. In 1855, an American ship found it. The United States fixed it up and gave it to Queen Victoria as a gift of friendship. Years later, when the ship was taken apart, the Queen had this desk built from its oak wood. She sent it to President Rutherford B. Hayes in 1880, and most presidents since then have used it."},
+ {id:"buck",room:2,title:"“The Buck Stops Here!” sign",where:"Harry S. Truman Library and Museum, Independence, Missouri",
+  story:"President Harry S. Truman kept this little sign on his desk. To “pass the buck” means to make someone else deal with a problem. Truman's sign meant the president can't pass the buck: hard choices stop at his desk, and he has to make them. The sign was made in El Reno, Oklahoma, and mailed to him in 1945. The back of it says “I'm From Missouri.”"},
+ {id:"moon",room:3,title:"A piece of the Moon",where:"Smithsonian's National Air and Space Museum, Washington, D.C.",
+  story:"Astronauts on the Apollo 17 mission picked up this rock on the Moon in December 1972. It is basalt, a rock made from hot lava, and it formed almost 4 billion years ago. At the National Air and Space Museum, visitors can touch a real slice of it with their own fingers!"}];
+
+/* ---------- saving ---------- */
 let S;
-function load(){
-  try{S=JSON.parse(localStorage.getItem("pgw-v1"))}catch(e){}
-  if(!S||!S.ps){
-    S={room:0,pos:0,miss:0,ps:{},snd:true};
-    try{const old=JSON.parse(localStorage.getItem("mug-v2")); if(old&&old.ps){S.ps=old.ps;S.miss=old.miss||0}}catch(e){}
-  }
-}
-function save(){try{localStorage.setItem("pgw-v1",JSON.stringify(S))}catch(e){}}
-function deal(p){
-  const nWrong=1+rnd(3), wrong=shuffle(KEYS).slice(0,nWrong), c={};
-  KEYS.forEach(k=>{const t=truth(p,k);c[k]=wrong.includes(k)?{shown:fakeDistinct(p,k,[t]),ok:false,done:false}:{shown:t,ok:true,done:false}});
-  return {c,sealed:false};
-}
+try{S=JSON.parse(localStorage.getItem("pg3d-v2"))}catch(e){}
+if(!S||!S.ps){S={ps:{},miss:0,snd:true,seen:false,room:0,found:{}};
+  // carry over progress from the one-room draft, or from the flat Gallery (same portrait numbers)
+  for(const key of["pg3d-v1","pgw-v1","mug-v2"]){try{const o=JSON.parse(localStorage.getItem(key));if(o&&o.ps&&Object.keys(o.ps).length){S.ps=o.ps;S.miss=o.miss||0;if(o.snd===false)S.snd=false;break}}catch(e){}}}
+S.found=S.found||{};
+const save=()=>{try{localStorage.setItem("pg3d-v2",JSON.stringify(S))}catch(e){}};
+function deal(p){const wrong=shuffle(KEYS).slice(0,1+rnd(3)),c={};
+  KEYS.forEach(k=>{const t=truth(p,k);c[k]=wrong.includes(k)?{shown:fakeDistinct(p,k,[t]),ok:false,done:false}:{shown:t,ok:true,done:false}});return {c,sealed:false}}
 const st=p=>S.ps[p.i]||(S.ps[p.i]=deal(p));
-const roomList=r=>P.slice(ROOMS[r][2],ROOMS[r][3]+1);
-const roomDone=r=>roomList(r).every(p=>st(p).sealed);
+const roomList=r=>P.slice(ROOMS[r].a,ROOMS[r].b+1);
+const sealedIn=r=>roomList(r).filter(p=>st(p).sealed).length;
+const roomDone=r=>sealedIn(r)===roomList(r).length;
 const unlocked=r=>r===0||roomDone(r-1);
-const sealedCount=r=>roomList(r).filter(p=>st(p).sealed).length;
+const allSealed=()=>P.every(p=>st(p).sealed);
+const foundN=()=>TREASURES.filter(t=>S.found[t.id]).length;
+if(!unlocked(S.room||0))S.room=0;
+let R=S.room||0;
 
 /* ---------- sound ---------- */
 let ac;
-function tone(f,d=.15,type="sine",v=.06,w=0){ if(!S.snd) return; try{ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended")ac.resume();
-  const t=ac.currentTime+w,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d+.02)}catch(e){} }
-function steps(){ if(!S.snd) return; try{ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==="suspended")ac.resume();
-  [0,.18].forEach(w=>{const n=ac.sampleRate*.06,b=ac.createBuffer(1,n,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
-  const s=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();f.type="lowpass";f.frequency.value=500;g.gain.value=.5;s.buffer=b;s.connect(f).connect(g).connect(ac.destination);s.start(ac.currentTime+w)})}catch(e){} }
-const sfx={ok(){tone(660,.12,"triangle",.07)},no(){tone(180,.25,"sawtooth",.04)},seal(){[523,659,784,1047].forEach((f,i)=>tone(f,.5,"triangle",.07,i*.12))},door(){[392,523,659].forEach((f,i)=>tone(f,.4,"sine",.08,i*.15))}};
-function setSnd(){$("sndBtn").textContent=S.snd?"🔊":"🔇"}
-$("sndBtn").onclick=()=>{S.snd=!S.snd;setSnd();save()};
+const actx=()=>{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();return ac};
+function tone(f,d=.15,type="sine",v=.06,w=0){if(!S.snd)return;try{const a=actx(),t=a.currentTime+w,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+function steps(n=2){if(!S.snd)return;try{const a=actx();for(let s=0;s<n;s++){const len=a.sampleRate*.07,b=a.createBuffer(1,len,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
+  const src=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();f.type="lowpass";f.frequency.value=420+rnd(120);g.gain.value=.55;src.buffer=b;src.connect(f).connect(g).connect(a.destination);src.start(a.currentTime+s*.34)}}catch(e){}}
+const sfx={ok(){tone(660,.12,"triangle",.07)},no(){tone(180,.25,"sawtooth",.04)},seal(){[523,659,784,1047].forEach((f,i)=>tone(f,.5,"triangle",.07,i*.12))},door(){[392,523,659,784].forEach((f,i)=>tone(f,.5,"sine",.08,i*.16))},
+  glass(){tone(1900,.35,"sine",.03);tone(2600,.25,"sine",.02,.05)},find(){[784,988,1175,1568].forEach((f,i)=>tone(f,.35,"sine",.06,i*.09))},fanfare(){[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.45,"triangle",.08,i*.16))}};
+const setSnd=()=>$("sndBtn").textContent=S.snd?"🔊":"🔇";
+$("sndBtn").onclick=()=>{S.snd=!S.snd;setSnd();save()};setSnd();
+let tt;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2400)}
 
-/* ---------- walking ---------- */
-// Positions in a room: -1 = door back (rooms 2-4), 0..n-1 = portraits, n = door forward (rooms 1-3)
+/* ---------- renderer ---------- */
+const canvas=$("c"), view=$("view");
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let renderer;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch(e){}
+if(!renderer){view.insertAdjacentHTML("beforeend",`<div class="nogl"><div><h2 class="serif">This device can't show the 3D gallery.</h2><p><a class="btn g" href="simple.html">Play the simple view instead</a></p></div></div>`);throw new Error("no webgl")}
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0b1512);
+const camera=new THREE.PerspectiveCamera(55,1,.05,80);camera.rotation.order="YXZ";
+
+/* ---------- canvas textures ---------- */
+function ctex(w,h,draw,rep,keep){const c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");draw(g,w,h);
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(...rep)}t.userData.keep=!!keep;
+  t.userData.redraw=f=>{g.clearRect(0,0,w,h);f(g,w,h);t.needsUpdate=true};return t}
+const glowTex=ctex(256,256,(g,w,h)=>{const r=g.createRadialGradient(w/2,h*.36,4,w/2,h*.5,w*.5);r.addColorStop(0,"#ffffffff");r.addColorStop(.45,"#ffffff66");r.addColorStop(1,"#ffffff00");g.fillStyle=r;g.fillRect(0,0,w,h)},0,1);
+const glassTex=ctex(128,160,(g,w,h)=>{g.fillStyle="#ffffff14";g.fillRect(0,0,w,h);g.save();g.rotate(-.5);g.fillStyle="#ffffff55";g.fillRect(-40,70,240,16);g.fillStyle="#ffffff30";g.fillRect(-40,100,240,7);g.restore()},0,1);
+const sealTex=ctex(128,128,(g,w,h)=>{g.beginPath();for(let a=0;a<Math.PI*2;a+=Math.PI/14){const r=a%(Math.PI/7)<.01?60:55;g.lineTo(64+Math.cos(a)*r,64+Math.sin(a)*r)}g.closePath();
+  const r=g.createRadialGradient(48,44,6,64,64,60);r.addColorStop(0,"#d4535b");r.addColorStop(.6,"#8e1f24");r.addColorStop(1,"#5d1115");g.fillStyle=r;g.fill();
+  g.strokeStyle="#f6d9c8";g.lineWidth=9;g.lineCap="round";g.beginPath();g.moveTo(42,66);g.lineTo(58,82);g.lineTo(88,46);g.stroke()},0,1);
+const sparkTex=ctex(128,128,(g,w,h)=>{const r=g.createRadialGradient(64,64,2,64,64,60);r.addColorStop(0,"#fff8d8");r.addColorStop(.25,"#ffd96a99");r.addColorStop(1,"#ffd96a00");g.fillStyle=r;g.fillRect(0,0,w,h);
+  g.fillStyle="#fffbe8";g.beginPath();for(let k=0;k<8;k++){const a=k*Math.PI/4,rr=k%2?14:48;g.lineTo(64+Math.cos(a)*rr,64+Math.sin(a)*rr)}g.closePath();g.fill()},0,1);
+const lam=o=>new THREE.MeshLambertMaterial(o), basic=o=>new THREE.MeshBasicMaterial(o);
+const brassM=new THREE.MeshPhongMaterial({color:0xd7b469,specular:0xffffff,shininess:80});brassM.userData.keep=1;
+const SERIF='"Cormorant Garamond",Georgia,serif', SANS='"Source Sans 3",system-ui,sans-serif';
+function wrap(g,text,x,y,maxW,lh){const words=text.split(" ");let line="";for(const w of words){const t=line?line+" "+w:w;if(g.measureText(t).width>maxW&&line){g.fillText(line,x,y);line=w;y+=lh}else line=t}g.fillText(line,x,y);return y}
+function wallTexFor(T){return ctex(256,256,(g,w,h)=>{g.fillStyle=T.wall;g.fillRect(0,0,w,h);g.strokeStyle=T.ink;g.fillStyle=T.ink;
+  if(T.pat==="damask"){g.lineWidth=3;for(const[x,y]of[[64,64],[192,192],[192,64],[64,192]]){const s=(x+y)%256?.8:1;g.save();g.translate(x,y);g.scale(s,s);g.beginPath();g.moveTo(0,-38);g.bezierCurveTo(26,-20,26,20,0,38);g.bezierCurveTo(-26,20,-26,-20,0,-38);g.stroke();g.beginPath();g.arc(0,0,7,0,7);g.fill();g.restore()}
+    g.fillStyle="#0000000d";for(let i=0;i<w;i+=8)g.fillRect(i,0,2,h)}
+  else if(T.pat==="stripe"){for(let i=0;i<w;i+=32){g.fillRect(i,0,14,h)}g.fillStyle="#ffffff10";for(let i=20;i<w;i+=32)g.fillRect(i,0,2,h)}
+  else{for(let i=0;i<900;i++){g.fillRect(rnd(w),rnd(h),2,2)}}},T.pat==="plain"?[6,2]:[12,2.2])}
+
+/* ---------- room building ---------- */
+const HW=5, L=24, H=4.4, DW=1.25, DH=3.2, EYE=1.62;
+const NODES=[{x:0,z:-2.6},{x:0,z:-11},{x:0,z:-20}];
+const TPOS=[{x:3.0,z:-22.4},{x:2.7,z:-22.0},{x:3.0,z:-22.4},{x:3.0,z:-22.4}];
+let roomG, frames=[], leaves=[], lock=null, doorLight=null, spots=[], tre=null, overTex, dsTex, welTex, certTex;
+const loader=new THREE.TextureLoader();
+const FW=1.0,FH=1.25;
+function plane(w,h,mat,pos,rotY=0,rotX=0,parent=roomG){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);m.position.set(...pos);m.rotation.set(rotX,rotY,0,"YXZ");parent.add(m);return m}
+function box(w,h,d,mat,pos,parent=roomG){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(...pos);parent.add(m);return m}
+function disposeRoom(){if(!roomG)return;scene.remove(roomG);roomG.traverse(o=>{if(o.geometry)o.geometry.dispose();const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];
+  ms.forEach(m=>{if(m.userData.keep)return;if(m.map&&!m.map.userData.keep)m.map.dispose();m.dispose()})});roomG=null}
+function plateDraw(p,T){return (g,w,h)=>{const s=st(p).sealed,gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,T.plate[0]);gr.addColorStop(1,T.plate[1]);g.fillStyle=gr;g.fillRect(0,0,w,h);
+  g.strokeStyle="#00000055";g.lineWidth=4;g.strokeRect(6,6,w-12,h-12);g.fillStyle="#2a1d08";g.textAlign="center";
+  if(s){g.font=`700 ${p.name.length>18?38:46}px ${SERIF}`;g.fillText(p.name,w/2,60);g.font=`600 ${p.term.length>12?24:30}px ${SANS}`;g.fillText("In office "+p.term,w/2,106)}
+  else{g.font=`600 ${p.term.length>12?26:34}px ${SANS}`;g.fillText("In office "+p.term,w/2,78)}}}
+function cardDraw(p){return (g,w,h)=>{const s=st(p).sealed;g.fillStyle=s?"#e9f4ea":"#f7f0df";g.fillRect(0,0,w,h);g.strokeStyle=s?"#2f7d4f":"#b9a77e";g.lineWidth=6;g.strokeRect(3,3,w-6,h-6);g.textAlign="center";
+  if(s){g.fillStyle="#2f7d4f";g.font=`700 120px ${SANS}`;g.fillText("✓",w/2,170);g.font=`700 30px ${SANS}`;g.fillText("VERIFIED",w/2,250)}
+  else{g.fillStyle="#7d6a45";g.font=`700 150px ${SERIF}`;g.fillText("?",w/2,190);g.font=`700 28px ${SANS}`;g.fillText("CHECK ME",w/2,262)}}}
+function spotsFor(n){const nl=Math.ceil(n/2),nr=n-nl,out=[];
+  for(let k=0;k<nl;k++)out.push({side:-1,z:-4-k*(17/(nl-1))});
+  for(let k=0;k<nr;k++)out.push({side:1,z:-20+k*(14/(nr-1))});return out}
+
+function buildRoom(r){
+  disposeRoom();roomG=new THREE.Group();scene.add(roomG);
+  const T=THEMES[r], modern=r===3;
+  scene.fog=new THREE.Fog(T.fog,18,46);
+  const wallM=lam({map:wallTexFor(T)}), trimM=lam({color:T.trim}), moldM=lam({color:T.mold});
+  const wainTex=T.wain&&ctex(256,128,(g,w,h)=>{g.fillStyle=T.wain;g.fillRect(0,0,w,h);g.strokeStyle=T.wainEdge;g.lineWidth=6;g.strokeRect(22,18,w-44,h-36);g.strokeStyle="#00000055";g.lineWidth=3;g.strokeRect(30,26,w-60,h-52)},[12,1]);
+  const wainM=T.wain?lam({map:wainTex}):null;
+  const floorTex=ctex(512,512,(g,w,h)=>{const[hu,li]=T.floor;g.fillStyle=`hsl(${hu},40%,${li*.5}%)`;g.fillRect(0,0,w,h);
+    if(r===2){for(let y=0;y<h;y+=64)for(let x=0;x<w;x+=64){const dir=((x+y)/64)%2;for(let k=0;k<4;k++){g.fillStyle=`hsl(${hu+rnd(6)},${40+rnd(10)}%,${li*(.5+Math.random()*.25)}%)`;dir?g.fillRect(x+k*16,y,15,63):g.fillRect(x,y+k*16,63,15)}}}
+    else for(let row=0;row<16;row++)for(let k=0;k<4;k++){const off=(row%2)*120+k*200-200;g.fillStyle=`hsl(${hu+rnd(8)},${modern?28:42+rnd(10)}%,${li*(modern?.78+Math.random()*.12:.45+Math.random()*.3)}%)`;g.fillRect(off,row*32,200,32)}
+    g.strokeStyle=modern?"#00000022":"#00000055";g.lineWidth=2;if(r!==2)for(let row=0;row<=16;row++){g.beginPath();g.moveTo(0,row*32);g.lineTo(w,row*32);g.stroke()}
+    g.strokeStyle="#ffffff0c";g.lineWidth=1;for(let i=0;i<300;i++){const y=rnd(h),x=rnd(w);g.beginPath();g.moveTo(x,y);g.lineTo(x+40+rnd(80),y+rnd(3)-1);g.stroke()}},[2.5,6]);
+  plane(2*HW,L,lam({map:floorTex}),[0,0,-L/2],0,-Math.PI/2);
+  const ceilTex=ctex(256,256,(g,w,h)=>{g.fillStyle=T.ceil;g.fillRect(0,0,w,h);if(T.coffer){g.strokeStyle=T.coffer;g.lineWidth=10;g.strokeRect(5,5,w-10,h-10);g.strokeStyle="#ffffff88";g.lineWidth=3;g.strokeRect(18,18,w-36,h-36)}},[3,8]);
+  plane(2*HW,L,modern?basic({color:0xe4e2dc}):lam({map:ceilTex}),[0,H,-L/2],0,Math.PI/2);
+  if(!modern){
+    const skyTex=ctex(128,512,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,"#cfe0e6");gr.addColorStop(.5,"#f4f7f2");gr.addColorStop(1,"#cfe0e6");g.fillStyle=gr;g.fillRect(0,0,w,h);
+      g.strokeStyle="#8a6a2e";g.lineWidth=5;g.beginPath();g.moveTo(w/2,0);g.lineTo(w/2,h);for(let y=0;y<=h;y+=42){g.moveTo(0,y);g.lineTo(w,y)}g.stroke()});
+    plane(2.2,17,basic({map:skyTex}),[0,H-.02,-L/2],0,Math.PI/2);
+    const sk=lam({color:0xb48a3c});for(const x of[-1.15,1.15])box(.14,.1,17.2,sk,[x,H-.05,-L/2]);for(const z of[-3.5,-20.5])box(2.44,.1,.14,sk,[0,H-.05,z]);
+  }else{const lp=basic({color:0xffffff});for(let z=-3;z>-24;z-=4)for(const x of[-2.5,2.5])plane(.6,.6,lp,[x,H-.01,z],0,Math.PI/2)}
+  for(const side of[-1,1]){
+    plane(L,H,wallM,[side*HW,H/2,-L/2],-side*Math.PI/2);
+    if(wainM){plane(L,.95,wainM,[side*(HW-.01),.475,-L/2],-side*Math.PI/2);box(.06,.06,L,moldM,[side*(HW-.03),.96,-L/2])}
+    box(.05,modern?.1:.18,L,trimM,[side*(HW-.025),modern?.05:.09,-L/2]);
+    if(!modern)box(.14,.16,L,moldM,[side*(HW-.07),H-.08,-L/2]);
+  }
+  const giltM=new THREE.MeshPhongMaterial({color:modern?0xbfbfbf:0xc9a45c,specular:0x664422,shininess:50});
+  // end walls; a doorway is a hole with trim and a peek into the next room
+  const endWall=(z,rotY,hole,inward)=>{
+    if(!hole){plane(2*HW,H,wallM,[0,H/2,z],rotY);if(wainM)plane(2*HW,.95,wainM,[0,.475,z+inward*.01],rotY)}
+    else{const sw=HW-DW;for(const s of[-1,1]){plane(sw,H,wallM,[s*(DW+sw/2),H/2,z],rotY);if(wainM)plane(sw,.95,wainM,[s*(DW+sw/2),.475,z+inward*.01],rotY)}plane(2*DW,H-DH,wallM,[0,DH+(H-DH)/2,z],rotY);
+      box(.22,DH+.1,.18,giltM,[-DW-.11,DH/2,z+inward*.05]);box(.22,DH+.1,.18,giltM,[DW+.11,DH/2,z+inward*.05]);box(2*DW+.66,.28,.22,giltM,[0,DH+.12,z+inward*.06])}
+    box(2*HW,modern?.1:.18,.05,trimM,[0,modern?.05:.09,z+inward*.025]);if(!modern)box(2*HW,.16,.14,moldM,[0,H-.08,z+inward*.07]);
+  };
+  const peekRoom=(z,dirz,th)=>{const pm=lam({color:new THREE.Color(th.wall),side:THREE.BackSide});const pk=box(2*DW,DH,4,pm,[0,DH/2,z+dirz*2]);
+    const pf=plane(.8,1,giltM,[0,1.9,z+dirz*3.98],dirz<0?0:Math.PI);plane(.62,.8,basic({color:0x2a2018}),[0,1.9,z+dirz*3.97],dirz<0?0:Math.PI);return pk};
+  // entrance wall
+  endWall(0,Math.PI,r>0,-1);
+  if(r>0){peekRoom(0,1,THEMES[r-1]);const hit=plane(2*DW,DH,basic({visible:false}),[0,DH/2,-.05],Math.PI);hit.userData.door=-1;
+    const bt=ctex(1024,160,(g,w,h)=>{g.fillStyle=modern?"#3a3a36":"#e8c77e";g.textAlign="center";g.font=`700 64px ${SERIF}`;g.fillText("← "+ROOMS[r-1].name,w/2,70);g.font=`600 38px ${SANS}`;g.fillStyle=modern?"#77736a":"#d4ccb6";g.fillText("back to "+ROOMS[r-1].years,w/2,126)});
+    plane(3.4,.53,basic({map:bt,transparent:true}),[0,3.86,-.04],Math.PI)}
+  welTex=ctex(1024,600,()=>{});plane(r>0?2.3:2.6,r>0?1.35:1.52,basic({map:welTex}),[r>0?3.15:0,2.15,-.02],Math.PI);
+  // far wall
+  leaves=[];lock=null;doorLight=null;certTex=null;dsTex=null;overTex=null;
+  if(r<3){
+    endWall(-L,0,true,1);peekRoom(-L,-1,THEMES[r+1]);
+    const doorTex=ctex(256,640,(g,w,h)=>{g.fillStyle=modern?"#d8d4ca":"#4a2e17";g.fillRect(0,0,w,h);for(let i=0;i<60;i++){g.strokeStyle=`rgba(0,0,0,${.05+Math.random()*.1})`;g.beginPath();const x=rnd(w);g.moveTo(x,0);g.lineTo(x+rnd(10)-5,h);g.stroke()}
+      g.strokeStyle="#2e1b0c";g.lineWidth=8;g.strokeRect(30,40,w-60,250);g.strokeRect(30,340,w-60,260);g.strokeStyle="#6d4627";g.lineWidth=3;g.strokeRect(40,50,w-80,230);g.strokeRect(40,350,w-80,240)});
+    const doorM=lam({map:doorTex});
+    leaves=[-1,1].map(s=>{const pivot=new THREE.Group();pivot.position.set(s*DW,0,-L+.02);roomG.add(pivot);
+      const leaf=new THREE.Mesh(new THREE.BoxGeometry(DW,DH,.08),doorM);leaf.position.set(-s*DW/2,DH/2,0);pivot.add(leaf);
+      const knob=new THREE.Mesh(new THREE.SphereGeometry(.05,16,12),brassM);knob.position.set(-s*(DW-.14),1.1,.07);pivot.add(knob);
+      pivot.traverse(o=>o.userData.door=1);pivot.userData.s=s;return pivot});
+    const dh=plane(2*DW,DH,basic({visible:false}),[0,DH/2,-L+.15],0);dh.userData.door=1;
+    lock=box(.22,.32,.04,brassM,[0,1.1,-L+.09]);lock.userData.door=1;
+    doorLight=new THREE.PointLight(0xffd9a0,0,6,1.5);doorLight.position.set(0,2.4,-L-1.5);roomG.add(doorLight);
+    overTex=ctex(1024,160,()=>{});plane(3.4,.53,basic({map:overTex,transparent:true}),[0,3.86,-L+.04],0);
+    dsTex=ctex(400,300,()=>{});const ds=plane(.6,.45,basic({map:dsTex}),[DW+.75,1.55,-L+.02],0);ds.userData.door=1;
+  }else{
+    endWall(-L,0,false,1);
+    const cg=new THREE.Group();cg.position.set(0,2.1,-L+.03);roomG.add(cg);
+    for(const[w,h,x,y]of[[2.5,.12,0,.86],[2.5,.12,0,-.86],[.12,1.6,-1.19,0],[.12,1.6,1.19,0]]){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,.1),new THREE.MeshPhongMaterial({color:0xc9a45c,specular:0x664422,shininess:50}));m.position.set(x,y,.05);cg.add(m)}
+    certTex=ctex(1024,680,()=>{});const cp=new THREE.Mesh(new THREE.PlaneGeometry(2.26,1.5),basic({map:certTex}));cp.position.z=.04;cg.add(cp);
+    const lampC=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,1,12),brassM);lampC.rotation.z=Math.PI/2;lampC.position.set(0,1.05,.25);cg.add(lampC);
+    cg.traverse(o=>o.userData.door=2);
+  }
+  // bench
+  const benchM=lam({color:modern?0x8a8a86:0x4a2a16}), velvet=lam({color:modern?0x3d4a57:0x7a1e26});
+  box(2.2,.08,.6,benchM,[0,.42,-15.5]);box(2.1,.1,.52,velvet,[0,.5,-15.5]);
+  for(const x of[-1,1])for(const z of[-1,1])box(.08,.42,.08,benchM,[x*.98,.21,-15.5+z*.24]);
+  // portraits
+  frames=[];
+  const list=roomList(r), sp=spotsFor(list.length), B=T.B;
+  const frameM=new THREE.MeshPhongMaterial({color:T.frame,specular:modern?0x222222:0x664422,shininess:modern?20:50}), lipM=lam({color:modern?0x111111:0x6e5426});
+  list.forEach((p,k)=>{
+    const s=sp[k],grp=new THREE.Group();grp.position.set(s.side*(HW-.02),2.0,s.z);grp.rotation.y=-s.side*Math.PI/2;roomG.add(grp);
+    const sealed=st(p).sealed;
+    const pool=new THREE.Mesh(new THREE.PlaneGeometry(2.3,2.9),basic({map:glowTex,transparent:true,opacity:sealed?.42:(modern?.12:.22),blending:THREE.AdditiveBlending,depthWrite:false,color:sealed?0xffc95a:T.pool}));pool.position.set(0,.25,.004);grp.add(pool);
+    const tex=loader.load(`portraits/${String(p.i).padStart(2,"0")}.jpg`);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;
+    const pic=new THREE.Mesh(new THREE.PlaneGeometry(FW,FH),basic({map:tex,color:0xf2e8d8}));pic.position.z=.05;grp.add(pic);
+    if(modern){const mat=new THREE.Mesh(new THREE.PlaneGeometry(FW+.16,FH+.16),basic({color:0xfbfaf6}));mat.position.z=.045;grp.add(mat)}
+    const ow=FW+(modern?.16:0), oh=FH+(modern?.16:0);
+    for(const[w,h,x,y]of[[ow+2*B,B,0,oh/2+B/2],[ow+2*B,B,0,-oh/2-B/2],[B,oh,-ow/2-B/2,0],[B,oh,ow/2+B/2,0]]){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,.1),frameM);m.position.set(x,y,.05);grp.add(m)}
+    if(!modern)for(const[w,h,x,y]of[[FW,.025,0,FH/2-.012],[FW,.025,0,-FH/2+.012],[.025,FH,-FW/2+.012,0],[.025,FH,FW/2-.012,0]]){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,.02),lipM);m.position.set(x,y,.065);grp.add(m)}
+    const lamp=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.6,12),brassM);lamp.rotation.z=Math.PI/2;lamp.position.set(0,oh/2+B+.12,.2);grp.add(lamp);
+    const arm=new THREE.Mesh(new THREE.BoxGeometry(.03,.03,.2),brassM);arm.position.set(0,oh/2+B+.12,.1);grp.add(arm);
+    const gp=new THREE.Group();gp.position.set(0,FH/2,.085);grp.add(gp);
+    const glass=new THREE.Mesh(new THREE.PlaneGeometry(FW,FH),basic({map:glassTex,transparent:true,opacity:.9,depthWrite:false}));glass.position.y=-FH/2;gp.add(glass);
+    const seal=new THREE.Mesh(new THREE.CircleGeometry(.11,32),basic({map:sealTex,transparent:true}));seal.position.set(ow/2+.02,-oh/2-.04,.12);seal.rotation.z=.2;grp.add(seal);
+    const ptex=ctex(512,128,plateDraw(p,T));const plate=new THREE.Mesh(new THREE.PlaneGeometry(.68,.17),basic({map:ptex}));plate.position.set(0,-FH/2-.3,.02);grp.add(plate);
+    const ctx=ctex(220,290,cardDraw(p));const card=new THREE.Mesh(new THREE.PlaneGeometry(.2,.264),basic({map:ctx}));card.position.set(ow/2+B+.28,-.42,.01);grp.add(card);
+    grp.traverse(o=>o.userData.portrait=p.i);
+    gp.scale.y=sealed?1:.001;gp.visible=sealed;seal.scale.setScalar(sealed?1:.001);seal.visible=sealed;
+    frames.push({grp,gp,seal,pool,ptex,ctx,p,side:s.side,z:s.z,T});
+  });
+  // lights
+  roomG.add(new THREE.HemisphereLight(T.hemi,0x3a2a1a,modern?2:1.5));
+  roomG.add(new THREE.AmbientLight(0xffe8c8,modern?.9:.6));
+  for(const z of[-4,-12,-20]){const l=new THREE.PointLight(T.light,9,13,1.2);l.position.set(0,3.9,z);roomG.add(l)}
+  // floor spots
+  spots=NODES.map((n,k)=>{const g=new THREE.Group();g.position.set(n.x,.015,n.z);roomG.add(g);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(.32,.46,40),basic({color:modern?0xb48a3c:0xe8c77e,transparent:true,opacity:.85,depthWrite:false}));ring.rotation.x=-Math.PI/2;g.add(ring);
+    const disc=new THREE.Mesh(new THREE.CircleGeometry(.32,40),basic({color:0xe8c77e,transparent:true,opacity:.18,depthWrite:false}));disc.rotation.x=-Math.PI/2;g.add(disc);
+    const pad=new THREE.Mesh(new THREE.CircleGeometry(.8,20),basic({visible:false}));pad.rotation.x=-Math.PI/2;g.add(pad);
+    g.traverse(o=>o.userData.node=k);return g});
+  buildTreasure(r);
+  drawSigns();
+  doorsOpen=false;if(r<3&&roomDone(r))openDoors(true);
+}
+
+/* ---------- the four treasures, modeled in code ---------- */
+function pedestal(g,modern){const pm=lam({color:modern?0xf4f3ef:0x2b2620});
+  if(modern){const c=new THREE.Mesh(new THREE.CylinderGeometry(.34,.38,1,32),pm);c.position.y=.5;g.add(c)}
+  else{box(.72,1,.72,pm,[0,.5,0],g);box(.8,.06,.8,lam({color:0x1a1612}),[0,1.0,0],g);box(.8,.08,.8,lam({color:0x1a1612}),[0,.04,0],g)}}
+function glassCase(g,w,h){const cm=basic({color:0xffffff,transparent:true,opacity:.1,depthWrite:false});box(w,h,w,cm,[0,1.03+h/2,0],g);
+  const e=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w,h,w)),new THREE.LineBasicMaterial({color:0xd7b469}));e.position.y=1.03+h/2;g.add(e)}
+function buildTreasure(r){
+  const t=TREASURES[r],pos=TPOS[r],g=new THREE.Group();g.position.set(pos.x,0,pos.z);g.rotation.y=Math.atan2(0-pos.x,-15-pos.z);roomG.add(g);
+  let topY=1.4;
+  if(t.id==="writebox"){pedestal(g);glassCase(g,.66,.5);
+    const mah=new THREE.MeshPhongMaterial({color:0x6a2f17,specular:0x553322,shininess:40}),o=new THREE.Group();o.position.y=1.03;o.scale.setScalar(1.35);g.add(o);
+    box(.37,.085,.245,mah,[0,.0425,0],o);box(.3,.03,.004,lam({color:0x3c1a0c}),[0,.04,.124],o);box(.03,.012,.01,brassM,[0,.04,.128],o);
+    const hinge=new THREE.Group();hinge.position.set(0,.085,-.122);hinge.rotation.x=-.42;o.add(hinge);
+    box(.37,.016,.245,mah,[0,.008,.1225],hinge);box(.33,.004,.2,lam({color:0x2f5a3a}),[0,.018,.1225],hinge);
+    const quill=new THREE.Mesh(new THREE.ConeGeometry(.012,.26,8),lam({color:0xf3efe4}));quill.position.set(.12,.2,-.02);quill.rotation.set(.3,0,-.5);o.add(quill);
+    const ink=new THREE.Mesh(new THREE.CylinderGeometry(.025,.03,.045,16),new THREE.MeshPhongMaterial({color:0x111a22,shininess:90}));ink.position.set(.16,.11,-.06);o.add(ink);topY=1.6}
+  else if(t.id==="resolute"){const rug=box(2.7,.05,2.1,lam({color:0x6b1d24}),[0,.025,0],g);
+    const oak=ctex(256,256,(c,w,h)=>{c.fillStyle="#4f2f17";c.fillRect(0,0,w,h);for(let i=0;i<80;i++){c.strokeStyle=`rgba(0,0,0,${.05+Math.random()*.12})`;c.beginPath();const y=rnd(h);c.moveTo(0,y);c.bezierCurveTo(80,y+rnd(12)-6,170,y+rnd(12)-6,w,y+rnd(8)-4);c.stroke()}
+      c.strokeStyle="#7a5230";c.lineWidth=7;c.strokeRect(22,22,w-44,h-44);c.strokeStyle="#2e1a0b";c.lineWidth=4;c.strokeRect(34,34,w-68,h-68);c.fillStyle="#6b4527";c.beginPath();c.ellipse(w/2,h/2,40,50,0,0,7);c.fill()});
+    const om=lam({map:oak}),top=lam({color:0x3e2410});
+    box(1.85,.06,1.22,top,[0,.8,0],g);for(const x of[-.62,.62])box(.56,.74,1.14,om,[x,.42,0],g);
+    box(.68,.58,.05,om,[0,.48,.56],g);const seal=new THREE.Mesh(new THREE.CircleGeometry(.13,32),lam({color:0xb48a3c}));seal.position.set(0,.5,.59);g.add(seal);
+    box(.68,.58,.05,om,[0,.48,-.56],g);
+    for(const[x,z]of[[-1.25,.95],[1.25,.95],[-1.25,-.95],[1.25,-.95]]){box(.05,.9,.05,brassM,[x,.48,z],g);const b=new THREE.Mesh(new THREE.SphereGeometry(.05,12,10),brassM);b.position.set(x,.95,z);g.add(b)}
+    const rope=lam({color:0x8e1f24});for(const[a,b]of[[[-1.25,.95],[1.25,.95]],[[-1.25,.95],[-1.25,-.95]],[[1.25,.95],[1.25,-.95]]]){const len=Math.hypot(b[0]-a[0],b[1]-a[1]);const c=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,len,8),rope);c.position.set((a[0]+b[0])/2,.8,(a[1]+b[1])/2);c.rotation.set(Math.PI/2,0,0);c.rotation.y=Math.atan2(b[0]-a[0],b[1]-a[1]);c.rotation.order="YXZ";c.rotation.x=Math.PI/2;g.add(c)}
+    topY=1.25}
+  else if(t.id==="buck"){pedestal(g);glassCase(g,.66,.42);
+    const o=new THREE.Group();o.position.y=1.03;o.scale.setScalar(1.7);g.add(o);
+    box(.33,.035,.06,new THREE.MeshPhongMaterial({color:0x5a3218,shininess:40}),[0,.0175,0],o);
+    const front=ctex(512,72,(c,w,h)=>{c.fillStyle="#f7f2e2";c.fillRect(0,0,w,h);c.fillStyle="#1b1b1b";c.textAlign="center";c.font=`700 40px ${SERIF}`;c.fillText("The Buck Stops Here!",w/2,50)});
+    const back=ctex(512,72,(c,w,h)=>{c.fillStyle="#f7f2e2";c.fillRect(0,0,w,h);c.fillStyle="#1b1b1b";c.textAlign="center";c.font=`700 40px ${SERIF}`;c.fillText("I'm From Missouri",w/2,50)});
+    plane(.31,.045,basic({map:front}),[0,.06,.004],0,0,o);plane(.31,.045,basic({map:back}),[0,.06,-.004],Math.PI,0,o);topY=1.55}
+  else if(t.id==="moon"){pedestal(g,true);
+    const geo=new THREE.IcosahedronGeometry(.16,3),pa=geo.attributes.position,v=new THREE.Vector3();
+    for(let k=0;k<pa.count;k++){v.fromBufferAttribute(pa,k);const n=1+.12*Math.sin(v.x*31)*Math.cos(v.y*27)+.08*Math.sin(v.z*45+v.x*12);v.multiplyScalar(n);if(v.y<-.05)v.y=-.05;pa.setXYZ(k,v.x,v.y,v.z)}
+    geo.computeVertexNormals();const rock=new THREE.Mesh(geo,new THREE.MeshPhongMaterial({color:0x4b4a48,specular:0x333333,shininess:12,flatShading:true}));rock.scale.set(1.3,.75,1);rock.position.y=1.06;g.add(rock);
+    const sg=ctex(256,64,(c,w,h)=>{c.fillStyle="#22252a";c.fillRect(0,0,w,h);c.fillStyle="#fff";c.textAlign="center";c.font=`700 30px ${SANS}`;c.fillText("PLEASE TOUCH",w/2,42)});
+    plane(.34,.085,basic({map:sg}),[0,.86,.37],0,-.2,g);topY=1.5}
+  const spark=new THREE.Sprite(new THREE.SpriteMaterial({map:sparkTex,transparent:true,depthWrite:false}));spark.scale.setScalar(.38);spark.position.y=topY+.25;g.add(spark);
+  const pad=box(1.2,2,1.2,basic({visible:false}),[0,1,0],g);
+  g.traverse(o=>o.userData.treasure=t.id);
+  tre={g,spark,t,pos,topY};spark.visible=!S.found[t.id];
+}
+function refreshFrame(f){f.ptex.userData.redraw(plateDraw(f.p,f.T));f.ctx.userData.redraw(cardDraw(f.p))}
+const frameOf=i=>frames.find(f=>f.p.i===i);
+
+/* ---------- signs ---------- */
+function drawSigns(){
+  const modern=R===3,ink=modern?"#2a2a26":"#2a1d08";
+  if(overTex)overTex.userData.redraw((g,w,h)=>{g.fillStyle=modern?"#3a3a36":"#e8c77e";g.textAlign="center";g.font=`700 70px ${SERIF}`;g.fillText(ROOMS[R+1].name,w/2,72);g.font=`600 40px ${SANS}`;g.fillStyle=modern?"#77736a":"#d4ccb6";g.fillText("next room · "+ROOMS[R+1].years,w/2,128)});
+  if(dsTex)dsTex.userData.redraw((g,w,h)=>{g.fillStyle="#f7f0df";g.fillRect(0,0,w,h);g.fillStyle="#2a1d08";g.textAlign="center";
+    if(roomDone(R)){g.font=`700 52px ${SERIF}`;g.fillText("Open!",w/2,90);g.font=`600 30px ${SANS}`;wrap(g,"Every portrait here is sealed.",w/2,150,w-40,38)}
+    else{g.font=`700 46px ${SERIF}`;g.fillText("Locked",w/2,76);g.font=`600 30px ${SANS}`;wrap(g,"Seal every portrait in this room to open the door.",w/2,130,w-40,36);g.font=`700 34px ${SANS}`;g.fillStyle="#8e1f24";g.fillText(`${sealedIn(R)} of ${roomList(R).length} sealed`,w/2,268)}});
+  if(welTex)welTex.userData.redraw((g,w,h)=>{g.fillStyle=modern?"#ffffff":"#f7f0df";g.fillRect(0,0,w,h);g.strokeStyle=modern?"#2a2a26":"#b48a3c";g.lineWidth=14;g.strokeRect(14,14,w-28,h-28);
+    g.fillStyle=ink;g.textAlign="center";g.font=`700 ${ROOMS[R].name.length>20?80:96}px ${SERIF}`;g.fillText(ROOMS[R].name,w/2,150);g.font=`600 46px ${SANS}`;g.fillStyle="#7d6a45";
+    g.fillText(`Room ${R+1} of 4 · ${ROOMS[R].years}`,w/2,222);
+    g.fillStyle=ink;g.font=`500 50px ${SERIF}`;wrap(g,R===0?"Someone mixed up the signs! Check each portrait's placards and seal it under glass.":"Check every placard, seal each portrait, and look for this room's hidden treasure!",w/2,330,w-140,62)});
+  if(certTex)certTex.userData.redraw((g,w,h)=>{const done=allSealed();g.fillStyle="#fbf6e6";g.fillRect(0,0,w,h);g.strokeStyle="#b48a3c";g.lineWidth=10;g.strokeRect(24,24,w-48,h-48);g.lineWidth=3;g.strokeRect(40,40,w-80,h-80);
+    g.textAlign="center";g.fillStyle="#2a1d08";g.font=`700 74px ${SERIF}`;g.fillText("Master Curator",w/2,150);g.font=`600 34px ${SANS}`;g.fillStyle="#7d6a45";g.fillText("A PUZZLING PRESIDENTIAL GALLERY",w/2,205);
+    g.fillStyle="#2a1d08";g.font=`500 44px ${SERIF}`;
+    if(done){wrap(g,"Every portrait in the gallery has been checked and sealed under glass. Well done!",w/2,300,w-200,56);g.drawImage(sealTex.image,w/2-70,470,140,140)}
+    else{wrap(g,"Seal all 45 portraits in the gallery to earn this certificate.",w/2,300,w-200,56);g.font=`700 52px ${SANS}`;g.fillStyle="#8e1f24";g.fillText(`${P.filter(p=>st(p).sealed).length} of ${P.length} sealed`,w/2,520)}});
+  frames.forEach(refreshFrame);
+}
+
+/* ---------- camera moves ---------- */
+const cam={x:0,y:EYE,z:NODES[0].z,yaw:0,pitch:0};
+let mode={t:"room",node:0};
+let tween=null;
+const angDiff=(a,b)=>{let d=(b-a)%(Math.PI*2);if(d>Math.PI)d-=Math.PI*2;if(d<-Math.PI)d+=Math.PI*2;return d};
+const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+function moveTo(to,done,quick){
+  const from={...cam},dist=Math.hypot(to.x-from.x,to.z-from.z),turn=Math.abs(angDiff(from.yaw,to.yaw));
+  if(dist>.5)steps(Math.min(4,1+Math.round(dist/3)));
+  if(REDUCED||quick){const f=$("fade");f.style.opacity=1;setTimeout(()=>{Object.assign(cam,to);f.style.opacity=0;done&&done()},REDUCED?120:250);return}
+  tween={t0:performance.now(),dur:Math.min(1800,450+dist*110+turn*220),from,to:{...to,yaw:from.yaw+angDiff(from.yaw,to.yaw)},done};
+}
+const lookYaw=(x,z,tx,tz)=>Math.atan2(-(tx-x),-(tz-z));
+function fitDist(hw,hh){const v=camera.fov*Math.PI/360,hz=Math.atan(Math.tan(v)*camera.aspect);return Math.max(hh/Math.tan(v),hw/Math.tan(hz))*1.08}
+function portraitView(i){const f=frameOf(i),d=Math.min(3.6,Math.max(1.7,fitDist(1.05,.95)));return {x:f.side*(HW-d),y:1.9,z:f.z,yaw:f.side<0?Math.PI/2:-Math.PI/2,pitch:0}}
+function doorView(dir){const d=Math.min(8,Math.max(3.4,fitDist(2.2,2.1)));return dir===-1?{x:0,y:2.0,z:-d,yaw:Math.PI,pitch:0}:{x:0,y:2.0,z:-L+d,yaw:0,pitch:0}}
+function treasureView(){const p=tre.pos,big=tre.t.id==="resolute",d=big?3.4:2.0,cx=0,cz=-15,len=Math.hypot(cx-p.x,cz-p.z),ux=(cx-p.x)/len,uz=(cz-p.z)/len;
+  const x=p.x+ux*d,z=p.z+uz*d,ty=big?.75:tre.topY-.35,y=big?1.9:1.65;return {x,y,z,yaw:lookYaw(x,z,p.x,p.z),pitch:Math.atan2(ty-y,d)}}
+const focusView=()=>mode.t==="portrait"?portraitView(mode.i):mode.t==="door"?doorView(mode.dir):mode.t==="treasure"?treasureView():null;
+function goNode(k,faceYaw){const n=NODES[k];setMode({t:"room",node:k});moveTo({x:n.x,y:EYE,z:n.z,yaw:faceYaw??cam.yaw,pitch:0})}
+function goPortrait(i){setMode({t:"portrait",i});requestAnimationFrame(()=>moveTo(portraitView(i)))}
+function goDoor(dir){setMode({t:"door",dir});requestAnimationFrame(()=>moveTo(doorView(dir)))}
+function goTreasure(){const first=!S.found[tre.t.id];if(first){S.found[tre.t.id]=true;save();sfx.find();tre.spark.visible=false}
+  setMode({t:"treasure",first});requestAnimationFrame(()=>moveTo(treasureView()));if(first)toast(`You found a museum treasure! ✦ ${foundN()} of 4`)}
+function stepBack(){
+  let tx=0,tz=-L;
+  if(mode.t==="portrait"){const f=frameOf(mode.i);tx=f.side*HW;tz=f.z}else if(mode.t==="door"&&mode.dir===-1)tz=0;else if(mode.t==="treasure"){tx=tre.pos.x;tz=tre.pos.z}
+  let k=0,b=1e9;NODES.forEach((n,j)=>{const d=Math.abs(n.z-cam.z);if(d<b){b=d;k=j}});
+  const n=NODES[k];setMode({t:"room",node:k});moveTo({x:n.x,y:EYE,z:n.z,yaw:lookYaw(n.x,n.z,tx,tz),pitch:.04})}
+function turnBy(a){if(tween)return;moveTo({...cam,yaw:cam.yaw+a,pitch:cam.pitch})}
+function enterRoom(r,how,then){
+  const f=$("fade");f.style.transition="opacity .35s";f.style.opacity=1;sfx.door();steps(3);
+  setTimeout(()=>{R=r;S.room=r;save();buildRoom(r);tween=null;
+    if(how==="back")Object.assign(cam,{x:0,y:EYE,z:NODES[2].z,yaw:Math.PI,pitch:0});else Object.assign(cam,{x:0,y:EYE,z:NODES[0].z,yaw:0,pitch:0});
+    setMode({t:"room",node:how==="back"?2:0});
+    setTimeout(()=>{f.style.opacity=0;toast(`Room ${r+1}: ${ROOMS[r].name}`);then&&then()},120)},REDUCED?60:380)}
+
+/* ---------- picking ---------- */
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+function pickAt(cx,cy){const rc=canvas.getBoundingClientRect();ndc.set((cx-rc.left)/rc.width*2-1,-(cy-rc.top)/rc.height*2+1);ray.setFromCamera(ndc,camera);
+  const hits=ray.intersectObjects(roomG.children,true);
+  for(const h of hits){const u=h.object.userData;
+    if(u.portrait!=null)return{t:"portrait",i:u.portrait};
+    if(u.treasure)return{t:"treasure"};
+    if(u.door!=null)return{t:"door",dir:u.door===2?2:u.door};
+    if(u.node!=null){if(mode.t==="room"&&mode.node===u.node)continue;return{t:"node",k:u.node}}
+    if(h.object.material&&h.object.material.visible===false)continue;
+    return null}
+  return null}
+function activate(h){
+  if(!h)return;hideHint();
+  if(h.t==="portrait"){if(mode.t==="portrait"&&mode.i===h.i)return;goPortrait(h.i)}
+  else if(h.t==="node")goNode(h.k);
+  else if(h.t==="door"){if(mode.t==="door"&&mode.dir===h.dir)return;goDoor(h.dir)}
+  else if(h.t==="treasure"){if(mode.t==="treasure")return;goTreasure()}
+}
+let down=null;
+canvas.addEventListener("pointerdown",e=>{down={x:e.clientX,y:e.clientY,t:performance.now(),yaw:cam.yaw,pitch:cam.pitch,moved:false};canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener("pointermove",e=>{
+  if(!down){canvas.classList.toggle("hot",!!pickAt(e.clientX,e.clientY));return}
+  const dx=e.clientX-down.x,dy=e.clientY-down.y;if(Math.hypot(dx,dy)>8)down.moved=true;
+  if(down.moved&&mode.t==="room"&&!tween){canvas.classList.add("drag");const k=2.4/Math.max(300,canvas.clientWidth);cam.yaw=down.yaw+dx*k;cam.pitch=Math.max(-.35,Math.min(.45,down.pitch+dy*k));hideHint()}});
+canvas.addEventListener("pointerup",e=>{if(!down)return;const d=down;down=null;canvas.classList.remove("drag");
+  const dx=e.clientX-d.x;
+  if(!d.moved&&performance.now()-d.t<700){unlockAudio();activate(pickAt(e.clientX,e.clientY));return}
+  if(mode.t==="portrait"&&Math.abs(dx)>50)stepPortrait(dx<0?1:-1)});
+canvas.addEventListener("pointercancel",()=>{down=null;canvas.classList.remove("drag")});
+$("tl").onclick=()=>{hideHint();turnBy(Math.PI/4)};$("tr").onclick=()=>{hideHint();turnBy(-Math.PI/4)};
+document.addEventListener("keydown",e=>{
+  if($("planOv").classList.contains("show")){if(e.key==="Escape")closePlan();return}
+  if($("intro").classList.contains("show"))return;
+  if(e.target.closest&&e.target.closest("button,a")&&(e.key===" "||e.key==="Enter"))return;
+  if(mode.t==="room"){
+    if(e.key==="ArrowLeft")turnBy(Math.PI/4);else if(e.key==="ArrowRight")turnBy(-Math.PI/4);
+    else if(e.key==="ArrowUp"||e.key==="ArrowDown"){
+      const fx=-Math.sin(cam.yaw),fz=-Math.cos(cam.yaw),sg=e.key==="ArrowUp"?1:-1;let best=null,bd=1e9;
+      NODES.forEach((n,k)=>{if(k===mode.node)return;const vx=n.x-cam.x,vz=n.z-cam.z,len=Math.hypot(vx,vz),dot=(vx*fx+vz*fz)/len*sg;if(dot>.6&&len<bd){bd=len;best=k}});
+      if(best!=null)goNode(best,sg<0?cam.yaw:undefined)}
+  }else{
+    if(e.key==="Escape"||e.key==="ArrowDown")stepBack();
+    if(mode.t==="portrait"&&e.key==="ArrowLeft")stepPortrait(-1);
+    if(mode.t==="portrait"&&e.key==="ArrowRight")stepPortrait(1);
+  }});
+function stepPortrait(d){const L0=roomList(R),k=L0.findIndex(p=>p.i===mode.i)+d;if(k<0||k>=L0.length)return;goPortrait(L0[k].i)}
+
+/* ---------- hint ---------- */
+let hintT;function hideHint(){$("hint").classList.add("gone")}
+function showHint(t){const h=$("hint");h.textContent=t;h.classList.remove("gone");clearTimeout(hintT);hintT=setTimeout(hideHint,6000)}
+
+/* ---------- mode + desk ---------- */
 let pending={};
-const room=()=>S.room, list=()=>roomList(S.room);
-const minPos=()=>S.room>0?-1:0, maxPos=()=>S.room<ROOMS.length-1?list().length:list().length-1;
-function frameHTML(p,cls=""){
-  const s=st(p);
-  return `<div class="slot ${cls} ${s.sealed?"sealed":""}"><div class="frame"><div class="mat"><img src="portraits/${String(p.i).padStart(2,"0")}.jpg" alt="Portrait of the president who served ${p.term}"><div class="glass"></div></div><div class="wax">✓</div></div>
-    <div class="plate">${s.sealed?`<b>${p.name}</b>`:""}In office ${p.term}</div></div>`;
-}
-function doorHTML(dir,cls=""){
-  if(dir<0){const r=ROOMS[S.room-1];return `<div class="slot ${cls}"><div class="door open"><span class="lock">🚪</span></div><div class="doorlab">Back to<br>${r[0]}</div></div>`}
-  if(S.room>=ROOMS.length-1) return "";
-  const r=ROOMS[S.room+1], ok=roomDone(S.room);
-  return `<div class="slot ${cls}"><div class="door ${ok?"open":""}"><span class="lock">${ok?"✨":"🔒"}</span></div><div class="doorlab">${ok?`Open! Walk into<br>${r[0]}`:`Locked. Seal every portrait in this room to open it.<br>${sealedCount(S.room)} of ${list().length} sealed`}</div></div>`;
-}
-function itemHTML(pos,cls){ if(pos<minPos()||pos>maxPos()) return ""; if(pos===-1) return doorHTML(-1,cls); if(pos===list().length) return doorHTML(1,cls); return frameHTML(list()[pos],cls); }
-function drawHall(dir){
-  document.body.className="r"+S.room;
-  const w=$("hall").clientWidth, gap=Math.min(w*.62, 420);
-  $("track").innerHTML=[-1,0,1].map(o=>{const h=itemHTML(S.pos+o, o?"side":""); return h?h.replace('class="slot',`style="transform:translateX(${o*gap}px)${o?" scale(.8)":""}" class="slot`):""}).join("");
-  if(dir){ const t=$("track"); t.style.transition="none"; t.style.transform=`translateX(${dir*60}px)`; t.style.opacity=".4"; void t.offsetWidth; t.style.transition=""; t.style.transform=""; t.style.opacity=""; }
-  $("prev").disabled=S.pos<=minPos(); $("next").disabled=S.pos>=maxPos();
-  $("roomName").innerHTML=`Room ${S.room+1} of 4: <b>${ROOMS[S.room][0]}</b> · ${sealedCount(S.room)}/${list().length} sealed`;
-  // little strip of dots for this room
-  let d=""; if(S.room>0) d+=`<button class="dot d ${S.pos===-1?"here":""}" data-pos="-1" aria-label="Door back"></button>`;
-  list().forEach((p,k)=>d+=`<button class="dot ${st(p).sealed?"s":""} ${S.pos===k?"here":""}" data-pos="${k}" aria-label="Portrait ${k+1}${st(p).sealed?", sealed":""}"></button>`);
-  if(S.room<ROOMS.length-1) d+=`<button class="dot d ${S.pos===list().length?"here":""}" data-pos="${list().length}" aria-label="Door forward"></button>`;
-  $("dots").innerHTML=d;
-}
-function go(pos,dir){ if(pos<minPos()||pos>maxPos()) return; S.pos=pos; pending={}; steps(); save(); drawHall(dir); drawDesk(); }
-function walk(d){ go(S.pos+d, d); }
-function enterRoom(r,pos){ S.room=r; S.pos=pos; pending={}; save(); sfx.door(); drawHall(r>0?1:-1); drawDesk(); toast(`Room ${r+1}: ${ROOMS[r][0]}`); }
-$("prev").onclick=()=>walk(-1); $("next").onclick=()=>walk(1);
-$("dots").addEventListener("click",e=>{const b=e.target.closest("[data-pos]"); if(b) go(+b.dataset.pos, +b.dataset.pos>S.pos?1:-1)});
-document.addEventListener("keydown",e=>{ if($("planOv").classList.contains("show")){ if(e.key==="Escape") closePlan(); return; }
-  if(e.key==="ArrowLeft") walk(-1); if(e.key==="ArrowRight") walk(1); });
-let tx=null; $("hall").addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
-$("hall").addEventListener("touchend",e=>{ if(tx===null) return; const dx=e.changedTouches[0].clientX-tx; tx=null; if(Math.abs(dx)>40) walk(dx<0?1:-1); });
-addEventListener("resize",()=>drawHall());
-
-/* ---------- the placard desk ---------- */
+function setMode(m){mode=m;pending={};document.body.classList.toggle("focus",m.t!=="room");drawDesk();if(m.t!=="room")$("desk").scrollTop=0}
+function head(title,sub,nav){const L0=roomList(R),k=nav?L0.findIndex(p=>p.i===mode.i):0;
+  return `<div class="dhead"><button class="btn back" id="backBtn">⤺ Step back</button>
+  ${nav?`<button class="sq-b" id="pv" aria-label="Previous portrait" ${k===0?"disabled":""}>‹</button>`:""}<div class="t">${title}<small>${sub}</small></div>${nav?`<button class="sq-b" id="nx" aria-label="Next portrait" ${k===L0.length-1?"disabled":""}>›</button>`:""}</div>`}
 function drawDesk(){
-  const D=$("desk");
-  if(S.pos===-1){ D.innerHTML=`<h2>A doorway</h2><p class="sub">This door leads back to <b>${ROOMS[S.room-1][0]}</b>.</p><button class="btn g" id="doorGo">Walk back through</button>`; $("doorGo").onclick=()=>enterRoom(S.room-1, roomList(S.room-1).length); return; }
-  if(S.pos===list().length){
-    const r=ROOMS[S.room+1], ok=roomDone(S.room);
-    if(ok){ D.innerHTML=`<h2>The door is open!</h2><p class="sub">Every portrait in ${ROOMS[S.room][0]} is sealed under glass. The next room is <b>${r[0]}</b> (${r[1]}).</p><button class="btn g" id="doorGo">Walk into the next room →</button>`; $("doorGo").onclick=()=>enterRoom(S.room+1,0); }
-    else{ const left=list().filter(p=>!st(p).sealed).length;
-      D.innerHTML=`<h2>This door is locked</h2><p class="sub">Seal every portrait in this room to open it. ${left} still need checking.</p><button class="btn g" id="findNext">Walk to the next unsealed portrait</button>`; $("findNext").onclick=()=>{const k=list().findIndex(p=>!st(p).sealed); if(k>=0) go(k,-1);}; }
-    return;
-  }
-  const p=list()[S.pos], s=st(p);
-  if(s.sealed){
-    const more=nextUnsealed();
-    D.innerHTML=`<div class="banner"><h3>Sealed under glass</h3><div class="lede">Every placard is checked. Here is a true story from the museum archives:</div><p class="story serif">📜 ${p.story}</p></div>
+  const D=$("desk"),L0=roomList(R);
+  $("roomName").textContent=ROOMS[R].name;$("count").textContent=`Room ${R+1} of 4 · ${sealedIn(R)} of ${L0.length} sealed · ✦ ${foundN()}/4`;
+  if(mode.t==="room"){D.innerHTML="";return}
+  if(mode.t==="treasure"){const t=tre.t;
+    D.innerHTML=head("Museum treasure",`✦ ${foundN()} of 4 found`)+`<div class="banner"><h3>${mode.first?"You found a treasure!":"A museum treasure"}</h3><div class="lede">${t.title}</div><p class="story serif">${t.story}</p></div>
+      <p class="note">This is a model. The real one is at the <b>${t.where}</b>.</p>${t.id==="moon"?`<p><button class="btn g" id="touchBtn">✋ Touch the Moon rock</button></p>`:""}`;
+    wireHead();const tb=$("touchBtn");if(tb)tb.onclick=()=>{unlockAudio();sfx.find();toast("You touched a model of the Moon! In Washington, D.C., you can touch the real thing.")};return}
+  if(mode.t==="door"){
+    if(mode.dir===-1){D.innerHTML=head("A doorway","back to "+ROOMS[R-1].name)+`<h2>Go back?</h2><p class="sub">This doorway leads back to <b>${ROOMS[R-1].name}</b> (${ROOMS[R-1].years}).</p><button class="btn g" id="goBack">Walk back through</button>`;
+      wireHead();$("goBack").onclick=()=>enterRoom(R-1,"back");return}
+    if(mode.dir===2){const n=P.filter(p=>st(p).sealed).length;
+      D.innerHTML=head("The end of the gallery","Master Curator certificate")+(allSealed()?`<div class="banner"><h3>You did it, Master Curator!</h3><p class="story serif">All 45 portraits are checked and sealed under glass. ✦ You found ${foundN()} of 4 treasures.</p></div>${foundN()<4?`<p class="sub">Tip: every room has one hidden treasure. Look for the sparkle!</p>`:""}`:
+        `<h2>The newest part of the gallery</h2><p class="sub">Seal every portrait in all four rooms to earn the Master Curator certificate. ${n} of ${P.length} sealed so far.</p>`)+`<button class="btn g" id="planGo">Open the floor plan</button>`;
+      wireHead();$("planGo").onclick=openPlan;return}
+    const ok=roomDone(R);
+    D.innerHTML=head("The doorway","to "+ROOMS[R+1].name)+(ok?
+      `<h2>The door is open!</h2><p class="sub">Every portrait in ${ROOMS[R].name} is sealed under glass. The next room is <b>${ROOMS[R+1].name}</b> (${ROOMS[R+1].years}).</p><button class="btn g" id="goNext">Walk into the next room →</button>`:
+      `<h2>This door is locked</h2><p class="sub">Seal every portrait in this room to open it. ${L0.length-sealedIn(R)} still need checking.</p><button class="btn g" id="findNext">Walk to the next unsealed portrait</button>`);
+    wireHead();const f=$("findNext");if(f)f.onclick=()=>{const p=L0.find(p=>!st(p).sealed);if(p)goPortrait(p.i)};const gn=$("goNext");if(gn)gn.onclick=()=>enterRoom(R+1,"fwd");return}
+  const p=P[mode.i],s=st(p),k=L0.indexOf(p),title=`Portrait ${k+1} of ${L0.length}`,sub=`In office ${p.term}`;
+  if(s.sealed){const more=nextUnsealed();
+    D.innerHTML=head(title,sub,1)+`<div class="banner"><h3>Sealed under glass</h3><div class="lede">Every placard is checked. Here is a true story from the museum archives:</div><p class="story serif">📜 ${p.story}</p></div>
       <div class="label"><div class="ln">${p.name}</div><div class="lt">${truth(p,"num")} President · ${p.term}</div><div class="lc"><div><b>Born in</b>${p.state}</div><div class="la">${p.ach}</div></div></div>
-      ${more!==null?`<button class="btn g" id="nextUn">Walk to the next unsealed portrait →</button>`:roomDone(S.room)&&S.room<ROOMS.length-1?`<button class="btn g" id="toDoor">Walk to the open door →</button>`:""}`;
-    const b=$("nextUn"); if(b) b.onclick=()=>go(more, more>S.pos?1:-1);
-    const dbt=$("toDoor"); if(dbt) dbt.onclick=()=>go(list().length,1);
-    return;
-  }
-  D.innerHTML=`<h2>Check the placards</h2><p class="sub">Someone mixed up the signs! Mark each one <b>Correct</b> or <b>Wrong</b>. The plate on the frame (years in office) is always right.</p><div class="cards">`+
-    KEYS.map(k=>{const c=s.c[k], fix=pending[k];
+      ${more!=null?`<button class="btn g" id="nextUn">Walk to the next unsealed portrait →</button>`:`<button class="btn g" id="toDoor">${R<3?"Walk to the open door →":"See the Master Curator certificate →"}</button>`}`;
+    wireHead();const b=$("nextUn");if(b)b.onclick=()=>goPortrait(more);const t=$("toDoor");if(t)t.onclick=()=>goDoor(R<3?1:2);return}
+  D.innerHTML=head(title,sub,1)+`<h2>Check the placards</h2><p class="sub">Mark each sign <b>Correct</b> or <b>Wrong</b>. The brass plate on the frame (years in office) is always right.</p><div class="cards">`+
+    KEYS.map(k=>{const c=s.c[k],fix=pending[k];
       let body=`<div class="acts"><button class="btn ok" data-a="yes" data-k="${k}">✓ Correct</button><button class="btn no" data-a="no" data-k="${k}">✗ Wrong</button></div>`;
-      if(fix) body=`<p class="msg">${fix.msg}</p><div class="choices">${fix.opts.map((o,j)=>`<button data-k="${k}" data-o="${j}" ${fix.tried.includes(j)?"disabled":""}>${o}</button>`).join("")}</div>`;
-      return `<div class="card ${k==="ach"?"ach":""} ${c.done?"done":""} ${fix?"fix":""}" id="c-${k}"><span class="stamp">VERIFIED ✓</span><div class="k">${LABEL[k]}</div><div class="v">${c.shown}</div>${c.done?"":body}</div>`;
-    }).join("")+`</div><p class="note">Slip-ups so far: ${S.miss}. Mistakes are how curators learn!</p>`;
+      if(fix)body=`<p class="msg">${fix.msg}</p><div class="choices">${fix.opts.map((o,j)=>`<button data-k="${k}" data-o="${j}" ${fix.tried.includes(j)?"disabled":""}>${o}</button>`).join("")}</div>`;
+      return `<div class="card ${k==="ach"?"ach":""} ${c.done?"done":""} ${fix?"fix":""}" id="c-${k}"><span class="stamp">VERIFIED ✓</span><div class="k">${LABEL[k]}</div><div class="v">${c.shown}</div>${c.done?"":body}</div>`}).join("")+
+    `</div><p class="note">Slip-ups so far: ${S.miss}. Mistakes are how curators learn!</p>`;
+  wireHead();
 }
-function nextUnsealed(){ const L=list(); for(let n=1;n<=L.length;n++){const k=(S.pos+n)%L.length; if(!st(L[k]).sealed) return k;} return null; }
-function startFix(k,msg){
-  const p=list()[S.pos],t=truth(p,k),shown=st(p).c[k].shown,opts=[t];
-  while(opts.length<3){const f=fakeDistinct(p,k,[...opts,shown]); if(!f)break; opts.push(f)}
-  pending[k]={msg,opts:shuffle(opts),tried:[]};
+function wireHead(){$("backBtn").onclick=stepBack;const pv=$("pv"),nx=$("nx");if(pv)pv.onclick=()=>stepPortrait(-1);if(nx)nx.onclick=()=>stepPortrait(1)}
+function nextUnsealed(){const L0=roomList(R),k0=L0.findIndex(p=>p.i===mode.i);for(let n=1;n<=L0.length;n++){const p=L0[(k0+n)%L0.length];if(!st(p).sealed)return p.i}return null}
+function startFix(k,msg){const p=P[mode.i],t=truth(p,k),shown=st(p).c[k].shown,opts=[t];
+  while(opts.length<3){const f=fakeDistinct(p,k,[...opts,shown]);if(!f)break;opts.push(f)}pending[k]={msg,opts:shuffle(opts),tried:[]}}
+function miss(k,text){S.miss++;save();sfx.no();toast(text);const el=$("c-"+k);if(el){el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake")}}
+function act(k,a){const p=P[mode.i],c=st(p).c[k];
+  if(a==="yes"){if(c.ok){c.done=true;sfx.ok();toast("Verified.")}else{startFix(k,"Not so fast: this placard is wrong. Which is right?");drawDesk();miss(k,"Look again: that placard is wrong.");return}}
+  else{if(!c.ok){startFix(k,"Good eye! This one is wrong. Pick the correct "+LABEL[k].toLowerCase()+":");sfx.ok()}else{c.done=true;drawDesk();miss(k,"That one was actually correct.");return after()}}
+  drawDesk();after()}
+function choose(k,j){const p=P[mode.i],f=pending[k],t=truth(p,k);
+  if(f.opts[j]===t){const c=st(p).c[k];c.shown=t;c.done=c.ok=true;delete pending[k];sfx.ok();toast("Fixed and verified!");drawDesk();after()}
+  else{f.tried.push(j);drawDesk();miss(k,"Not that one. Try again.")}}
+function after(){const i=mode.i,p=P[i],s=st(p);
+  if(!s.sealed&&KEYS.every(k=>s.c[k].done)){s.sealed=true;save();sealAnim(i);
+    setTimeout(()=>{drawDesk();if(roomDone(R))setTimeout(()=>{if(R<3){openDoors();toast("Room complete! The door is open.")}else if(allSealed()){sfx.fanfare();drawSigns();toast("You sealed the whole gallery! 🏛️")}else toast("Room complete! Some portraits in other rooms still need you.")},1800)},900)}
+  save()}
+$("desk").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||!b.dataset.k)return;unlockAudio();
+  if(b.dataset.a)act(b.dataset.k,b.dataset.a);else if(b.dataset.o!=null)choose(b.dataset.k,+b.dataset.o)});
+
+/* ---------- little animations ---------- */
+const anims=[];
+function anim(dur,fn,delay=0){anims.push({t0:performance.now()+delay,dur:REDUCED?1:dur,fn})}
+function sealAnim(i){const f=frameOf(i);if(!f)return;f.gp.visible=true;sfx.glass();
+  anim(1000,k=>f.gp.scale.y=Math.max(.001,1-Math.pow(1-k,3)));
+  anim(500,k=>{f.seal.visible=true;f.seal.scale.setScalar(Math.max(.001,k<.6?k/.6*1.35:1.35-(k-.6)/.4*.35))},900);
+  setTimeout(()=>{refreshFrame(f);sfx.seal();toast("Sealed under glass ✨")},1000);
+  const c0=new THREE.Color(f.T.pool),c1=new THREE.Color(0xffc95a),o0=f.pool.material.opacity;
+  anim(900,k=>{f.pool.material.color.lerpColors(c0,c1,k);f.pool.material.opacity=o0+(.42-o0)*k},1000);
+  drawSigns();
 }
-function miss(k,text){S.miss++; save(); sfx.no(); toast(text); const el=$("c-"+k); if(el){el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake")}}
-function act(k,a){
-  const p=list()[S.pos], c=st(p).c[k];
-  if(a==="yes"){
-    if(c.ok){c.done=true; sfx.ok(); toast("Verified.")}
-    else{startFix(k,"Not so fast: this placard is wrong. Which is right?"); drawDesk(); miss(k,"Look again: that placard is wrong."); return}
-  } else {
-    if(!c.ok){startFix(k,"Good eye! This one is wrong. Pick the correct "+LABEL[k].toLowerCase()+":"); sfx.ok();}
-    else{c.done=true; drawDesk(); miss(k,"That one was actually correct."); return after()}
-  }
-  drawDesk(); after();
-}
-function choose(k,j){
-  const p=list()[S.pos], f=pending[k], t=truth(p,k);
-  if(f.opts[j]===t){const c=st(p).c[k]; c.shown=t; c.done=true; c.ok=true; delete pending[k]; sfx.ok(); toast("Fixed and verified!"); drawDesk(); after();}
-  else{f.tried.push(j); drawDesk(); miss(k,"Not that one. Try again.");}
-}
-function after(){
-  const p=list()[S.pos], s=st(p);
-  if(!s.sealed&&KEYS.every(k=>s.c[k].done)){
-    s.sealed=true; save();
-    setTimeout(()=>{ drawHall(); drawDesk(); sfx.seal(); toast("Sealed under glass ✨");
-      if(roomDone(S.room)) setTimeout(()=>{ sfx.door(); toast(S.room<ROOMS.length-1?`Room complete! The door to ${ROOMS[S.room+1][0]} is open.`:"You sealed the whole gallery! 🏛️"); drawHall(); }, 1600);
-      $("desk").scrollIntoView({behavior:"smooth",block:"nearest"}); }, 200);
-  }
-  save();
-}
-$("desk").addEventListener("click",e=>{const b=e.target.closest("button"); if(!b||!b.dataset.k) return;
-  if(b.dataset.a) act(b.dataset.k,b.dataset.a); else if(b.dataset.o!=null) choose(b.dataset.k,+b.dataset.o);});
-let tt; function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2000);}
+let doorsOpen=false;
+function openDoors(instant){if(doorsOpen||!leaves.length)return;doorsOpen=true;if(!instant)sfx.door();drawSigns();
+  const a=Math.PI*.55;anim(instant?1:1600,k=>{const e=ease(k);leaves.forEach(p=>p.rotation.y=-p.userData.s*a*e);if(doorLight)doorLight.intensity=6*e});if(lock)lock.visible=false}
 
 /* ---------- floor plan ---------- */
-function openPlan(){
-  $("rooms").innerHTML=ROOMS.map((r,ri)=>{const ok=unlocked(ri);
-    return `<div class="rm ${ok?"":"locked"}"><h3>${ok?"":"🔒 "}${r[0]}</h3><small>${r[1]} · ${sealedCount(ri)}/${roomList(ri).length} sealed</small>`+
-      roomList(ri).map((p,k)=>`<button class="sq ${st(p).sealed?"s":""} ${ri===S.room&&k===S.pos?"here":""}" data-r="${ri}" data-k="${k}" ${ok?"":"disabled"} aria-label="${st(p).sealed?p.name:"Unsealed portrait"}">${st(p).sealed?p.num[0]:""}</button>`).join("")+`</div>`}).join("");
-  $("planOv").classList.add("show"); $("planClose").focus();
+let planRoom=R;
+function drawPlan(){
+  const r=planRoom,pos=(x,z)=>`left:${(x+HW)/(2*HW)*100}%;top:${(1+z/L)*100}%`,L0=roomList(r),sp=spotsFor(L0.length),here=r===R,tp=TPOS[r],tid=TREASURES[r].id;
+  $("tabs").innerHTML=ROOMS.map((rm,k)=>`<button class="tab ${k===r?"on":""}" data-r="${k}" ${unlocked(k)?"":"disabled"}>${unlocked(k)?"":"🔒 "}${k+1}. ${rm.name}<small>${sealedIn(k)}/${roomList(k).length} sealed${S.found[TREASURES[k].id]?" · ✦":""}</small></button>`).join("");
+  $("map").style.borderColor=THEMES[r].wall;
+  $("map").innerHTML=`<div class="door" style="background:${r===3?(allSealed()?"#e8c77e":"#b48a3c"):(roomDone(r)?"#e8c77e":"#4a2e17")}"></div>${r>0?`<div class="door" style="top:auto;bottom:-8px;background:#e8c77e"></div>`:""}<div class="bench" style="top:${(1-15.5/L)*100-1.5}%"></div>`+
+    NODES.map((n,k)=>`<button class="mn" style="${pos(n.x,n.z)}" data-n="${k}" aria-label="Stand here"></button>`).join("")+
+    L0.map((p,k)=>`<button class="ms ${st(p).sealed?"s":""}" style="${pos(sp[k].side*(HW-.4),sp[k].z)}" data-i="${p.i}" aria-label="${st(p).sealed?p.name:"Portrait "+(k+1)}">${k+1}</button>`).join("")+
+    `<button class="mt ${S.found[tid]?"f":""}" style="${pos(tp.x,tp.z)}" data-t="1" aria-label="${S.found[tid]?TREASURES[r].title:"Hidden treasure"}">${S.found[tid]?"✦":"?"}</button>`+
+    (here?`<div class="you" style="${pos(cam.x,cam.z)};transform:rotate(${-cam.yaw}rad)"><b></b><i></i></div>`:"");
+  $("planNote").textContent=here?"Gold squares are sealed under glass. Tap a square to walk to that portrait, or a circle to stand there.":`Tap a square or circle to walk into ${ROOMS[r].name}.`;
 }
+function openPlan(){planRoom=R;drawPlan();$("planOv").classList.add("show");$("planOv").scrollTop=0;$("planClose").focus({preventScroll:true})}
 function closePlan(){$("planOv").classList.remove("show")}
-$("planBtn").onclick=openPlan; $("planClose").onclick=closePlan;
-$("rooms").addEventListener("click",e=>{const b=e.target.closest(".sq"); if(!b||b.disabled) return; closePlan(); const r=+b.dataset.r,k=+b.dataset.k; if(r!==S.room){S.room=r;S.pos=k;pending={};save();sfx.door();drawHall(1);drawDesk();} else go(k, k>S.pos?1:-1);});
-$("resetAll").onclick=()=>{ S={room:0,pos:0,miss:0,ps:{},snd:S.snd}; save(); closePlan(); drawHall(); drawDesk(); toast("The placards have been shuffled again!"); };
+$("planBtn").onclick=openPlan;$("planClose").onclick=closePlan;
+$("tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b||b.disabled)return;planRoom=+b.dataset.r;drawPlan()});
+$("map").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;closePlan();
+  const go=()=>{if(b.dataset.i!=null)goPortrait(+b.dataset.i);else if(b.dataset.t)goTreasure();else goNode(+b.dataset.n,0)};
+  if(planRoom!==R)enterRoom(planRoom,"fwd",()=>setTimeout(go,150));else go()});
+$("resetAll").onclick=()=>{S={ps:{},miss:0,snd:S.snd,seen:true,room:0,found:{}};save();closePlan();R=0;buildRoom(0);Object.assign(cam,{x:0,y:EYE,z:NODES[0].z,yaw:0,pitch:0});tween=null;setMode({t:"room",node:0});toast("The placards have been shuffled again!")};
 
-load(); if(!unlocked(S.room)){S.room=0;S.pos=0} setSnd(); drawHall(); drawDesk();
+/* ---------- intro + help ---------- */
+let audioOn=false;function unlockAudio(){if(audioOn||!S.snd)return;audioOn=true;try{actx()}catch(e){}}
+$("startBtn").onclick=()=>{$("intro").classList.remove("show");S.seen=true;save();unlockAudio();showHint("Drag to look around. Tap a portrait to step up to it.")};
+$("helpBtn").onclick=()=>$("intro").classList.add("show");
+if(S.seen){$("intro").classList.remove("show");showHint("Drag to look around. Tap a portrait to step up to it.")}
+
+/* ---------- size + loop ---------- */
+function resize(){const w=view.clientWidth,h=view.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);const a=w/h;camera.aspect=a;
+  camera.fov=Math.min(80,Math.max(55,2*Math.atan(Math.tan(31*Math.PI/180)/a)*180/Math.PI));camera.updateProjectionMatrix();
+  const fv=focusView();if(fv){if(tween)Object.assign(tween.to,{x:fv.x,y:fv.y,z:fv.z});else Object.assign(cam,fv)}}
+function frame(now){
+  requestAnimationFrame(frame);
+  if(tween){const k=Math.min(1,(now-tween.t0)/tween.dur),e=ease(k),a=tween.from,b=tween.to;
+    cam.x=a.x+(b.x-a.x)*e;cam.y=a.y+(b.y-a.y)*e;cam.z=a.z+(b.z-a.z)*e;cam.yaw=a.yaw+(b.yaw-a.yaw)*e;cam.pitch=a.pitch+(b.pitch-a.pitch)*e;
+    cam.y+=Math.sin(k*Math.PI*4)*.012*(1-Math.abs(.5-k)*2)*(Math.hypot(b.x-a.x,b.z-a.z)>.5?1:0);
+    if(k>=1){const d=tween.done;tween=null;d&&d()}}
+  for(let j=anims.length-1;j>=0;j--){const A=anims[j],k=(now-A.t0)/A.dur;if(k<0)continue;A.fn(Math.min(1,k));if(k>=1)anims.splice(j,1)}
+  const pulse=.55+.3*Math.sin(now/400);spots.forEach((g,k)=>{g.visible=!(mode.t==="room"&&mode.node===k);g.children[0].material.opacity=pulse});
+  if(tre&&tre.spark.visible){tre.spark.position.y=tre.topY+.25+Math.sin(now/500)*.06;tre.spark.material.rotation=now/1500}
+  camera.position.set(cam.x,cam.y,cam.z);camera.rotation.set(cam.pitch,cam.yaw,0);
+  if(!document.hidden)renderer.render(scene,camera);
+}
+buildRoom(R);
+new ResizeObserver(resize).observe(view);resize();
+(document.fonts?Promise.all([document.fonts.load(`700 40px ${SERIF}`),document.fonts.load(`500 40px ${SERIF}`),document.fonts.load(`600 30px ${SANS}`),document.fonts.load(`700 30px ${SANS}`)]):Promise.resolve()).then(()=>drawSigns(),()=>{});
+setMode({t:"room",node:0});
+requestAnimationFrame(frame);
+window.__g={goPortrait,goDoor,goNode,goTreasure,enterRoom,stepBack,turnBy,S,P,st,act,choose,openPlan,cam,get mode(){return mode},get R(){return R},KEYS,truth,roomList};
 }
 </script>
 </body>

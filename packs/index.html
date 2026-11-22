@@ -313,10 +313,10 @@ const PACKS=[['all','Everything'],['inv','Inventions'],['exp','Explorers'],['big
 const PNAME=Object.fromEntries(PACKS);PNAME.chain='Cause & Effect';
 const PFILE={all:'art/pack-std.webp',inv:'art/pack-inv.webp',exp:'art/pack-exp.webp',big:'art/pack-big.webp',won:'art/pack-won.webp',chain:'art/pack-chain.jpg'};
 // each wrapper is from a different made-up company (Explorers is Eric's own design with its words baked in). logo: [x,y,width] on the 728x1168 wrapper;
-// brand: words the game writes on the empty banner; stk: [x,y,radius,turn,draw a sticker?,ink]; hole: die-cut hang hole in the art; paper: no foil shine; cello: plastic-wrap gloss, no foil
+// brand: words the game writes on the empty banner; stk: [x,y,radius,turn,draw a sticker?,ink]; hole: die-cut hang hole in the art; paper: no foil shine; strip: height of the tear-off strip (default .4 of 2.85); cello: plastic-wrap gloss, no foil
 const PK={
   all:{logo:[364,590,420],stk:[606,1004,84,-.18,1,'#1d1626'],hole:1},
-  inv:{logo:[366,594,370],brand:{t:['BRIGHT IDEA'],x:364,y:300,r:0,s:62,c:'#14245c'},stk:[551,921,76,0,0,'#2b1608'],hole:1},
+  inv:{hole:1,strip:.36},  // Eric's own design, foil: words and logo are in the art; shorter tear strip so the rip stays above the logo
   exp:{hole:1,cello:1},  // Eric's own design: words, logo and sticker are in the art
   big:{logo:[367,586,390],brand:{t:['HEADLINE','CARDS'],x:368,y:272,r:-.18,s:72,c:'#6e0b1a'},stk:[553,921,80,-.1,0,'#5a0a14'],hole:1},
   won:{logo:[364,586,320],brand:{t:['GALLERY GUILD'],x:364,y:998,r:0,s:44,c:'#2a0d3d'},stk:[598,898,82,.14,1,'#2a0d3d'],hole:1},
@@ -387,7 +387,7 @@ const Scene={ready:false,active:false,state:'idle',
   build(items,chain,bonus,onAll){const T=this.T,S3=this.scene;if(this.root){S3.remove(this.root);this.root.traverse(o=>{if(o.material){[].concat(o.material).forEach(m=>{m.map&&m.map!==this.backTex&&m.map.dispose();m.dispose()})}})}
     const root=this.root=new T.Group();S3.add(root);this.items=items;this.onAll=onAll;this.told=false;
     this.state='pack';this.p=0;this.dir=1;this.big=null;this.spin=0;this.tilt={x:0,y:0};this.anims=[];
-    const W=1.78,H=2.85,SH=.4,BH=H-SH,pt=this.tex(ART.pack[chain?'chain':G.theme]);
+    const W=1.78,H=2.85,SH=chain?.4:PK[G.theme].strip||.4,BH=H-SH,pt=this.tex(ART.pack[chain?'chain':G.theme]);
     const pk=chain?{}:PK[G.theme];this.foilMat=new T.MeshStandardMaterial({map:pt,color:pk.cello?0xcfcfcf:0xffffff,metalness:pk.paper||pk.cello?.05:.5,roughness:pk.paper?.85:pk.cello?.35:.3,alphaTest:.5,side:T.DoubleSide});
     const pack=this.pack=new T.Group();root.add(pack);
     const side=back=>{const gm=new T.PlaneGeometry(W,BH,20,24),ps=gm.attributes.position,uv=gm.attributes.uv;

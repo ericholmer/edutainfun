@@ -312,12 +312,12 @@ function img(src){return loading[src]||(loading[src]=new Promise(r=>{const im=ne
 const PACKS=[['all','Everything'],['inv','Inventions'],['exp','Explorers'],['big','Big Moments'],['won','Wonders & Art']];
 const PNAME=Object.fromEntries(PACKS);PNAME.chain='Cause & Effect';
 const PFILE={all:'art/pack-std.webp',inv:'art/pack-inv.webp',exp:'art/pack-exp.webp',big:'art/pack-big.webp',won:'art/pack-won.webp',chain:'art/pack-chain.jpg'};
-// each wrapper is from a different made-up company. logo: [x,y,width] on the 728x1168 wrapper;
-// brand: words the game writes on the empty banner; stk: [x,y,radius,turn,draw a sticker?,ink]; hole: die-cut hang hole in the art; paper: no foil shine
+// each wrapper is from a different made-up company (Explorers is Eric's own design with its words baked in). logo: [x,y,width] on the 728x1168 wrapper;
+// brand: words the game writes on the empty banner; stk: [x,y,radius,turn,draw a sticker?,ink]; hole: die-cut hang hole in the art; paper: no foil shine; cello: plastic-wrap gloss, no foil
 const PK={
   all:{logo:[364,590,420],stk:[606,1004,84,-.18,1,'#1d1626'],hole:1},
   inv:{logo:[366,594,370],brand:{t:['BRIGHT IDEA'],x:364,y:300,r:0,s:62,c:'#14245c'},stk:[551,921,76,0,0,'#2b1608'],hole:1},
-  exp:{logo:[350,600,350],brand:{t:['COMPASS ROSE'],x:356,y:316,r:-.24,s:44,c:'#123c40'},stk:[144,933,72,0,0,'#123c40'],paper:1},
+  exp:{hole:1,cello:1},  // Eric's own design: words, logo and sticker are in the art
   big:{logo:[367,586,390],brand:{t:['HEADLINE','CARDS'],x:368,y:272,r:-.18,s:72,c:'#6e0b1a'},stk:[553,921,80,-.1,0,'#5a0a14'],hole:1},
   won:{logo:[364,586,320],brand:{t:['GALLERY GUILD'],x:364,y:998,r:0,s:44,c:'#2a0d3d'},stk:[598,898,82,.14,1,'#2a0d3d'],hole:1},
   chain:{logo:[364,593,345],stk:[600,1000,92,-.18,1,'#1d1626']}};
@@ -346,7 +346,7 @@ function drawMask(c,fin){const k=cv(CWp,CHp),g=k.getContext('2d'),fr=FR[TH[c.th]
 function logoAt(g,cx,cy,w){const L=IMG['art/logo.webp'];if(L){const h=w*L.height/L.width;g.drawImage(L,cx-w/2,cy-h/2,w,h)}}
 function drawBack(){const k=cv(CWp,CHp),g=k.getContext('2d');rr(g,0,0,CWp,CHp,34);g.clip();const b=IMG['art/back.jpg'];if(b)g.drawImage(b,0,0,CWp,CHp);else{g.fillStyle='#27307a';g.fillRect(0,0,CWp,CHp)}logoAt(g,411,613,286);return k}
 function drawPack(kind){const k=cv(728,1168),g=k.getContext('2d'),im=IMG[PFILE[kind]],P=PK[kind];if(im)g.drawImage(im,0,0,728,1168);else{g.fillStyle='#16224f';g.fillRect(0,0,728,1168)}
-  logoAt(g,...P.logo);if(!P.stk)return k;
+  if(P.logo)logoAt(g,...P.logo);if(!P.stk)return k;
   const sp=v=>{try{g.letterSpacing=v}catch(e){}};g.textAlign='center';g.textBaseline='middle';
   if(P.brand){const B=P.brand;g.save();g.translate(B.x,B.y);g.rotate(B.r);g.fillStyle=B.c;sp('2px');g.font='800 '+B.s+'px '+TF;g.fillText(B.t[0],0,B.t[1]?-B.s*.18:0);
     if(B.t[1]){g.font='700 '+Math.round(B.s*.4)+'px '+TF;sp('4px');g.fillText(B.t[1],0,B.s*.5)}g.restore()}
@@ -388,7 +388,7 @@ const Scene={ready:false,active:false,state:'idle',
     const root=this.root=new T.Group();S3.add(root);this.items=items;this.onAll=onAll;this.told=false;
     this.state='pack';this.p=0;this.dir=1;this.big=null;this.spin=0;this.tilt={x:0,y:0};this.anims=[];
     const W=1.78,H=2.85,SH=.4,BH=H-SH,pt=this.tex(ART.pack[chain?'chain':G.theme]);
-    const paper=!chain&&PK[G.theme].paper;this.foilMat=new T.MeshStandardMaterial({map:pt,metalness:paper?.05:.5,roughness:paper?.85:.3,alphaTest:.5,side:T.DoubleSide});
+    const pk=chain?{}:PK[G.theme];this.foilMat=new T.MeshStandardMaterial({map:pt,color:pk.cello?0xcfcfcf:0xffffff,metalness:pk.paper||pk.cello?.05:.5,roughness:pk.paper?.85:pk.cello?.35:.3,alphaTest:.5,side:T.DoubleSide});
     const pack=this.pack=new T.Group();root.add(pack);
     const side=back=>{const gm=new T.PlaneGeometry(W,BH,20,24),ps=gm.attributes.position,uv=gm.attributes.uv;
       for(let i=0;i<ps.count;i++){const u=uv.getX(i),v=uv.getY(i);ps.setZ(i,.11*(1-(2*u-1)**6)*(1-(2*v-1)**8)+.004);uv.setY(i,v*BH/H)}

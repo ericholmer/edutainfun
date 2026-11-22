@@ -181,7 +181,7 @@
     footer{padding:4px 10px calc(4px + env(safe-area-inset-bottom));gap:6px}
     .btn{padding:6px 12px;font-size:14px}
     .chip{padding:3px 8px;font-size:13px}
-    .banner{min-height:34px;padding:3px 10px}
+    .banner{min-height:34px;padding:3px 92px 3px 72px}   /* clear the floating logo and sound buttons */
     .bname{font-size:17px}.bsmall{font-size:10px}
     .try{width:10px;height:10px}.lt{width:10px;height:10px}
   }
@@ -380,17 +380,18 @@ function layoutFrame() {
   const stage = $('stage'), W0 = stage.clientWidth, H0 = stage.clientHeight;
   if (!W0 || !H0) return;
   const F = W0 / H0 >= 1.05 ? FRAMES.wide : FRAMES.tall, wide = F === FRAMES.wide;
-  const A = R ? R.w / R.h : 2, bannerH = $('banner').offsetHeight || 50;
   const [sx0, sy0, sx1, sy1] = F.screen;
   const fixedSum = segs => segs.reduce((t, [p, q, st]) => t + (st ? 0 : q - p), 0);
   const fixW = fixedSum(F.cols), fixH = Math.max(...Object.values(F.rows).map(fixedSum));
   const chromeW = fixW - F.cols.reduce((t, [p, q, st]) => t + (st ? 0 : Math.max(0, Math.min(q, sx1) - Math.max(p, sx0))), 0);
   const chromeH = sy0 + (F.h - sy1);
-  // plastic scale: chunky enough to read as a gadget, never so big it eats the map
-  const s = Math.max(.2, Math.min(.75, Math.min(W0, H0) / (wide ? 1400 : 1500)));
-  const keep = wide ? sy0 * s : (F.h - sy1) * s;          // the clock edge stays fully visible
-  const availW = W0 - 2 * BLEED, availH = H0 - keep - BLEED;
-  let sw = Math.min(availW, (availH - bannerH) * A), sh = Math.min(availH, sw / A + bannerH);
+  // The map gets the room; the gadget wraps around it and runs off the window.
+  // Only the clock edge stays in view (top band on the wide frame, bottom band on the tall one).
+  const s = Math.max(.16, Math.min(.45, Math.min(W0, H0) / (wide ? 2200 : 1700)));
+  const [, ry0, , ry1] = F.readout;
+  const vis = wide ? Math.max(0, ry0 - 24) : Math.min(F.h, ry1 + 24);   // frame line that sits on the window edge
+  const keep = wide ? (sy0 - vis) * s : (vis - sy1) * s;
+  let sw = W0 - 2 * BLEED, sh = H0 - keep - BLEED;
   const W = Math.max(fixW * s, sw + chromeW * s), H = Math.max(fixH * s, sh + chromeH * s);
   sw = W - chromeW * s; sh = H - chromeH * s;
   const place = (segs, total) => {
@@ -401,9 +402,8 @@ function layoutFrame() {
   for (const k in F.rows) rsets[k] = place(F.rows[k], H);
   const along = (segs, v) => { const g = segs.find(g => v >= g.p && v <= g.q) || segs[segs.length - 1]; return g.d + (v - g.p) * g.len / (g.q - g.p); };
   const rs0 = rsets[Object.keys(rsets)[0]];
-  // centre the screen; if the whole gadget fits, centre the gadget instead
-  const L = Math.round(W <= W0 ? (W0 - W) / 2 : W0 / 2 - (along(cs, sx0) + sw / 2));
-  const T = Math.round(H <= H0 ? (H0 - H) / 2 : wide ? 0 : H0 - H);
+  const L = Math.round(W0 / 2 - (along(cs, sx0) + sw / 2));               // screen centred left to right
+  const T = Math.round(wide ? -along(rs0, vis) : H0 - along(rs0, vis));   // clock band on the window edge
   const fr = $('frame'); fr.innerHTML = '';
   Object.assign(fr.style, { left: L + 'px', top: T + 'px', width: W + 'px', height: H + 'px' });
   cs.forEach(c => rsets[c.key].forEach(r => {

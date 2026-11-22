@@ -60,7 +60,12 @@
   .lt.bad{background:var(--bad);border-color:var(--bad)}
 
   .mapwrap{flex:1;position:relative;min-height:0;overflow:hidden}
-  #map{width:100%;height:100%;display:block;overflow:visible;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  #map{width:100%;height:100%;display:block;overflow:visible;touch-action:none;user-select:none;-webkit-user-select:none}
+  .zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:6px;z-index:2}
+  .zoom button{width:40px;height:40px;padding:0;border:1px solid var(--glow);background:#031009dd;color:var(--glow);font:700 26px/1 "Pixie",sans-serif;border-radius:6px;text-shadow:0 0 6px #3dff8a88;cursor:pointer}
+  .zoom button:active{background:#0d3a22}
+  .zoom button:disabled{opacity:.3;cursor:default}
+  .playing #map{cursor:crosshair}
   .landg{filter:drop-shadow(0 0 1.5px #3dff8a99)}
   .grid{fill:none;stroke:#174a30;stroke-width:.7}
   .land{stroke:var(--glow);stroke-width:.6;stroke-linejoin:round}
@@ -181,7 +186,7 @@
     footer{padding:4px 10px calc(4px + env(safe-area-inset-bottom));gap:6px}
     .btn{padding:6px 12px;font-size:14px}
     .chip{padding:3px 8px;font-size:13px}
-    .banner{min-height:34px;padding:3px 10px}
+    .banner{min-height:34px;padding:3px 92px 3px 72px}   /* clear the floating logo and sound buttons */
     .bname{font-size:17px}.bsmall{font-size:10px}
     .try{width:10px;height:10px}.lt{width:10px;height:10px}
   }
@@ -289,6 +294,7 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
         <div class="nosig" id="nosig"></div>
         <div class="count" id="count"></div>
         <div class="toast" id="toast"></div>
+        <div class="zoom"><button id="zIn" title="Zoom in" aria-label="Zoom in">+</button><button id="zOut" title="Zoom out" aria-label="Zoom out">&minus;</button></div>
       </div>
       <div class="sweep" aria-hidden="true"></div>
       <div class="glass" aria-hidden="true"></div>
@@ -380,17 +386,18 @@ function layoutFrame() {
   const stage = $('stage'), W0 = stage.clientWidth, H0 = stage.clientHeight;
   if (!W0 || !H0) return;
   const F = W0 / H0 >= 1.05 ? FRAMES.wide : FRAMES.tall, wide = F === FRAMES.wide;
-  const A = R ? R.w / R.h : 2, bannerH = $('banner').offsetHeight || 50;
   const [sx0, sy0, sx1, sy1] = F.screen;
   const fixedSum = segs => segs.reduce((t, [p, q, st]) => t + (st ? 0 : q - p), 0);
   const fixW = fixedSum(F.cols), fixH = Math.max(...Object.values(F.rows).map(fixedSum));
   const chromeW = fixW - F.cols.reduce((t, [p, q, st]) => t + (st ? 0 : Math.max(0, Math.min(q, sx1) - Math.max(p, sx0))), 0);
   const chromeH = sy0 + (F.h - sy1);
-  // plastic scale: chunky enough to read as a gadget, never so big it eats the map
-  const s = Math.max(.2, Math.min(.75, Math.min(W0, H0) / (wide ? 1400 : 1500)));
-  const keep = wide ? sy0 * s : (F.h - sy1) * s;          // the clock edge stays fully visible
-  const availW = W0 - 2 * BLEED, availH = H0 - keep - BLEED;
-  let sw = Math.min(availW, (availH - bannerH) * A), sh = Math.min(availH, sw / A + bannerH);
+  // The map gets the room; the gadget wraps around it and runs off the window.
+  // Only the clock edge stays in view (top band on the wide frame, bottom band on the tall one).
+  const s = Math.max(.16, Math.min(.45, Math.min(W0, H0) / (wide ? 2200 : 1700)));
+  const [, ry0, , ry1] = F.readout;
+  const vis = wide ? Math.max(0, ry0 - 24) : Math.min(F.h, ry1 + 24);   // frame line that sits on the window edge
+  const keep = wide ? (sy0 - vis) * s : (vis - sy1) * s;
+  let sw = W0 - 2 * BLEED, sh = H0 - keep - BLEED;
   const W = Math.max(fixW * s, sw + chromeW * s), H = Math.max(fixH * s, sh + chromeH * s);
   sw = W - chromeW * s; sh = H - chromeH * s;
   const place = (segs, total) => {
@@ -401,9 +408,8 @@ function layoutFrame() {
   for (const k in F.rows) rsets[k] = place(F.rows[k], H);
   const along = (segs, v) => { const g = segs.find(g => v >= g.p && v <= g.q) || segs[segs.length - 1]; return g.d + (v - g.p) * g.len / (g.q - g.p); };
   const rs0 = rsets[Object.keys(rsets)[0]];
-  // centre the screen; if the whole gadget fits, centre the gadget instead
-  const L = Math.round(W <= W0 ? (W0 - W) / 2 : W0 / 2 - (along(cs, sx0) + sw / 2));
-  const T = Math.round(H <= H0 ? (H0 - H) / 2 : wide ? 0 : H0 - H);
+  const L = Math.round(W0 / 2 - (along(cs, sx0) + sw / 2));               // screen centred left to right
+  const T = Math.round(wide ? -along(rs0, vis) : H0 - along(rs0, vis));   // clock band on the window edge
   const fr = $('frame'); fr.innerHTML = '';
   Object.assign(fr.style, { left: L + 'px', top: T + 'px', width: W + 'px', height: H + 'px' });
   cs.forEach(c => rsets[c.key].forEach(r => {
@@ -478,7 +484,6 @@ const NS = 'http://www.w3.org/2000/svg';
 function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
 function drawMap() {
   R = REGIONS.find(r => r.key === region);
-  svg.setAttribute('viewBox', `0 0 ${R.w} ${R.h}`);
   svg.innerHTML = '<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#0a2618"/><line x1="0" y1="0" x2="0" y2="6" stroke="#2c6b48" stroke-width="2"/></pattern></defs>';
   if (R.grid) el('path', { d: R.grid, class: 'grid' }, svg);
   layers.land = el('g', { class: 'landg' }, svg);
@@ -489,13 +494,78 @@ function drawMap() {
   });
   layers.marks = el('g', {}, svg);
   layers.labels = el('g', {}, svg);
-  layoutFrame(); measure();
+  layoutFrame(); measure(); resetView();
 }
 function measure() {
   const r = svg.getBoundingClientRect();
-  scale = Math.min(r.width / R.w, r.height / R.h) || 1;
+  baseScale = Math.min(r.width / R.w, r.height / R.h) || 1;
+  scale = baseScale * view.z;
 }
-addEventListener('resize', () => { updateWide(); layoutFrame(); if (R) measure(); });
+
+/* ---------- zoom and pan (pinch, drag, scroll wheel, + and - buttons) ---------- */
+const ZMAX = 8, view = { z: 1, cx: 0, cy: 0 };
+let baseScale = 1;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function applyView() {
+  const w = R.w / view.z, h = R.h / view.z;
+  view.cx = clamp(view.cx, w / 2, R.w - w / 2); view.cy = clamp(view.cy, h / 2, R.h - h / 2);
+  svg.setAttribute('viewBox', `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
+  scale = baseScale * view.z;
+  $('zOut').disabled = view.z <= 1.001; $('zIn').disabled = view.z >= ZMAX - .001;
+  rescaleMarks();
+}
+function resetView() { view.z = 1; view.cx = R.w / 2; view.cy = R.h / 2; applyView(); }
+function zoomAt(f, clientX, clientY) {
+  const [mx, my] = svgXY(clientX, clientY), z = clamp(view.z * f, 1, ZMAX), k = view.z / z;
+  view.cx = mx - (mx - view.cx) * k; view.cy = my - (my - view.cy) * k; view.z = z; applyView();
+}
+function panBy(dx, dy) { view.cx -= dx / scale; view.cy -= dy / scale; applyView(); }
+function zoomCenter(f) { const r = $('wrap').getBoundingClientRect(); zoomAt(f, r.left + r.width / 2, r.top + r.height / 2); }
+function onScreen(x, y, m = 30) {
+  const pt = new DOMPoint(x, y).matrixTransform(svg.getScreenCTM()), r = $('wrap').getBoundingClientRect();
+  return pt.x > r.left + m && pt.x < r.right - m && pt.y > r.top + m && pt.y < r.bottom - m;
+}
+function showSpot(x, y) { if (view.z > 1 && !onScreen(x, y)) { view.cx = x; view.cy = y; applyView(); } }
+// markers keep the same size on screen at any zoom
+function rescaleMarks() {
+  if (!layers.marks) return;
+  svg.querySelectorAll('g.pin').forEach(g => g.setAttribute('transform', `translate(${g.dataset.x},${g.dataset.y}) scale(${px(1)})`));
+  svg.querySelectorAll('circle.ring').forEach(c => { c.setAttribute('r', px(16)); c.setAttribute('stroke-width', px(3)); });
+  svg.querySelectorAll('text.lbl').forEach(t => { const fs = Math.max(px(12), 9 / view.z); t.setAttribute('font-size', fs); t.setAttribute('stroke-width', fs * .28); });
+}
+$('zIn').onclick = () => zoomCenter(1.6);
+$('zOut').onclick = () => zoomCenter(1 / 1.6);
+svg.addEventListener('wheel', e => {
+  if (phase === 'menu') return;
+  e.preventDefault(); zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0018)), e.clientX, e.clientY);
+}, { passive: false });
+const pts = new Map(); let gest = null;
+const mid = () => { const a = [...pts.values()]; return [(a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y)]; };
+svg.addEventListener('pointerdown', e => {
+  if (phase === 'menu') return;
+  try { svg.setPointerCapture(e.pointerId); } catch (_) {}
+  pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pts.size === 1) gest = { mode: 'tap', x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, target: e.target };
+  else if (pts.size === 2) { const [x, y, d] = mid(); gest = { mode: 'pinch', x, y, d }; }
+});
+svg.addEventListener('pointermove', e => {
+  const p = pts.get(e.pointerId); if (!p || !gest) return;
+  p.x = e.clientX; p.y = e.clientY;
+  if (gest.mode === 'pinch' && pts.size === 2) {
+    const [x, y, d] = mid();
+    if (gest.d > 0 && d > 0) zoomAt(d / gest.d, x, y);
+    panBy(x - gest.x, y - gest.y); Object.assign(gest, { x, y, d });
+  } else if (gest.mode === 'tap' && Math.hypot(e.clientX - gest.x, e.clientY - gest.y) > 10) gest.mode = 'pan';
+  if (gest.mode === 'pan' && pts.size === 1) { panBy(e.clientX - gest.lx, e.clientY - gest.ly); gest.lx = e.clientX; gest.ly = e.clientY; }
+});
+const lift = e => {
+  if (!pts.delete(e.pointerId) || !gest) return;
+  if (e.type === 'pointerup' && gest.mode === 'tap' && pts.size === 0) tapAt(gest.x, gest.y, gest.target);
+  if (pts.size === 1) { const [p] = pts.values(); gest = { mode: 'pan', lx: p.x, ly: p.y }; }   // one finger left after a pinch: keep dragging, never a tap
+  if (!pts.size) gest = null;
+};
+svg.addEventListener('pointerup', lift); svg.addEventListener('pointercancel', lift);
+addEventListener('resize', () => { updateWide(); layoutFrame(); if (R) { measure(); applyView(); } });
 function clearMarks() { layers.marks.innerHTML = ''; layers.labels.innerHTML = ''; R.shapes.forEach(s => s.el.classList.remove('hi', 'found', 'missed', 'show')); }
 function px(n) { return n / scale; } // screen px -> map units
 
@@ -507,7 +577,7 @@ function label(s, cls) {
 function pingAt(x, y) { el('circle', { cx: x, cy: y, r: px(30), class: 'ping', 'stroke-width': px(2.5) }, layers.marks); }
 function ringAt(x, y) { el('circle', { cx: x, cy: y, r: px(16), class: 'ring', 'stroke-width': px(3) }, layers.marks); }
 function beacon(x, y, lit) {
-  const k = px(1), g = el('g', { class: 'beacon', transform: `translate(${x},${y}) scale(${k})` }, layers.marks);
+  const k = px(1), g = el('g', { class: 'beacon pin', 'data-x': x, 'data-y': y, transform: `translate(${x},${y}) scale(${k})` }, layers.marks);
   if (lit) {
     if (lit === true) {
       el('path', { d: 'M0,-10 L-14,-38 L14,-38 Z', fill: '#ff3b2a', opacity: .45, class: 'beam' }, g);
@@ -518,8 +588,11 @@ function beacon(x, y, lit) {
   el('path', { d: 'M-6,-2 v-7 a6,6 0 0 1 12,0 v7 z', fill: lit ? '#ff3b2a' : '#777', stroke: '#000', 'stroke-width': 1.2 }, g);
   if (lit) el('circle', { cx: -2, cy: -8, r: 2, fill: '#fff' }, g);
 }
-function xAt(x, y) { const r = px(7); el('path', { d: `M${x - r},${y - r}L${x + r},${y + r}M${x + r},${y - r}L${x - r},${y + r}`, class: 'xmark', 'stroke-width': px(4) }, layers.marks);
-  el('path', { d: `M${x - r},${y - r}L${x + r},${y + r}M${x + r},${y - r}L${x - r},${y + r}`, stroke: '#e2533f', 'stroke-linecap': 'round', 'stroke-width': px(2.2) }, layers.marks); }
+function xAt(x, y) {
+  const g = el('g', { class: 'pin', 'data-x': x, 'data-y': y, transform: `translate(${x},${y}) scale(${px(1)})` }, layers.marks), d = 'M-7,-7L7,7M7,-7L-7,7';
+  el('path', { d, class: 'xmark', 'stroke-width': 4 }, g);
+  el('path', { d, stroke: '#e2533f', 'stroke-linecap': 'round', 'stroke-width': 2.2 }, g);
+}
 
 /* ---------- choosing places ---------- */
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -528,7 +601,7 @@ function pickList() {
   const cands = R.shapes.map((s, i) => s.n ? i : -1).filter(i => i >= 0);
   // only places big enough to tap on this screen
   let min = 14, pool;
-  do { pool = cands.filter(i => Math.sqrt(R.shapes[i].a) * scale >= min); min -= 2; } while (pool.length < LIST && min > 4);
+  do { pool = cands.filter(i => Math.sqrt(R.shapes[i].a) * baseScale >= min); min -= 2; } while (pool.length < LIST && min > 4);
   return shuffle(pool).slice(0, Math.min(LIST, pool.length));
 }
 
@@ -574,7 +647,9 @@ $('callGo').onclick = () => { show('call', false); startStudy(); };
 
 function startStudy() {
   phase = 'study';
-  if (innerHeight > innerWidth && innerWidth < 700 && R.w / R.h > 1.4) setTimeout(() => toast('Tip: turn your phone sideways for a bigger map!', 3200), 400);
+  const touch = matchMedia('(pointer: coarse)').matches;
+  if (innerHeight > innerWidth && innerWidth < 700) setTimeout(() => toast('Tip: pinch to zoom in on small places, or turn your phone sideways!', 3600), 400);
+  else if (!store.get('zoomTip', false)) { store.set('zoomTip', true); setTimeout(() => toast(touch ? 'Tip: pinch to zoom in on small places!' : 'Tip: scroll or use + and \u2212 to zoom in!', 3200), 400); }
   ['chips', 'prevBtn', 'nextBtn', 'readyBtn'].forEach(id => $(id).classList.remove('hide')); $('giveBtn').classList.add('hide');
   const ch = $('chips'); ch.innerHTML = '';
   list.forEach((i, k) => { const c = document.createElement('button'); c.className = 'chip'; c.textContent = R.shapes[i].n; c.onclick = () => { stopTour(); studyShow(k, true); }; ch.appendChild(c); });
@@ -586,7 +661,7 @@ function studyShow(k, speak) {
   studyIdx = (k + list.length) % list.length;
   clearMarks();
   const s = R.shapes[list[studyIdx]];
-  s.el.classList.add('hi'); ringAt(s.p[0], s.p[1]); label(s);
+  showSpot(s.p[0], s.p[1]); s.el.classList.add('hi'); ringAt(s.p[0], s.p[1]); label(s);
   setBanner(`The Chief's list · ${studyIdx + 1} of ${list.length}`, s.n, true);
   [...$('chips').children].forEach((c, j) => c.classList.toggle('on', j === studyIdx));
   [...$('caseList').children].forEach((c, j) => c.classList.toggle('on', j === studyIdx));
@@ -598,7 +673,7 @@ $('nextBtn').onclick = () => { stopTour(); studyShow(studyIdx + 1, true); };
 $('readyBtn').onclick = () => { stopTour(); startChase(); };
 
 function startChase() {
-  phase = 'countdown'; clearMarks();
+  phase = 'countdown'; clearMarks(); resetView();
   ['chips', 'prevBtn', 'nextBtn', 'readyBtn'].forEach(id => $(id).classList.add('hide'));
   $('giveBtn').classList.remove('hide');
   $('lights').innerHTML = calls.map(() => '<div class="lt"></div>').join('');
@@ -633,7 +708,7 @@ function stopClock() { cancelAnimationFrame(raf); }
 document.addEventListener('visibilitychange', () => { if (document.hidden) paused = true; else { paused = false; tLast = performance.now(); } });
 
 /* tapping */
-function svgPoint(e) { const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse()); return [pt.x, pt.y]; }
+function svgXY(cx, cy) { const pt = new DOMPoint(cx, cy).matrixTransform(svg.getScreenCTM().inverse()); return [pt.x, pt.y]; }
 function inside(s, x, y) { try { return s.el.isPointInFill(new DOMPoint(x, y)); } catch (e) { return false; } }
 function near(s, x, y, rpx) {
   const r = px(rpx);
@@ -641,12 +716,13 @@ function near(s, x, y, rpx) {
   return Math.hypot(x - s.p[0], y - s.p[1]) <= r;
 }
 let lock = false;
-svg.addEventListener('pointerdown', e => {
+function tapAt(cx, cy, target) {
+  if (phase === 'review') return reviewTap(target);
   if (phase !== 'chase' || lock) return;
-  const [x, y] = svgPoint(e);
+  const [x, y] = svgXY(cx, cy);
   pingAt(x, y);
   const s = R.shapes[calls[step]];
-  const hitI = e.target.dataset && e.target.dataset.i !== undefined ? +e.target.dataset.i : -1;
+  const hitI = target && target.dataset && target.dataset.i !== undefined ? +target.dataset.i : -1;
   const small = Math.sqrt(s.a) * scale < 30;
   let ok = hitI === calls[step] || inside(s, x, y);
   if (!ok) {
@@ -667,12 +743,12 @@ svg.addEventListener('pointerdown', e => {
     else {
       // second miss: leave the light where it landed, show the right spot, move on
       beacon(x, y, false); results.push({ i: calls[step], ok: false }); markLight(false);
-      lock = true; paused = true; s.el.classList.add('show'); label(s); ringAt(s.p[0], s.p[1]);
+      lock = true; paused = true; showSpot(s.p[0], s.p[1]); s.el.classList.add('show'); label(s); ringAt(s.p[0], s.p[1]);
       setBanner('Here it is:', s.n);
       setTimeout(() => { s.el.classList.remove('show'); s.el.classList.add('missed'); layers.labels.innerHTML = ''; lock = false; paused = false; tLast = performance.now(); step++; nextCall(); }, 1600);
     }
   }
-});
+}
 function markLight(ok) { const l = $('lights').children[results.length - 1]; if (l) l.classList.add(ok ? 'good' : 'bad');
   const r = results[results.length - 1], li = r && $('caseList').children[list.indexOf(r.i)]; if (li) li.classList.add(ok ? 'ok' : 'no'); }
 $('giveBtn').onclick = () => { if (phase === 'chase' || phase === 'countdown') finish(true); };
@@ -717,18 +793,18 @@ $('review').onclick = () => {
   $('readyBtn').onclick = () => { $('readyBtn').textContent = 'I\'m ready! Start the chase'; $('readyBtn').onclick = () => { stopTour(); startChase(); }; $('readyBtn').classList.add('hide'); show('end', true); };
 };
 // in review, tapping any listed place names it
-svg.addEventListener('click', e => {
-  if (phase !== 'review') return; const i = e.target.dataset && e.target.dataset.i; if (i === undefined) return;
+function reviewTap(target) {
+  const i = target && target.dataset && target.dataset.i; if (i === undefined) return;
   const s = R.shapes[+i]; setBanner('That place is', s.n, true); say(s.n);
   if (!calls.includes(+i)) { layers.labels.querySelectorAll('.extra').forEach(n => n.remove()); label(s, 'extra'); }
-});
+}
 
 // the tracker's yellow button says the name again; the blue one is the sound switch
 $('btnY').onclick = () => { actx(); const i = phase === 'study' ? list[studyIdx] : phase === 'chase' ? calls[step] : -1; if (i >= 0 && R.shapes[i]) { const v = voice; voice = true; say(R.shapes[i].n); voice = v; } else sfx.beep(660); };
 $('btnB').onclick = () => $('soundBtn').click();
 // draw a map behind the start window
 updateWide(); drawMap();
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layoutFrame(); measure(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layoutFrame(); measure(); applyView(); });
 </script>
 </body>
 </html>

@@ -39,6 +39,11 @@ button{font:inherit;color:var(--ink);cursor:pointer}
 .view{display:none;flex-direction:column;gap:14px;padding-top:16px}
 .view.on{display:flex}
 .lead{color:var(--soft)}
+.harbor{position:relative;border:2px solid var(--ink);border-radius:6px;overflow:hidden;line-height:0;background:#cfe3df}
+#harbor{display:block;width:100%;height:300px;touch-action:none;cursor:pointer}
+#harbor:focus-visible{outline-offset:-3px}
+.fishhere{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);line-height:1.3;white-space:nowrap;max-width:94%;overflow:hidden;text-overflow:ellipsis}
+.fishhere:active{transform:translate(-50%,2px)}
 .mapwrap{position:relative;border:2px solid var(--ink);border-radius:6px;overflow:hidden;line-height:0;background:var(--buff)}
 .mapwrap img{display:block;width:100%;height:auto}
 .pin{position:absolute;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:var(--magenta);color:#fff;border:3px solid #fff;font-weight:700;font-size:19px;line-height:1;padding:0;box-shadow:0 3px 0 rgba(0,0,0,.45)}
@@ -179,17 +184,14 @@ bar.querySelectorAll(".eb-go").forEach(a=>{
 <main>
 <section class="view on" id="v-pick" aria-labelledby="pickH">
   <div>
-    <h2 id="pickH">Where do you want to fish?</h2>
+    <h2 id="pickH">Drive to a fishing spot</h2>
     <p class="lead">Different fish live in different water. Try each spot and see who bites.</p>
   </div>
-  <div class="mapwrap">
-    <img src="art/map.webp" alt="A painted pretend map of the Bay with four fishing spots" draggable="false">
-    <button class="pin" type="button" data-spot="river" style="left:17.3%;top:20%" aria-label="Spot 1. Up the river in spring">1</button>
-    <button class="pin" type="button" data-spot="grass" style="left:23%;top:64%" aria-label="Spot 2. Bay grass by the shore">2</button>
-    <button class="pin" type="button" data-spot="channel" style="left:50%;top:63.4%" aria-label="Spot 3. The deep channel">3</button>
-    <button class="pin" type="button" data-spot="creek" style="left:67%;top:34.7%" aria-label="Spot 4. Quiet creek at night">4</button>
+  <div class="harbor">
+    <canvas id="harbor" tabindex="0" aria-label="The map of the Bay. Hold or tap the water to drive the boat. Arrow keys work too. Drive to a numbered spot to fish there."></canvas>
+    <button class="btn main fishhere" id="fishHere" type="button" hidden>Fish here</button>
   </div>
-  <p class="lead" style="font-size:15px;margin-top:-8px">This is a pretend map. Tap a number to fish there.</p>
+  <p class="lead" style="font-size:15px;margin-top:-6px">Hold or tap the water to drive. Arrow keys work too. Drive to a number to fish there, or tap a spot below.</p>
   <div class="spots" id="spots"></div>
   <div class="row" id="doneRow" hidden>
     <button class="btn" id="doneBtn" type="button">I'm done fishing</button>
@@ -353,6 +355,7 @@ function show(v){
   for(var i=0;i<all.length;i++) all[i].classList.toggle("on", all[i].id === "v-"+v);
   if(v !== "log") lastView = v;
   if(v !== "water") stopSea();
+  if(v !== "pick" && typeof stopHarbor === "function") stopHarbor();
   $("count").textContent = "Fish caught: " + trip.n;
   var h = document.querySelector("#v-"+v+" h2");
   if(h){ h.setAttribute("tabindex","-1"); h.focus({preventScroll:true}); }
@@ -366,11 +369,12 @@ function renderPick(){
     var seen = (S.seen[sp.id] || []).map(function(f){ return FISH[f].name; });
     b.innerHTML = '<span class="num">'+sp.n+'</span><b>'+sp.name+'</b><span>'+sp.desc+'</span><em>'+
       (seen.length ? "Seen here: " + seen.join(", ") : "Nobody caught here yet") + '</em>';
-    b.addEventListener("click", function(){ goSpot(sp.id); });
+    b.addEventListener("click", function(){ driveTo(sp.id); var hv = $("harbor"); if(hv && hv.scrollIntoView) hv.scrollIntoView({block:"nearest", behavior:"smooth"}); });
     box.appendChild(b);
   });
   $("doneRow").hidden = trip.n < 5;
   show("pick");
+  HB.near = null; $("fishHere").hidden = true; startHarbor();
 }
 /* ---------- the water: find the bubbles, wait for the strike, hold in the green ---------- */
 var W = {run:false, fish:[], lure:{x:0,y:0}, target:{x:0,y:0}, state:"fishing", bite:null, F:null, win:0, pause:0, idle:0, quiet:0, hinted:false,
@@ -753,6 +757,262 @@ function renderDone(){
   show("done");
 }
 
+/* ---------- the harbor map: drive the boat to a fishing spot ---------- */
+/* Map art is 1296 x 712. WATER_GRID is a 324 x 178 picture of where the boat may go (white = water, 4 map pixels per cell). */
+var HB = {run:false, last:0, t:0, cw:360, ch:300, k:0.4, camX:0, camY:0, ready:false,
+          boat:{x:520, y:300, a:-0.5, v:0}, dest:null, path:[], keys:{}, held:false, pathAt:0, wake:[], near:null, bumpAt:0, wakeAt:0};
+var HB_MAP = {w:1296, h:712, gs:4, gw:324, gh:178};
+var HB_SPOTS = {river:{x:278, y:182}, grass:{x:342, y:434}, channel:{x:740, y:490}, creek:{x:770, y:410}};
+var HB_MAXV = 120, HB_BOAT_LEN = 64;
+var hcv = $("harbor"), hcx = hcv && hcv.getContext ? hcv.getContext("2d") : null;
+var HB_IMG = {}, HB_GRID = null, HB_CLEAR = null;
+["map-drive", "boat-top"].forEach(function(k){
+  if(typeof Image === "undefined") return;
+  var i = new Image(); i.onload = function(){ i.ok = true; }; i.src = "art/" + k + ".webp"; HB_IMG[k] = i;
+});
+(function(){
+  if(typeof Image === "undefined" || typeof document === "undefined") return;
+  var g = new Image();
+  g.onload = function(){
+    try{
+      var c = document.createElement("canvas"); c.width = HB_MAP.gw; c.height = HB_MAP.gh;
+      var x = c.getContext("2d"); x.drawImage(g, 0, 0);
+      var d = x.getImageData(0, 0, HB_MAP.gw, HB_MAP.gh).data, a = new Uint8Array(HB_MAP.gw*HB_MAP.gh);
+      for(var i=0;i<a.length;i++) a[i] = d[i*4] > 127 ? 1 : 0;
+      HB_GRID = a;
+      var W_ = HB_MAP.gw, H_ = HB_MAP.gh, cl = new Uint8Array(a.length).fill(255), q = [];
+      for(var j=0;j<a.length;j++) if(!a[j]){ cl[j] = 0; q.push(j); }
+      for(var qi=0; qi<q.length; qi++){
+        var c = q[qi], x0 = c % W_, y0 = (c / W_) | 0;
+        for(var dy=-1; dy<=1; dy++) for(var dx=-1; dx<=1; dx++){
+          var nx = x0 + dx, ny = y0 + dy; if(nx < 0 || ny < 0 || nx >= W_ || ny >= H_) continue;
+          var ni = ny*W_ + nx; if(cl[ni] > cl[c] + 1){ cl[ni] = cl[c] + 1; q.push(ni); }
+        }
+      }
+      HB_CLEAR = cl; HB.ready = true;
+    }catch(e){}
+  };
+  g.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUQAAACyAQAAAAASLYvbAAAEVElEQVR42uVYO67cNhQ9IoWnKZ6fVL4igFSkcJkyhZERkA14CS5TZgEBhjtwlpBluIuyg1enogEXLuVnFxqDI6bQSMPPvRQDl2alIc4c8h7eHwl818NO/s91GB8mgKZyJyRHKIBnKGei3L6+REiremfisH2NMW+rnR/HbZ8qRtaaMmiO9wk4yJt1XwlkM9x+P25fHwn7f3G+T+w2CwCmdLa5fYh49SL4I71NiKtRroH0NgVQCpx0dEJ/EQbVjjfUnJqAACZn1WadJ5G+JbR7LEjjirOOJwp5cX5268dA+miFkwk9ifRknDGsyD48qshDp8DnDDjbwUgQIbsr5906zXMewiDaWx27yL4MDnNiOUUgPJ9wrhlnC42R3+ddMtO4yEJ5fpxY3WoA7f7qagn0N/ucR2sNIG2Kcwuf2Qkia1k9PzcogN9zjqr426pVzfmUWB1ora5W3zwmkbU1x82LF8245V1rjhRSRIFjX+b656z9LL3jyUNCp5MjOhXuJKf00gqPnFAS+Yvb51MWcsSBNChGaoAqhARyQDMnlXdoui+ZOaQdxmRsbjO/augU8sb9ijnLlaua9tKoQJwPL3EJp0qWO36kkG6WM0lPHjwfuRm3Xw33Mm3QKE0Esgx8BACkGjMrglSJKuNZd/CzpEjIKSlOqmjMJYXsCeTXQ0cgFWnTu7gxJYW/1L91mXXzX69ZpZD91giNmZzTbg7pEh7i57aGbKkpzkPK6zw9r92I0Luci7r2B5LTj3AFQEIPdOFyxwCgDltQsvh3AJpnm5GTGwDd2wb7q08Ajll5vszuwVKTYySoVllVZmACBkBlQ5NqncV5RwQ2jSzy+0/FBkKwT6tRj3mcDZpM5EMcTCXX6uAfmtPstyJXPaTZVUpwF6cLo2fczBhOeZVbZZKtlI/U2cj9CBGZ1YgLTvamT7byheLa9GjQcsj3MZLuqiXeRDs1jEmdjEjVblfrBgmpJ2HBI+WFha3HZDhvnLQoOltTk30zlZpA3pPZuiW2XE007aXMvRfLMUSy9+yHEHnuuauTylHJcT/nECTnPJ8af/V+5jZ6CPbZ23SYOh5ScKTL85UA7tfjuqgd45dmooYc2qTxK7LCHV4wSB2cpsDnjqsPC3J9RXsZ1wtXpo3TtK/pzjbKZtIAHXeiHmdpgNf4lNEL1hoYqZxnrT3OLmezID9QXv/kVhw5X9sESvjK6o3zD/O8Hl0Ri3pWjyuyKIubQu+7uC5WwZtrT+ayGTja6cpZ+SR/er+eXfEf2OeJxT9aa+h4t4k2JNWWaKDeOE1Acm640ywG4m3Kyffylh51mL5PXrkJkPc9+VBurVUB8sDWUV1tFhU6dEIvTh5/3rxODMkX3WrYPh7i/EqWhgY/ZSIV89jnIwV3z+6JcleQ6TAoJZeSrR1nhdyGo433yQyip7U5d8jljPr/8fZLDfNN78l0CzVnc9q8S0aUSRLnntPmkrV5wvc8/gPAfoiPrcRBOgAAAABJRU5ErkJggg==";
+})();
+function hbCell(x, y){ return [Math.floor(x / HB_MAP.gs), Math.floor(y / HB_MAP.gs)]; }
+function hbWet(cx_, cy_){ return cx_ >= 0 && cy_ >= 0 && cx_ < HB_MAP.gw && cy_ < HB_MAP.gh && HB_GRID && HB_GRID[cy_*HB_MAP.gw + cx_] === 1; }
+function hbRoom(cx_, cy_){ return cx_ >= 0 && cy_ >= 0 && cx_ < HB_MAP.gw && cy_ < HB_MAP.gh && HB_CLEAR && HB_CLEAR[cy_*HB_MAP.gw + cx_] >= 3; }
+function hbWater(x, y){ var c = hbCell(x, y); return hbWet(c[0], c[1]); }
+function hbLen(){ return Math.max(HB_BOAT_LEN, 32 / (HB.k || 0.5)); }
+function hbOpen(x, y){ /* the hull needs room, not just one wet pixel */
+  var r = Math.min(9, hbLen() * 0.11);
+  return hbWater(x, y) && hbWater(x+r, y) && hbWater(x-r, y) && hbWater(x, y+r) && hbWater(x, y-r);
+}
+function hbNearestWater(x, y){
+  var c = hbCell(x, y);
+  for(var r=0; r<40; r++){
+    for(var dy=-r; dy<=r; dy++) for(var dx=-r; dx<=r; dx++){
+      if(Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+      if(hbRoom(c[0]+dx, c[1]+dy)) return [c[0]+dx, c[1]+dy];
+    }
+  }
+  return null;
+}
+function hbLine(a, b){ /* is the straight line between two cells all water? */
+  var x0 = a[0], y0 = a[1], x1 = b[0], y1 = b[1], n = Math.max(Math.abs(x1-x0), Math.abs(y1-y0), 1);
+  for(var i=0; i<=n; i++){
+    var x = Math.round(x0 + (x1-x0)*i/n), y = Math.round(y0 + (y1-y0)*i/n);
+    if(!hbRoom(x, y)) return false;
+  }
+  return true;
+}
+function hbPath(fx, fy, tx, ty){ /* shortest way around the land, then straightened */
+  if(!HB_GRID) return [];
+  var s = hbNearestWater(fx, fy), g = hbNearestWater(tx, ty); if(!s || !g) return [];
+  var W_ = HB_MAP.gw, N = W_*HB_MAP.gh, cost = new Float32Array(N).fill(1e9), from = new Int32Array(N).fill(-1), done = new Uint8Array(N);
+  var si = s[1]*W_ + s[0], gi = g[1]*W_ + g[0]; cost[si] = 0;
+  var D = [[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.414],[1,-1,1.414],[-1,1,1.414],[-1,-1,1.414]];
+  function h(i){ var x = i % W_, y = (i / W_) | 0, dx = Math.abs(x - g[0]), dy = Math.abs(y - g[1]); return Math.max(dx, dy) + 0.414*Math.min(dx, dy); }
+  var hp = [], hf = [];  /* binary heap of cells, ordered by f */
+  function push(i, f){ var n = hp.length; hp.push(i); hf.push(f); while(n > 0){ var p = (n - 1) >> 1; if(hf[p] <= hf[n]) break; var ti = hp[p]; hp[p] = hp[n]; hp[n] = ti; var tf = hf[p]; hf[p] = hf[n]; hf[n] = tf; n = p; } }
+  function pop(){ var top = hp[0], li = hp.pop(), lf = hf.pop(); if(hp.length){ hp[0] = li; hf[0] = lf; var n = 0, L = hp.length;
+      for(;;){ var l = 2*n + 1, r = l + 1, m = n; if(l < L && hf[l] < hf[m]) m = l; if(r < L && hf[r] < hf[m]) m = r; if(m === n) break;
+        var ti = hp[m]; hp[m] = hp[n]; hp[n] = ti; var tf = hf[m]; hf[m] = hf[n]; hf[n] = tf; n = m; } } return top; }
+  push(si, h(si));
+  while(hp.length){
+    var cur_ = pop();
+    if(cur_ === gi) break; if(done[cur_]) continue; done[cur_] = 1;
+    var cx0 = cur_ % W_, cy0 = (cur_ / W_) | 0;
+    for(var d=0; d<8; d++){
+      var nx = cx0 + D[d][0], ny = cy0 + D[d][1];
+      if(!hbRoom(nx, ny)) continue;
+      if(D[d][2] > 1 && (!hbRoom(cx0 + D[d][0], cy0) || !hbRoom(cx0, cy0 + D[d][1]))) continue;
+      var shore = HB_CLEAR[ny*W_ + nx] < 5 ? 1.5 : 0;
+      var ni = ny*W_ + nx, nc = cost[cur_] + D[d][2] + shore;
+      if(nc < cost[ni]){ cost[ni] = nc; from[ni] = cur_; push(ni, nc + h(ni)); }
+    }
+  }
+  if(from[gi] < 0 && gi !== si) return [];
+  var cells = [], i = gi; while(i >= 0){ cells.push([i % W_, (i / W_) | 0]); if(i === si) break; i = from[i]; }
+  cells.reverse();
+  var out = [], a = cells[0];
+  for(var j=2; j<cells.length; j++){ if(!hbLine(a, cells[j])){ a = cells[j-1]; out.push(a); } }
+  out.push(cells[cells.length-1]);
+  return out.map(function(c){ return {x:c[0]*HB_MAP.gs + HB_MAP.gs/2, y:c[1]*HB_MAP.gs + HB_MAP.gs/2}; });
+}
+function hbSetDest(x, y){
+  HB.dest = {x:x, y:y}; HB.path = hbPath(HB.boat.x, HB.boat.y, x, y); HB.pathAt = HB.t;
+}
+function driveTo(id){ var s = HB_SPOTS[id]; if(!s) return; audio(); HB.keys = {}; hbSetDest(s.x, s.y); HB.focusSpot = id; }
+function hbSize(){
+  if(!hcv) return;
+  var wrap = hcv.parentNode, cw = Math.max(260, wrap.clientWidth || 360), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var ch = Math.round(Math.max(250, Math.min(470, Math.max(cw / 1.82, Math.min(320, (window.innerHeight || 800) * 0.45)))));
+  HB.cw = cw; HB.ch = ch; hcv.style.height = ch + "px";
+  hcv.width = Math.round(cw * dpr); hcv.height = Math.round(ch * dpr); if(hcx) hcx.setTransform(dpr,0,0,dpr,0,0);
+  HB.k = Math.max(cw / HB_MAP.w, ch / HB_MAP.h);
+}
+function startHarbor(){ hbSize(); if(HB.run) return; HB.run = true; HB.last = 0; requestAnimationFrame(hbFrame); }
+function stopHarbor(){ HB.run = false; HB.held = false; HB.keys = {}; motor(0); }
+function hbFrame(ts){
+  if(!HB.run) return;
+  var dt = HB.last ? Math.min(0.05, (ts - HB.last)/1000) : 0.016; HB.last = ts; HB.t += dt;
+  hbStep(dt); hbDraw(); requestAnimationFrame(hbFrame);
+}
+function angDiff(a, b){ var d = b - a; while(d > Math.PI) d -= 2*Math.PI; while(d < -Math.PI) d += 2*Math.PI; return d; }
+function hbStep(dt){
+  var B = HB.boat, kx = (HB.keys.r ? 1 : 0) - (HB.keys.l ? 1 : 0), ky = (HB.keys.d ? 1 : 0) - (HB.keys.u ? 1 : 0), want = null, vT = 0;
+  if(kx || ky){ want = Math.atan2(ky, kx); vT = HB_MAXV; HB.dest = null; HB.path = []; }
+  else if(HB.path.length){
+    var p = HB.path[0], dx = p.x - B.x, dy = p.y - B.y, dist = Math.sqrt(dx*dx + dy*dy);
+    if(dist < (HB.path.length > 1 ? 14 : 6)){ HB.path.shift(); }
+    else {
+      want = Math.atan2(dy, dx);
+      var left = dist; for(var i=1;i<HB.path.length;i++) left += Math.hypot(HB.path[i].x - HB.path[i-1].x, HB.path[i].y - HB.path[i-1].y);
+      vT = HB_MAXV * Math.max(0.25, Math.min(1, left / 70)) * Math.max(0.3, Math.cos(angDiff(B.a, want)));
+    }
+    if(!HB.path.length){ HB.dest = null; }
+  }
+  if(want !== null){ var d = angDiff(B.a, want), turn = 3.4 * dt; B.a += Math.max(-turn, Math.min(turn, d)); }
+  B.v += (vT - B.v) * Math.min(1, dt * (vT > B.v ? 2.2 : 3));
+  if(Math.abs(B.v) > 0.5){
+    var nx = B.x + Math.cos(B.a) * B.v * dt, ny = B.y + Math.sin(B.a) * B.v * dt;
+    var bow = hbLen() * 0.42, bx = nx + Math.cos(B.a) * bow * Math.sign(B.v), by = ny + Math.sin(B.a) * bow * Math.sign(B.v);
+    if(hbOpen(nx, ny) && hbWater(bx, by)){ B.x = nx; B.y = ny; }
+    else if(hbOpen(nx, B.y)){ B.x = nx; B.v *= 0.92; }
+    else if(hbOpen(B.x, ny)){ B.y = ny; B.v *= 0.92; }
+    else {
+      if(HB.t - HB.bumpAt > 0.6){ HB.bumpAt = HB.t; buzz(25); tone(120, 0.12, "triangle", 0.08); }
+      B.v = -B.v * 0.25;
+    }
+  }
+  if(HB.held && HB.t - HB.pathAt > 0.2 && HB.dest) hbSetDest(HB.dest.x, HB.dest.y);
+  if(HB.path.length && !HB.held){
+    if(Math.abs(B.v) > 15) HB.stuck = 0; else HB.stuck = (HB.stuck || 0) + dt;
+    if(HB.stuck > 1.2){ HB.stuck = 0; var g = HB.path[HB.path.length-1];
+      if(Math.hypot(g.x - B.x, g.y - B.y) < 60){ HB.path = []; HB.dest = null; } else hbSetDest(g.x, g.y); }
+  }
+  /* wake */
+  HB.wakeAt -= dt;
+  if(B.v > 20 && HB.wakeAt <= 0){
+    HB.wakeAt = 0.06;
+    var sx = B.x - Math.cos(B.a) * hbLen() * 0.5, sy = B.y - Math.sin(B.a) * hbLen() * 0.5;
+    HB.wake.push({x:sx, y:sy, a:B.a, life:1.2, s:B.v / HB_MAXV});
+  }
+  for(var w=HB.wake.length-1; w>=0; w--){ HB.wake[w].life -= dt; if(HB.wake[w].life <= 0) HB.wake.splice(w, 1); }
+  motor(B.v);
+  /* camera follows the boat on screens too small for the whole map */
+  var mw = HB_MAP.w * HB.k, mh = HB_MAP.h * HB.k;
+  var tx = Math.max(0, Math.min(mw - HB.cw, B.x * HB.k - HB.cw / 2)), ty = Math.max(0, Math.min(mh - HB.ch, B.y * HB.k - HB.ch / 2));
+  HB.camX += (tx - HB.camX) * Math.min(1, dt * 4); HB.camY += (ty - HB.camY) * Math.min(1, dt * 4);
+  /* arriving at a fishing spot */
+  var near = null;
+  for(var id in HB_SPOTS){ var s = HB_SPOTS[id]; if(Math.hypot(s.x - B.x, s.y - B.y) < 46 && Math.abs(B.v) < 45) near = id; }
+  if(near !== HB.near){
+    HB.near = near; var fb = $("fishHere");
+    if(near){ var sp = spotById(near); fb.textContent = "Fish here: " + sp.name; fb.hidden = false; tone(660, 0.1, "sine", 0.1); tone(880, 0.16, "sine", 0.1, 0, 0.1); }
+    else fb.hidden = true;
+  }
+}
+var MOTOR = null;
+function motor(v){
+  var a = (v > 1 || MOTOR) ? audio() : null; if(!a) return;
+  try{
+    if(!MOTOR){
+      var o = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain();
+      o.type = "sawtooth"; f.type = "lowpass"; f.frequency.value = 300; g.gain.value = 0;
+      o.connect(f); f.connect(g); g.connect(a.destination); o.start(); MOTOR = {o:o, g:g};
+    }
+    var s = Math.min(1, Math.abs(v) / HB_MAXV);
+    MOTOR.o.frequency.setTargetAtTime(48 + s * 40, a.currentTime, 0.1);
+    MOTOR.g.gain.setTargetAtTime(soundOn && HB.run ? 0.025 + s * 0.035 : 0, a.currentTime, 0.15);
+  }catch(e){}
+}
+function hbDraw(){
+  if(!hcx) return;
+  var k = HB.k, ox = -HB.camX, oy = -HB.camY, B = HB.boat, i;
+  hcx.fillStyle = "#cfe3df"; hcx.fillRect(0, 0, HB.cw, HB.ch);
+  var m = HB_IMG["map-drive"];
+  if(m && m.ok) hcx.drawImage(m, ox, oy, HB_MAP.w * k, HB_MAP.h * k);
+  hcx.save(); hcx.translate(ox, oy); hcx.scale(k, k);
+  /* wake */
+  for(i=0; i<HB.wake.length; i++){
+    var w = HB.wake[i], age = 1.2 - w.life, spread = 6 + age * 26;
+    hcx.strokeStyle = "rgba(255,255,255," + (0.75 * w.life / 1.2) + ")"; hcx.lineWidth = 2.4;
+    hcx.beginPath();
+    hcx.moveTo(w.x + Math.cos(w.a + Math.PI/2) * spread * 0.6 * w.s, w.y + Math.sin(w.a + Math.PI/2) * spread * 0.6 * w.s);
+    hcx.lineTo(w.x + Math.cos(w.a + Math.PI/2) * spread * w.s, w.y + Math.sin(w.a + Math.PI/2) * spread * w.s);
+    hcx.moveTo(w.x - Math.cos(w.a + Math.PI/2) * spread * 0.6 * w.s, w.y - Math.sin(w.a + Math.PI/2) * spread * 0.6 * w.s);
+    hcx.lineTo(w.x - Math.cos(w.a + Math.PI/2) * spread * w.s, w.y - Math.sin(w.a + Math.PI/2) * spread * w.s);
+    hcx.stroke();
+  }
+  /* where the boat is heading */
+  if(HB.dest && HB.path.length){
+    var d = HB.path[HB.path.length - 1];
+    hcx.strokeStyle = "rgba(255,255,255,.9)"; hcx.lineWidth = 3; hcx.setLineDash([6, 6]);
+    hcx.beginPath(); hcx.arc(d.x, d.y, 10 + (reduce ? 0 : Math.sin(HB.t * 6) * 2), 0, 6.3); hcx.stroke(); hcx.setLineDash([]);
+  }
+  hcx.restore();
+  /* fishing spots: a fixed size on screen so they stay easy to see and tap on phones */
+  SPOTS.forEach(function(sp){
+    var s = HB_SPOTS[sp.id], sx = s.x * k + ox, sy = s.y * k + oy, here = HB.near === sp.id, pr = reduce ? 0 : (HB.t * 0.9 + sp.n * 0.3) % 1;
+    hcx.strokeStyle = "rgba(168,31,114," + (0.75 * (1 - pr)) + ")"; hcx.lineWidth = 3;
+    hcx.beginPath(); hcx.arc(sx, sy, 15 + pr * 16, 0, 6.3); hcx.stroke();
+    hcx.fillStyle = here ? "#f4c430" : "#a81f72"; hcx.strokeStyle = "#fff"; hcx.lineWidth = 3;
+    hcx.beginPath(); hcx.arc(sx, sy, 13, 0, 6.3); hcx.fill(); hcx.stroke();
+    hcx.fillStyle = here ? "#1d2a33" : "#fff"; hcx.font = "700 15px Verdana, sans-serif"; hcx.textAlign = "center"; hcx.textBaseline = "middle";
+    hcx.fillText(String(sp.n), sx, sy + 1);
+  });
+  /* the boat: at least 32 px long on screen */
+  var bi = HB_IMG["boat-top"], L = hbLen() * k, bob = reduce ? 0 : Math.sin(HB.t * 3) * 0.02;
+  hcx.save(); hcx.translate(B.x * k + ox, B.y * k + oy); hcx.rotate(B.a);
+  hcx.fillStyle = "rgba(20,50,60,.18)"; hcx.beginPath(); hcx.ellipse(2, 3, L * 0.5, L * 0.21, 0, 0, 6.3); hcx.fill();
+  if(bi && bi.ok){ var bh = L * bi.height / bi.width; hcx.scale(1 + bob, 1 - bob); hcx.drawImage(bi, -L/2, -bh/2, L, bh); }
+  else { hcx.fillStyle = "#8a5632"; hcx.beginPath(); hcx.ellipse(0, 0, L/2, L*0.2, 0, 0, 6.3); hcx.fill(); }
+  hcx.restore();
+}
+/* input: hold or tap the water to steer, arrow keys or WASD to drive */
+function hbPoint(e){ var r = hcv.getBoundingClientRect(); return {x:(e.clientX - r.left + HB.camX) / HB.k, y:(e.clientY - r.top + HB.camY) / HB.k}; }
+if(hcv){
+  hcv.addEventListener("pointerdown", function(e){
+    audio(); try{ hcv.setPointerCapture(e.pointerId); }catch(x){}
+    var p = hbPoint(e), hit = null;
+    for(var id in HB_SPOTS){ if(Math.hypot(HB_SPOTS[id].x - p.x, HB_SPOTS[id].y - p.y) < 26 / HB.k) hit = id; }
+    HB.keys = {}; HB.held = true;
+    if(hit) driveTo(hit); else hbSetDest(p.x, p.y);
+    e.preventDefault();
+  });
+  hcv.addEventListener("pointermove", function(e){ if(HB.held){ var p = hbPoint(e); HB.dest = {x:p.x, y:p.y}; } });
+  var hbUp = function(){ if(HB.held && HB.dest) hbSetDest(HB.dest.x, HB.dest.y); HB.held = false; };
+  hcv.addEventListener("pointerup", hbUp); hcv.addEventListener("pointercancel", hbUp);
+  hcv.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  hcv.addEventListener("touchstart", function(e){ e.preventDefault(); }, {passive:false});
+}
+var HB_KEYS = {ArrowLeft:"l", ArrowRight:"r", ArrowUp:"u", ArrowDown:"d", a:"l", d:"r", w:"u", s:"d", A:"l", D:"r", W:"u", S:"d"};
+document.addEventListener("keydown", function(e){
+  if(!HB.run || !HB_KEYS[e.key]) return;
+  var t = e.target && e.target.tagName; if(t === "INPUT" || t === "TEXTAREA") return;
+  e.preventDefault(); audio(); HB.keys[HB_KEYS[e.key]] = true;
+});
+document.addEventListener("keyup", function(e){ if(HB_KEYS[e.key]) HB.keys[HB_KEYS[e.key]] = false; });
+window.addEventListener("resize", function(){ if(HB.run) hbSize(); });
+if($("fishHere")) $("fishHere").addEventListener("click", function(){ if(HB.near) goSpot(HB.near); });
+
 /* ---------- wiring ---------- */
 $("backBtn").addEventListener("click", renderPick);
 $("sndBtn").addEventListener("click", function(){ soundOn = !soundOn; this.textContent = "Sound: " + (soundOn ? "on" : "off"); this.setAttribute("aria-pressed", soundOn ? "true" : "false"); if(soundOn) audio(); });
@@ -764,8 +1024,6 @@ $("doneBtn").addEventListener("click", renderDone);
 $("keep").addEventListener("click", renderPick);
 $("doneLog").addEventListener("click", renderLog);
 $("again").addEventListener("click", function(){ trip = {n:0, first:0, kinds:{}}; renderPick(); });
-var marks = document.querySelectorAll(".pin");
-for(var mi=0; mi<marks.length; mi++) (function(g){ g.addEventListener("click", function(){ goSpot(g.getAttribute("data-spot")); }); })(marks[mi]);
 if(typeof module === "undefined") renderPick();
 </script>
 </body>
